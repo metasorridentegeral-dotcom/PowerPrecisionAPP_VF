@@ -890,10 +890,10 @@ const AdminDashboard = () => {
               </div>
               <div className="space-y-2">
                 <Label>Processo (opcional)</Label>
-                <Select value={eventFormData.process_id} onValueChange={(v) => setEventFormData({ ...eventFormData, process_id: v })}>
+                <Select value={eventFormData.process_id || "none"} onValueChange={(v) => setEventFormData({ ...eventFormData, process_id: v === "none" ? "" : v })}>
                   <SelectTrigger><SelectValue placeholder="Selecione um processo" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhum (evento geral)</SelectItem>
+                    <SelectItem value="none">Nenhum (evento geral)</SelectItem>
                     {processes.map((p) => (<SelectItem key={p.id} value={p.id}>{p.client_name}</SelectItem>))}
                   </SelectContent>
                 </Select>
@@ -901,20 +901,20 @@ const AdminDashboard = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Atribuir Consultor</Label>
-                  <Select value={eventFormData.assigned_consultor_id} onValueChange={(v) => setEventFormData({ ...eventFormData, assigned_consultor_id: v })}>
+                  <Select value={eventFormData.assigned_consultor_id || "none"} onValueChange={(v) => setEventFormData({ ...eventFormData, assigned_consultor_id: v === "none" ? "" : v })}>
                     <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
+                      <SelectItem value="none">Nenhum</SelectItem>
                       {consultors.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Atribuir Mediador</Label>
-                  <Select value={eventFormData.assigned_mediador_id} onValueChange={(v) => setEventFormData({ ...eventFormData, assigned_mediador_id: v })}>
+                  <Select value={eventFormData.assigned_mediador_id || "none"} onValueChange={(v) => setEventFormData({ ...eventFormData, assigned_mediador_id: v === "none" ? "" : v })}>
                     <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
+                      <SelectItem value="none">Nenhum</SelectItem>
                       {mediadors.map((m) => (<SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>))}
                     </SelectContent>
                   </Select>
