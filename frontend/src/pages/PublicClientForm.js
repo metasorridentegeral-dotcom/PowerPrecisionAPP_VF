@@ -13,11 +13,19 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { Checkbox } from "../components/ui/checkbox";
-import { Building2, Loader2, ArrowLeft, ArrowRight, Check, User, Briefcase, Home, Users, CreditCard } from "lucide-react";
+import { Building2, Loader2, ArrowLeft, ArrowRight, Check, User, Briefcase, Home, Users, CreditCard, HelpCircle, Info } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + "/api";
+
+// Helper component for field hints
+const FieldHint = ({ children }) => (
+  <p className="text-xs text-muted-foreground mt-1 flex items-start gap-1">
+    <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+    <span>{children}</span>
+  </p>
+);
 
 const ESTADOS_CIVIS = [
   { value: "solteiro", label: "Solteiro/a" },
