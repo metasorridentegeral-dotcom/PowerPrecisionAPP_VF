@@ -58,3 +58,18 @@ export const getClientOneDriveFiles = (clientName, subfolder) =>
 export const getOneDriveDownloadUrl = (itemId) => 
   axios.get(`${API_URL}/onedrive/download/${itemId}`);
 export const getOneDriveStatus = () => axios.get(`${API_URL}/onedrive/status`);
+
+// AI Document Analysis
+export const analyzeDocument = (data) => axios.post(`${API_URL}/ai/analyze-document`, data);
+export const analyzeOneDriveDocument = (data) => axios.post(`${API_URL}/ai/analyze-onedrive-document`, data);
+export const getSupportedDocuments = () => axios.get(`${API_URL}/ai/supported-documents`);
+
+// Document Expiry Management
+export const getDocumentExpiries = (processId) => 
+  axios.get(`${API_URL}/documents/expiry`, { params: { process_id: processId } });
+export const getUpcomingExpiries = (days = 30) => 
+  axios.get(`${API_URL}/documents/expiry/upcoming`, { params: { days } });
+export const createDocumentExpiry = (data) => axios.post(`${API_URL}/documents/expiry`, data);
+export const updateDocumentExpiry = (id, data) => axios.put(`${API_URL}/documents/expiry/${id}`, data);
+export const deleteDocumentExpiry = (id) => axios.delete(`${API_URL}/documents/expiry/${id}`);
+export const getDocumentTypes = () => axios.get(`${API_URL}/documents/types`);
