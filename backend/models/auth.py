@@ -6,7 +6,24 @@ class UserRole:
     CLIENTE = "cliente"
     CONSULTOR = "consultor"
     MEDIADOR = "mediador"
+    CONSULTOR_MEDIADOR = "consultor_mediador"  # Can do both consultor and mediador tasks
+    CEO = "ceo"  # Between admin and staff - can manage basic things + consultor/mediador tasks
     ADMIN = "admin"
+    
+    @classmethod
+    def can_act_as_consultor(cls, role: str) -> bool:
+        """Check if role can perform consultor tasks"""
+        return role in [cls.CONSULTOR, cls.CONSULTOR_MEDIADOR, cls.CEO, cls.ADMIN]
+    
+    @classmethod
+    def can_act_as_mediador(cls, role: str) -> bool:
+        """Check if role can perform mediador tasks"""
+        return role in [cls.MEDIADOR, cls.CONSULTOR_MEDIADOR, cls.CEO, cls.ADMIN]
+    
+    @classmethod
+    def is_staff(cls, role: str) -> bool:
+        """Check if role is staff (not cliente)"""
+        return role != cls.CLIENTE
 
 
 class UserRegister(BaseModel):
