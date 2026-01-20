@@ -1,4 +1,5 @@
 # CreditoIMO - Sistema de Registo de Clientes
+## Power Real Estate & Precision
 
 ## Problem Statement
 Sistema de registo de clientes que podem precisar de crédito e de ajuda imobiliária ou as duas coisas. O cliente preenche um formulário público inicial (sem login). O mediador e o consultor gerem depois o cliente.
@@ -7,7 +8,7 @@ Sistema de registo de clientes que podem precisar de crédito e de ajuda imobili
 1. **Cliente** - Preenche formulário público (sem login), recebe acompanhamento
 2. **Consultor** - Gere dados imobiliários, altera estados, adiciona prazos
 3. **Mediador** - Gere dados de crédito (após autorização bancária), altera estados
-4. **Admin** - Gestão de utilizadores, gestão de fluxos de processos, configurações
+4. **Admin** - Gestão de utilizadores, gestão de fluxos de processos, configurações. Tem acesso a TODAS as funcionalidades de consultor e mediador
 
 ## Core Requirements
 - Formulário público para clientes (sem autenticação)
@@ -16,101 +17,78 @@ Sistema de registo de clientes que podem precisar de crédito e de ajuda imobili
 - Histórico de alterações
 - Sistema de comentários/atividade
 - Integração OneDrive para documentos (preparado)
-- Notificações por email (simuladas)
+- Notificações por email (Resend - preparado)
+- Análise AI de documentos (GPT-4o - preparado)
 
 ## Architecture
 - **Backend**: FastAPI + MongoDB + JWT Auth
 - **Frontend**: React + Tailwind CSS + Shadcn/UI
 - **Database**: MongoDB
 
-### Backend Structure (Refatorado 2026-01-20)
+### Backend Structure
 ```
 /app/backend/
-├── server.py          # Main app (~130 linhas)
+├── server.py          # Main app
 ├── config.py          # Configurações
 ├── database.py        # Conexão MongoDB
 ├── models/            # Pydantic models
-│   ├── auth.py        # UserRole, UserResponse, etc
-│   ├── process.py     # ProcessCreate, ProcessResponse, etc
-│   ├── deadline.py    # DeadlineCreate, DeadlineResponse
-│   ├── workflow.py    # WorkflowStatusCreate, etc
-│   ├── activity.py    # ActivityCreate, HistoryResponse
-│   └── onedrive.py    # OneDriveFile
 ├── routes/            # API endpoints
 │   ├── auth.py        # /api/auth/*
 │   ├── public.py      # /api/public/*
 │   ├── processes.py   # /api/processes/*
 │   ├── admin.py       # /api/users/*, /api/workflow-statuses/*
-│   ├── deadlines.py   # /api/deadlines/*
+│   ├── deadlines.py   # /api/deadlines/* (com atribuições)
 │   ├── activities.py  # /api/activities/*, /api/history
+│   ├── documents.py   # /api/documents/*
+│   ├── ai.py          # /api/ai/*
 │   ├── onedrive.py    # /api/onedrive/*
 │   └── stats.py       # /api/stats, /api/health
 └── services/          # Business logic
     ├── auth.py        # JWT, password hashing
-    ├── email.py       # Email notifications
+    ├── email.py       # Email notifications (Resend)
+    ├── ai_document.py # GPT-4o document analysis
     ├── history.py     # Change logging
     └── onedrive.py    # OneDrive integration
 ```
 
 ## What's Been Implemented
 
-### Fase 1 (2026-01-20)
+### Fase 1-4 (Anteriores)
 - ✅ Sistema de autenticação para staff
 - ✅ 4 dashboards por role
 - ✅ Sistema de prazos com calendário
-
-### Fase 2 (2026-01-20)
 - ✅ Histórico de alterações
 - ✅ Sistema de comentários/atividade
 - ✅ Gestão de estados de fluxo pelo admin
-- ✅ Integração OneDrive preparada
+- ✅ Formulário público para clientes
+- ✅ Backend refatorado para estrutura modular
 
-### Fase 3 (2026-01-20)
-- ✅ Formulário público para clientes (sem login)
-- ✅ Processos de simulação criados
-- ✅ Fluxo completo: cliente regista-se → consultor/mediador gerem
-
-### Fase 4 - Refatoração (2026-01-20)
-- ✅ Backend refatorado de 1340 linhas para estrutura modular
-- ✅ Separação em models/, routes/, services/
-- ✅ server.py simplificado (~130 linhas)
-- ✅ Código mais manutenível e escalável
-- ✅ Suite de testes pytest criada (37 testes API)
-- ✅ Cobertura API: auth, processos, admin, activities, public
-- ✅ Suite de testes E2E Playwright (17 testes)
-- ✅ Cobertura E2E: formulário público, login, dashboards, navegação, responsividade
-
-### Fase 5 - Novo Formulário Completo (2026-01-20)
-- ✅ Formulário baseado na ficha de cliente PDF do Microsoft Forms
+### Fase 5 - Formulário Completo
+- ✅ Formulário baseado na ficha de cliente PDF
 - ✅ 6 passos: Dados Pessoais > 2º Titular > Imóvel > Situação Financeira > Créditos/Capital > Confirmação
-- ✅ Campos: NIF, CC/Passaporte, Naturalidade, Estado Civil, Tipo Compra
-- ✅ Imóvel: Tipo, Quartos, Localização, Características obrigatórias
-- ✅ Financeiro: Portal Finanças, Chave Móvel, Salário, Bancos com créditos, Capital próprio
-- ✅ Suporte para 2º titular (compra conjunta)
-- ✅ Backend atualizado com novos modelos de dados
-- ✅ Mensagens de ajuda em todos os campos (ícone info com descrição)
+- ✅ Mensagens de ajuda em todos os campos
 
-### Fase 6 - Dashboard Admin Avançado (2026-01-20)
-- ✅ Nova tab "Visão Geral" com filtros por consultor/mediador
-- ✅ Nova tab "Calendário" com calendário visual e filtros
-- ✅ Visualização de prazos por data com informação de cliente/consultor/mediador
-- ✅ API /api/deadlines/calendar para obter todos os prazos com filtros
+### Fase 6 - Dashboard Admin Avançado
+- ✅ Tabs: Visão Geral, Calendário, Documentos, Análise IA, Utilizadores, Fluxo, Configurações
+- ✅ Calendário visual com filtros por consultor/mediador
 - ✅ Estatísticas: Total Processos, Utilizadores, Prazos Pendentes, Estados
-- ✅ Tabs: Visão Geral, Calendário, Utilizadores, Fluxo, Configurações
-- ✅ Branding atualizado: Power Real Estate & Precision
 
-## Processos de Simulação
-| Cliente | Tipo | Estado |
-|---------|------|--------|
-| António Ferreira | Crédito | Pedido Inicial |
-| Carla Rodrigues | Imobiliária | Pedido Inicial |
-| Rui Mendes | Crédito + Imobiliária | Autorização Bancária |
-| Sofia Almeida | Crédito | Pedido Inicial |
+### Fase 7 - Melhorias (2026-01-20)
+- ✅ **Removido estado "Autorização Bancária"** do workflow
+- ✅ **Limpeza de utilizadores de teste** (30 eliminados)
+- ✅ **Criar eventos no calendário com atribuição de consultor/mediador**
+- ✅ **Admin tem acesso a todas funcionalidades** de consultor e mediador
+- ✅ Dashboard do Consultor com análise AI
+- ✅ Dashboard do Mediador com análise AI
+- ✅ Documentos a expirar tracking
 
-## Integrações Pendentes
-- [ ] OneDrive (requer credenciais Azure AD)
-- [ ] HCPRO (dados imobiliários) - para futuro
-- [ ] CRMCREDITO (dados de crédito) - para futuro
+## Workflow Statuses (Atual)
+| Ordem | Nome | Label |
+|-------|------|-------|
+| 1 | pedido_inicial | Pedido Inicial |
+| 2 | em_analise | Em Análise |
+| 4 | aprovado | Aprovado |
+| 5 | rejeitado | Rejeitado |
 
 ## Credentials (Dev)
 - **Admin**: admin@sistema.pt / admin123
@@ -121,6 +99,19 @@ Sistema de registo de clientes que podem precisar de crédito e de ajuda imobili
 - **Formulário Público**: / ou /registo
 - **Login Staff**: /login
 
-## MOCKED APIs
-- **Email**: Notificações simuladas (logs)
-- **OneDrive**: Preparado, não configurado
+## Integrações
+| Integração | Estado | Notas |
+|------------|--------|-------|
+| Resend (Email) | MOCKED | RESEND_API_KEY vazio, emails simulados |
+| OneDrive | MOCKED | Aguarda credenciais Azure AD |
+| GPT-4o (AI) | Preparado | EMERGENT_LLM_KEY presente |
+
+## Sites de Referência
+- **Imobiliária**: https://www.powerealestate.pt/
+- **Crédito**: https://precision-credito.pt/
+
+## Próximas Tarefas
+- [ ] Configurar Resend API key para emails reais
+- [ ] Configurar OneDrive com credenciais Azure AD
+- [ ] Testar análise AI de documentos
+- [ ] CI/CD pipeline para testes automatizados
