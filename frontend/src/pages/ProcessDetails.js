@@ -9,6 +9,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Calendar } from "../components/ui/calendar";
+import { ScrollArea } from "../components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -35,6 +36,13 @@ import {
   createDeadline,
   updateDeadline,
   deleteDeadline,
+  getActivities,
+  createActivity,
+  deleteActivity,
+  getHistory,
+  getWorkflowStatuses,
+  getClientOneDriveFiles,
+  getOneDriveDownloadUrl,
 } from "../services/api";
 import {
   ArrowLeft,
@@ -46,22 +54,29 @@ import {
   Clock,
   Plus,
   Check,
-  X,
   Trash2,
-  Edit,
   Loader2,
   AlertCircle,
+  MessageSquare,
+  History,
+  Send,
+  FolderOpen,
+  File,
+  Download,
+  ChevronRight,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
-import { format, parseISO, isAfter, isBefore, addDays } from "date-fns";
+import { format, parseISO, isAfter } from "date-fns";
 import { pt } from "date-fns/locale";
 
-const statusLabels = {
-  pedido_inicial: "Pedido Inicial",
-  em_analise: "Em Análise",
-  autorizacao_bancaria: "Autorização Bancária",
-  aprovado: "Aprovado",
-  rejeitado: "Rejeitado",
+const statusColors = {
+  yellow: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  blue: "bg-blue-100 text-blue-800 border-blue-200",
+  orange: "bg-orange-100 text-orange-800 border-orange-200",
+  green: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  red: "bg-red-100 text-red-800 border-red-200",
+  purple: "bg-purple-100 text-purple-800 border-purple-200",
 };
 
 const typeLabels = {
@@ -76,9 +91,15 @@ const ProcessDetails = () => {
   const { user } = useAuth();
   const [process, setProcess] = useState(null);
   const [deadlines, setDeadlines] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [workflowStatuses, setWorkflowStatuses] = useState([]);
+  const [oneDriveFiles, setOneDriveFiles] = useState([]);
+  const [currentFolder, setCurrentFolder] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
+  const [sideTab, setSideTab] = useState("deadlines");
 
   // Form states
   const [personalData, setPersonalData] = useState({});
@@ -86,6 +107,10 @@ const ProcessDetails = () => {
   const [realEstateData, setRealEstateData] = useState({});
   const [creditData, setCreditData] = useState({});
   const [status, setStatus] = useState("");
+
+  // Activity state
+  const [newComment, setNewComment] = useState("");
+  const [sendingComment, setSendingComment] = useState(false);
 
   // Deadline dialog
   const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
@@ -103,24 +128,60 @@ const ProcessDetails = () => {
 
   const fetchData = async () => {
     try {
-      const [processRes, deadlinesRes] = await Promise.all([
+      const [processRes, deadlinesRes, activitiesRes, historyRes, statusesRes] = await Promise.all([
         getProcess(id),
         getDeadlines(id),
+        getActivities(id),
+        getHistory(id),
+        getWorkflowStatuses(),
       ]);
       const processData = processRes.data;
       setProcess(processData);
       setDeadlines(deadlinesRes.data);
+      setActivities(activitiesRes.data);
+      setHistory(historyRes.data);
+      setWorkflowStatuses(statusesRes.data);
       setStatus(processData.status);
       setPersonalData(processData.personal_data || {});
       setFinancialData(processData.financial_data || {});
       setRealEstateData(processData.real_estate_data || {});
       setCreditData(processData.credit_data || {});
+
+      // Try to load OneDrive files
+      if (processData.client_name) {
+        try {
+          const filesRes = await getClientOneDriveFiles(processData.client_name, currentFolder);
+          setOneDriveFiles(filesRes.data);
+        } catch (e) {
+          // OneDrive not configured or folder doesn't exist
+          setOneDriveFiles([]);
+        }
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("Erro ao carregar dados do processo");
       navigate(-1);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadOneDriveFolder = async (subfolder = "") => {
+    try {
+      const filesRes = await getClientOneDriveFiles(process.client_name, subfolder);
+      setOneDriveFiles(filesRes.data);
+      setCurrentFolder(subfolder);
+    } catch (e) {
+      toast.error("Erro ao carregar pasta");
+    }
+  };
+
+  const handleDownloadFile = async (fileId) => {
+    try {
+      const res = await getOneDriveDownloadUrl(fileId);
+      window.open(res.data.download_url, "_blank");
+    } catch (e) {
+      toast.error("Erro ao obter link de download");
     }
   };
 
@@ -143,7 +204,8 @@ const ProcessDetails = () => {
       if (user.role === "mediador" || user.role === "admin") {
         updateData.personal_data = personalData;
         updateData.financial_data = financialData;
-        if (process.status === "autorizacao_bancaria" || process.status === "aprovado") {
+        const allowedStatuses = workflowStatuses.filter(s => s.order >= 3).map(s => s.name);
+        if (allowedStatuses.includes(process.status) || process.status === "autorizacao_bancaria" || process.status === "aprovado") {
           updateData.credit_data = creditData;
         }
       }
@@ -160,6 +222,34 @@ const ProcessDetails = () => {
       toast.error(error.response?.data?.detail || "Erro ao guardar processo");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendComment = async () => {
+    if (!newComment.trim()) return;
+
+    setSendingComment(true);
+    try {
+      await createActivity({ process_id: id, comment: newComment });
+      setNewComment("");
+      const activitiesRes = await getActivities(id);
+      setActivities(activitiesRes.data);
+      toast.success("Comentário adicionado");
+    } catch (error) {
+      toast.error("Erro ao adicionar comentário");
+    } finally {
+      setSendingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (activityId) => {
+    try {
+      await deleteActivity(activityId);
+      const activitiesRes = await getActivities(id);
+      setActivities(activitiesRes.data);
+      toast.success("Comentário eliminado");
+    } catch (error) {
+      toast.error("Erro ao eliminar comentário");
     }
   };
 
@@ -183,7 +273,6 @@ const ProcessDetails = () => {
       setSelectedDate(null);
       fetchData();
     } catch (error) {
-      console.error("Error creating deadline:", error);
       toast.error("Erro ao criar prazo");
     }
   };
@@ -193,7 +282,6 @@ const ProcessDetails = () => {
       await updateDeadline(deadline.id, { completed: !deadline.completed });
       fetchData();
     } catch (error) {
-      console.error("Error updating deadline:", error);
       toast.error("Erro ao atualizar prazo");
     }
   };
@@ -206,16 +294,21 @@ const ProcessDetails = () => {
       toast.success("Prazo eliminado!");
       fetchData();
     } catch (error) {
-      console.error("Error deleting deadline:", error);
       toast.error("Erro ao eliminar prazo");
     }
+  };
+
+  const getStatusInfo = (statusName) => {
+    const statusInfo = workflowStatuses.find(s => s.name === statusName);
+    return statusInfo || { label: statusName, color: "blue" };
   };
 
   const canEditPersonal = ["cliente", "consultor", "mediador", "admin"].includes(user?.role);
   const canEditFinancial = ["cliente", "consultor", "mediador", "admin"].includes(user?.role);
   const canEditRealEstate = ["consultor", "admin"].includes(user?.role);
   const canEditCredit = ["mediador", "admin"].includes(user?.role) && 
-    (process?.status === "autorizacao_bancaria" || process?.status === "aprovado");
+    (workflowStatuses.filter(s => s.order >= 3).map(s => s.name).includes(process?.status) || 
+     process?.status === "autorizacao_bancaria" || process?.status === "aprovado");
   const canChangeStatus = ["consultor", "mediador", "admin"].includes(user?.role);
   const canManageDeadlines = ["consultor", "mediador", "admin"].includes(user?.role);
 
@@ -236,17 +329,15 @@ const ProcessDetails = () => {
           <CardContent className="p-8 text-center">
             <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground">Processo não encontrado</p>
-            <Button className="mt-4" onClick={() => navigate(-1)}>
-              Voltar
-            </Button>
+            <Button className="mt-4" onClick={() => navigate(-1)}>Voltar</Button>
           </CardContent>
         </Card>
       </DashboardLayout>
     );
   }
 
-  // Calendar dates with deadlines
   const deadlineDates = deadlines.map((d) => parseISO(d.due_date));
+  const currentStatusInfo = getStatusInfo(process.status);
 
   return (
     <DashboardLayout title="Detalhes do Processo">
@@ -265,8 +356,8 @@ const ProcessDetails = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge className={`status-${process.status}`}>
-              {statusLabels[process.status]}
+            <Badge className={`${statusColors[currentStatusInfo.color]} border`}>
+              {currentStatusInfo.label}
             </Badge>
             {canChangeStatus && (
               <Select value={status} onValueChange={setStatus}>
@@ -274,11 +365,9 @@ const ProcessDetails = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pedido_inicial">Pedido Inicial</SelectItem>
-                  <SelectItem value="em_analise">Em Análise</SelectItem>
-                  <SelectItem value="autorizacao_bancaria">Autorização Bancária</SelectItem>
-                  <SelectItem value="aprovado">Aprovado</SelectItem>
-                  <SelectItem value="rejeitado">Rejeitado</SelectItem>
+                  {workflowStatuses.map((s) => (
+                    <SelectItem key={s.id} value={s.name}>{s.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}
@@ -320,9 +409,7 @@ const ProcessDetails = () => {
                         <Label>NIF</Label>
                         <Input
                           value={personalData.nif || ""}
-                          onChange={(e) =>
-                            setPersonalData({ ...personalData, nif: e.target.value })
-                          }
+                          onChange={(e) => setPersonalData({ ...personalData, nif: e.target.value })}
                           disabled={!canEditPersonal}
                           data-testid="personal-nif"
                         />
@@ -332,36 +419,26 @@ const ProcessDetails = () => {
                         <Input
                           type="date"
                           value={personalData.birth_date || ""}
-                          onChange={(e) =>
-                            setPersonalData({ ...personalData, birth_date: e.target.value })
-                          }
+                          onChange={(e) => setPersonalData({ ...personalData, birth_date: e.target.value })}
                           disabled={!canEditPersonal}
-                          data-testid="personal-birth-date"
                         />
                       </div>
                       <div className="space-y-2 md:col-span-2">
                         <Label>Morada</Label>
                         <Input
                           value={personalData.address || ""}
-                          onChange={(e) =>
-                            setPersonalData({ ...personalData, address: e.target.value })
-                          }
+                          onChange={(e) => setPersonalData({ ...personalData, address: e.target.value })}
                           disabled={!canEditPersonal}
-                          data-testid="personal-address"
                         />
                       </div>
                       <div className="space-y-2">
                         <Label>Estado Civil</Label>
                         <Select
                           value={personalData.marital_status || ""}
-                          onValueChange={(value) =>
-                            setPersonalData({ ...personalData, marital_status: value })
-                          }
+                          onValueChange={(value) => setPersonalData({ ...personalData, marital_status: value })}
                           disabled={!canEditPersonal}
                         >
-                          <SelectTrigger data-testid="personal-marital-status">
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="solteiro">Solteiro(a)</SelectItem>
                             <SelectItem value="casado">Casado(a)</SelectItem>
@@ -375,11 +452,8 @@ const ProcessDetails = () => {
                         <Label>Nacionalidade</Label>
                         <Input
                           value={personalData.nationality || ""}
-                          onChange={(e) =>
-                            setPersonalData({ ...personalData, nationality: e.target.value })
-                          }
+                          onChange={(e) => setPersonalData({ ...personalData, nationality: e.target.value })}
                           disabled={!canEditPersonal}
-                          data-testid="personal-nationality"
                         />
                       </div>
                     </div>
@@ -393,11 +467,8 @@ const ProcessDetails = () => {
                         <Input
                           type="number"
                           value={financialData.monthly_income || ""}
-                          onChange={(e) =>
-                            setFinancialData({ ...financialData, monthly_income: parseFloat(e.target.value) || null })
-                          }
+                          onChange={(e) => setFinancialData({ ...financialData, monthly_income: parseFloat(e.target.value) || null })}
                           disabled={!canEditFinancial}
-                          data-testid="financial-monthly-income"
                         />
                       </div>
                       <div className="space-y-2">
@@ -405,11 +476,8 @@ const ProcessDetails = () => {
                         <Input
                           type="number"
                           value={financialData.other_income || ""}
-                          onChange={(e) =>
-                            setFinancialData({ ...financialData, other_income: parseFloat(e.target.value) || null })
-                          }
+                          onChange={(e) => setFinancialData({ ...financialData, other_income: parseFloat(e.target.value) || null })}
                           disabled={!canEditFinancial}
-                          data-testid="financial-other-income"
                         />
                       </div>
                       <div className="space-y-2">
@@ -417,25 +485,18 @@ const ProcessDetails = () => {
                         <Input
                           type="number"
                           value={financialData.monthly_expenses || ""}
-                          onChange={(e) =>
-                            setFinancialData({ ...financialData, monthly_expenses: parseFloat(e.target.value) || null })
-                          }
+                          onChange={(e) => setFinancialData({ ...financialData, monthly_expenses: parseFloat(e.target.value) || null })}
                           disabled={!canEditFinancial}
-                          data-testid="financial-monthly-expenses"
                         />
                       </div>
                       <div className="space-y-2">
                         <Label>Tipo de Emprego</Label>
                         <Select
                           value={financialData.employment_type || ""}
-                          onValueChange={(value) =>
-                            setFinancialData({ ...financialData, employment_type: value })
-                          }
+                          onValueChange={(value) => setFinancialData({ ...financialData, employment_type: value })}
                           disabled={!canEditFinancial}
                         >
-                          <SelectTrigger data-testid="financial-employment-type">
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="efetivo">Contrato Efetivo</SelectItem>
                             <SelectItem value="termo">Contrato a Termo</SelectItem>
@@ -450,22 +511,16 @@ const ProcessDetails = () => {
                         <Label>Entidade Empregadora</Label>
                         <Input
                           value={financialData.employer_name || ""}
-                          onChange={(e) =>
-                            setFinancialData({ ...financialData, employer_name: e.target.value })
-                          }
+                          onChange={(e) => setFinancialData({ ...financialData, employer_name: e.target.value })}
                           disabled={!canEditFinancial}
-                          data-testid="financial-employer-name"
                         />
                       </div>
                       <div className="space-y-2">
                         <Label>Tempo de Emprego</Label>
                         <Input
                           value={financialData.employment_duration || ""}
-                          onChange={(e) =>
-                            setFinancialData({ ...financialData, employment_duration: e.target.value })
-                          }
+                          onChange={(e) => setFinancialData({ ...financialData, employment_duration: e.target.value })}
                           disabled={!canEditFinancial}
-                          data-testid="financial-employment-duration"
                         />
                       </div>
                     </div>
@@ -484,14 +539,10 @@ const ProcessDetails = () => {
                           <Label>Tipo de Imóvel</Label>
                           <Select
                             value={realEstateData.property_type || ""}
-                            onValueChange={(value) =>
-                              setRealEstateData({ ...realEstateData, property_type: value })
-                            }
+                            onValueChange={(value) => setRealEstateData({ ...realEstateData, property_type: value })}
                             disabled={!canEditRealEstate}
                           >
-                            <SelectTrigger data-testid="realestate-property-type">
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
+                            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="apartamento">Apartamento</SelectItem>
                               <SelectItem value="moradia">Moradia</SelectItem>
@@ -504,11 +555,8 @@ const ProcessDetails = () => {
                           <Label>Zona Pretendida</Label>
                           <Input
                             value={realEstateData.property_zone || ""}
-                            onChange={(e) =>
-                              setRealEstateData({ ...realEstateData, property_zone: e.target.value })
-                            }
+                            onChange={(e) => setRealEstateData({ ...realEstateData, property_zone: e.target.value })}
                             disabled={!canEditRealEstate}
-                            data-testid="realestate-property-zone"
                           />
                         </div>
                         <div className="space-y-2">
@@ -516,11 +564,8 @@ const ProcessDetails = () => {
                           <Input
                             type="number"
                             value={realEstateData.desired_area || ""}
-                            onChange={(e) =>
-                              setRealEstateData({ ...realEstateData, desired_area: parseFloat(e.target.value) || null })
-                            }
+                            onChange={(e) => setRealEstateData({ ...realEstateData, desired_area: parseFloat(e.target.value) || null })}
                             disabled={!canEditRealEstate}
-                            data-testid="realestate-desired-area"
                           />
                         </div>
                         <div className="space-y-2">
@@ -528,25 +573,18 @@ const ProcessDetails = () => {
                           <Input
                             type="number"
                             value={realEstateData.max_budget || ""}
-                            onChange={(e) =>
-                              setRealEstateData({ ...realEstateData, max_budget: parseFloat(e.target.value) || null })
-                            }
+                            onChange={(e) => setRealEstateData({ ...realEstateData, max_budget: parseFloat(e.target.value) || null })}
                             disabled={!canEditRealEstate}
-                            data-testid="realestate-max-budget"
                           />
                         </div>
                         <div className="space-y-2">
                           <Label>Finalidade</Label>
                           <Select
                             value={realEstateData.property_purpose || ""}
-                            onValueChange={(value) =>
-                              setRealEstateData({ ...realEstateData, property_purpose: value })
-                            }
+                            onValueChange={(value) => setRealEstateData({ ...realEstateData, property_purpose: value })}
                             disabled={!canEditRealEstate}
                           >
-                            <SelectTrigger data-testid="realestate-property-purpose">
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
+                            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="habitacao_propria">Habitação Própria</SelectItem>
                               <SelectItem value="investimento">Investimento</SelectItem>
@@ -558,11 +596,8 @@ const ProcessDetails = () => {
                           <Label>Notas</Label>
                           <Textarea
                             value={realEstateData.notes || ""}
-                            onChange={(e) =>
-                              setRealEstateData({ ...realEstateData, notes: e.target.value })
-                            }
+                            onChange={(e) => setRealEstateData({ ...realEstateData, notes: e.target.value })}
                             disabled={!canEditRealEstate}
-                            data-testid="realestate-notes"
                           />
                         </div>
                       </div>
@@ -571,13 +606,11 @@ const ProcessDetails = () => {
 
                   {/* Credit Tab */}
                   <TabsContent value="credit" className="space-y-4 mt-4">
-                    {process.status !== "autorizacao_bancaria" && process.status !== "aprovado" ? (
+                    {!canEditCredit && !creditData?.requested_amount ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
                         <p>Dados de crédito só podem ser preenchidos após autorização bancária</p>
-                        <Badge className="mt-2 status-em_analise">
-                          Estado atual: {statusLabels[process.status]}
-                        </Badge>
+                        <Badge className="mt-2">{currentStatusInfo.label}</Badge>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -586,11 +619,8 @@ const ProcessDetails = () => {
                           <Input
                             type="number"
                             value={creditData.requested_amount || ""}
-                            onChange={(e) =>
-                              setCreditData({ ...creditData, requested_amount: parseFloat(e.target.value) || null })
-                            }
+                            onChange={(e) => setCreditData({ ...creditData, requested_amount: parseFloat(e.target.value) || null })}
                             disabled={!canEditCredit}
-                            data-testid="credit-requested-amount"
                           />
                         </div>
                         <div className="space-y-2">
@@ -598,11 +628,8 @@ const ProcessDetails = () => {
                           <Input
                             type="number"
                             value={creditData.loan_term_years || ""}
-                            onChange={(e) =>
-                              setCreditData({ ...creditData, loan_term_years: parseInt(e.target.value) || null })
-                            }
+                            onChange={(e) => setCreditData({ ...creditData, loan_term_years: parseInt(e.target.value) || null })}
                             disabled={!canEditCredit}
-                            data-testid="credit-loan-term"
                           />
                         </div>
                         <div className="space-y-2">
@@ -611,11 +638,8 @@ const ProcessDetails = () => {
                             type="number"
                             step="0.01"
                             value={creditData.interest_rate || ""}
-                            onChange={(e) =>
-                              setCreditData({ ...creditData, interest_rate: parseFloat(e.target.value) || null })
-                            }
+                            onChange={(e) => setCreditData({ ...creditData, interest_rate: parseFloat(e.target.value) || null })}
                             disabled={!canEditCredit}
-                            data-testid="credit-interest-rate"
                           />
                         </div>
                         <div className="space-y-2">
@@ -623,22 +647,16 @@ const ProcessDetails = () => {
                           <Input
                             type="number"
                             value={creditData.monthly_payment || ""}
-                            onChange={(e) =>
-                              setCreditData({ ...creditData, monthly_payment: parseFloat(e.target.value) || null })
-                            }
+                            onChange={(e) => setCreditData({ ...creditData, monthly_payment: parseFloat(e.target.value) || null })}
                             disabled={!canEditCredit}
-                            data-testid="credit-monthly-payment"
                           />
                         </div>
                         <div className="space-y-2">
                           <Label>Banco</Label>
                           <Input
                             value={creditData.bank_name || ""}
-                            onChange={(e) =>
-                              setCreditData({ ...creditData, bank_name: e.target.value })
-                            }
+                            onChange={(e) => setCreditData({ ...creditData, bank_name: e.target.value })}
                             disabled={!canEditCredit}
-                            data-testid="credit-bank-name"
                           />
                         </div>
                         <div className="space-y-2">
@@ -646,22 +664,16 @@ const ProcessDetails = () => {
                           <Input
                             type="date"
                             value={creditData.bank_approval_date || ""}
-                            onChange={(e) =>
-                              setCreditData({ ...creditData, bank_approval_date: e.target.value })
-                            }
+                            onChange={(e) => setCreditData({ ...creditData, bank_approval_date: e.target.value })}
                             disabled={!canEditCredit}
-                            data-testid="credit-approval-date"
                           />
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label>Notas da Aprovação</Label>
                           <Textarea
                             value={creditData.bank_approval_notes || ""}
-                            onChange={(e) =>
-                              setCreditData({ ...creditData, bank_approval_notes: e.target.value })
-                            }
+                            onChange={(e) => setCreditData({ ...creditData, bank_approval_notes: e.target.value })}
                             disabled={!canEditCredit}
-                            data-testid="credit-approval-notes"
                           />
                         </div>
                       </div>
@@ -674,10 +686,7 @@ const ProcessDetails = () => {
                 <div className="flex justify-end">
                   <Button onClick={handleSave} disabled={saving} data-testid="save-process-btn">
                     {saving ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        A guardar...
-                      </>
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" />A guardar...</>
                     ) : (
                       "Guardar Alterações"
                     )}
@@ -685,202 +694,295 @@ const ProcessDetails = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Sidebar - Calendar & Deadlines */}
-          <div className="space-y-6">
-            {/* Calendar */}
+            {/* Activity Section */}
             <Card className="border-border">
-              <CardHeader className="pb-2">
+              <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5" />
-                  Calendário
+                  <MessageSquare className="h-5 w-5" />
+                  Atividade
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  locale={pt}
-                  modifiers={{
-                    deadline: deadlineDates,
-                  }}
-                  modifiersStyles={{
-                    deadline: {
-                      backgroundColor: "hsl(var(--primary))",
-                      color: "white",
-                      borderRadius: "4px",
-                    },
-                  }}
-                  className="rounded-md border"
-                />
+                <div className="space-y-4">
+                  {/* New Comment Input */}
+                  <div className="flex gap-2">
+                    <Textarea
+                      placeholder="Adicionar comentário..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      className="flex-1 min-h-[80px]"
+                      data-testid="new-comment-input"
+                    />
+                    <Button
+                      onClick={handleSendComment}
+                      disabled={sendingComment || !newComment.trim()}
+                      data-testid="send-comment-btn"
+                    >
+                      {sendingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </Button>
+                  </div>
+
+                  {/* Comments List */}
+                  <ScrollArea className="h-[300px]">
+                    <div className="space-y-3">
+                      {activities.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-4">Sem comentários</p>
+                      ) : (
+                        activities.map((activity) => (
+                          <div key={activity.id} className="p-3 bg-muted/50 rounded-md" data-testid={`activity-${activity.id}`}>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-sm">{activity.user_name}</span>
+                                  <Badge variant="outline" className="text-xs">{activity.user_role}</Badge>
+                                </div>
+                                <p className="text-sm mt-1">{activity.comment}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {format(parseISO(activity.created_at), "dd/MM/yyyy HH:mm", { locale: pt })}
+                                </p>
+                              </div>
+                              {(activity.user_id === user.id || user.role === "admin") && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => handleDeleteComment(activity.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
               </CardContent>
             </Card>
+          </div>
 
-            {/* Deadlines */}
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Side Tabs */}
             <Card className="border-border">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
-                    Prazos
-                  </CardTitle>
-                  {canManageDeadlines && (
-                    <Dialog open={isDeadlineDialogOpen} onOpenChange={setIsDeadlineDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="outline" data-testid="add-deadline-btn">
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Novo Prazo</DialogTitle>
-                          <DialogDescription>
-                            Adicionar um novo prazo ao processo
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label>Título</Label>
-                            <Input
-                              value={deadlineForm.title}
-                              onChange={(e) =>
-                                setDeadlineForm({ ...deadlineForm, title: e.target.value })
-                              }
-                              placeholder="Ex: Entregar documentos"
-                              data-testid="deadline-title"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Descrição</Label>
-                            <Textarea
-                              value={deadlineForm.description}
-                              onChange={(e) =>
-                                setDeadlineForm({ ...deadlineForm, description: e.target.value })
-                              }
-                              placeholder="Detalhes adicionais..."
-                              data-testid="deadline-description"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Data Limite</Label>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className="w-full justify-start text-left font-normal"
-                                  data-testid="deadline-date-btn"
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {selectedDate ? format(selectedDate, "PPP", { locale: pt }) : "Selecione uma data"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                  mode="single"
-                                  selected={selectedDate}
-                                  onSelect={setSelectedDate}
-                                  locale={pt}
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Prioridade</Label>
-                            <Select
-                              value={deadlineForm.priority}
-                              onValueChange={(value) =>
-                                setDeadlineForm({ ...deadlineForm, priority: value })
-                              }
-                            >
-                              <SelectTrigger data-testid="deadline-priority">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="low">Baixa</SelectItem>
-                                <SelectItem value="medium">Média</SelectItem>
-                                <SelectItem value="high">Alta</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button onClick={handleCreateDeadline} data-testid="save-deadline-btn">
-                            Criar Prazo
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {deadlines.length === 0 ? (
-                  <div className="text-center py-6 text-muted-foreground">
-                    <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Nenhum prazo definido</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {deadlines.map((deadline) => (
-                      <div
-                        key={deadline.id}
-                        className={`flex items-center justify-between p-3 rounded-md ${
-                          deadline.completed ? "bg-muted/30" : "bg-muted/50"
-                        }`}
-                        data-testid={`deadline-item-${deadline.id}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => handleToggleDeadline(deadline)}
-                            className={`h-5 w-5 rounded border flex items-center justify-center ${
-                              deadline.completed
-                                ? "bg-emerald-500 border-emerald-500 text-white"
-                                : "border-slate-300"
-                            }`}
-                            disabled={!canManageDeadlines}
-                            data-testid={`toggle-deadline-${deadline.id}`}
-                          >
-                            {deadline.completed && <Check className="h-3 w-3" />}
-                          </button>
-                          <div>
-                            <p
-                              className={`text-sm font-medium ${
-                                deadline.completed ? "line-through text-muted-foreground" : ""
-                              }`}
-                            >
-                              {deadline.title}
-                            </p>
-                            <p className="text-xs text-muted-foreground font-mono">
-                              {format(parseISO(deadline.due_date), "dd/MM/yyyy")}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className={`priority-${deadline.priority}`}>
-                            {deadline.priority === "high"
-                              ? "Alta"
-                              : deadline.priority === "medium"
-                              ? "Média"
-                              : "Baixa"}
-                          </Badge>
-                          {canManageDeadlines && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => handleDeleteDeadline(deadline.id)}
-                              data-testid={`delete-deadline-${deadline.id}`}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
+              <CardContent className="p-0">
+                <Tabs value={sideTab} onValueChange={setSideTab}>
+                  <TabsList className="w-full grid grid-cols-3 rounded-none rounded-t-md">
+                    <TabsTrigger value="deadlines" className="gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span className="hidden sm:inline">Prazos</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="history" className="gap-1">
+                      <History className="h-4 w-4" />
+                      <span className="hidden sm:inline">Histórico</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="files" className="gap-1">
+                      <FolderOpen className="h-4 w-4" />
+                      <span className="hidden sm:inline">Ficheiros</span>
+                    </TabsTrigger>
+                  </TabsList>
+
+                  {/* Deadlines Tab */}
+                  <TabsContent value="deadlines" className="p-4 pt-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-medium">Prazos</h3>
+                      {canManageDeadlines && (
+                        <Dialog open={isDeadlineDialogOpen} onOpenChange={setIsDeadlineDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline" data-testid="add-deadline-btn">
+                              <Plus className="h-4 w-4" />
                             </Button>
-                          )}
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Novo Prazo</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>Título</Label>
+                                <Input
+                                  value={deadlineForm.title}
+                                  onChange={(e) => setDeadlineForm({ ...deadlineForm, title: e.target.value })}
+                                  placeholder="Ex: Entregar documentos"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Descrição</Label>
+                                <Textarea
+                                  value={deadlineForm.description}
+                                  onChange={(e) => setDeadlineForm({ ...deadlineForm, description: e.target.value })}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Data Limite</Label>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {selectedDate ? format(selectedDate, "PPP", { locale: pt }) : "Selecione"}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0">
+                                    <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} locale={pt} />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Prioridade</Label>
+                                <Select
+                                  value={deadlineForm.priority}
+                                  onValueChange={(value) => setDeadlineForm({ ...deadlineForm, priority: value })}
+                                >
+                                  <SelectTrigger><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="low">Baixa</SelectItem>
+                                    <SelectItem value="medium">Média</SelectItem>
+                                    <SelectItem value="high">Alta</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <Button onClick={handleCreateDeadline}>Criar Prazo</Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
+
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      locale={pt}
+                      modifiers={{ deadline: deadlineDates }}
+                      modifiersStyles={{
+                        deadline: { backgroundColor: "hsl(var(--primary))", color: "white", borderRadius: "4px" },
+                      }}
+                      className="rounded-md border mb-4"
+                    />
+
+                    <ScrollArea className="h-[200px]">
+                      {deadlines.length === 0 ? (
+                        <p className="text-center text-muted-foreground text-sm py-4">Sem prazos</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {deadlines.map((deadline) => (
+                            <div
+                              key={deadline.id}
+                              className={`flex items-center justify-between p-2 rounded-md ${deadline.completed ? "bg-muted/30" : "bg-muted/50"}`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleToggleDeadline(deadline)}
+                                  className={`h-4 w-4 rounded border flex items-center justify-center ${
+                                    deadline.completed ? "bg-emerald-500 border-emerald-500 text-white" : "border-slate-300"
+                                  }`}
+                                  disabled={!canManageDeadlines}
+                                >
+                                  {deadline.completed && <Check className="h-3 w-3" />}
+                                </button>
+                                <div>
+                                  <p className={`text-sm ${deadline.completed ? "line-through text-muted-foreground" : ""}`}>
+                                    {deadline.title}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground font-mono">
+                                    {format(parseISO(deadline.due_date), "dd/MM/yyyy")}
+                                  </p>
+                                </div>
+                              </div>
+                              {canManageDeadlines && (
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDeleteDeadline(deadline.id)}>
+                                  <Trash2 className="h-3 w-3 text-destructive" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      )}
+                    </ScrollArea>
+                  </TabsContent>
+
+                  {/* History Tab */}
+                  <TabsContent value="history" className="p-4 pt-2">
+                    <h3 className="font-medium mb-4">Histórico de Alterações</h3>
+                    <ScrollArea className="h-[400px]">
+                      {history.length === 0 ? (
+                        <p className="text-center text-muted-foreground text-sm py-4">Sem histórico</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {history.map((entry) => (
+                            <div key={entry.id} className="border-l-2 border-primary/30 pl-3 py-1">
+                              <p className="text-sm font-medium">{entry.action}</p>
+                              {entry.field && (
+                                <p className="text-xs text-muted-foreground">
+                                  {entry.field}: {entry.old_value || "vazio"} → {entry.new_value}
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground">
+                                {entry.user_name} • {format(parseISO(entry.created_at), "dd/MM HH:mm", { locale: pt })}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </TabsContent>
+
+                  {/* Files Tab (OneDrive) */}
+                  <TabsContent value="files" className="p-4 pt-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-medium">Documentos</h3>
+                      {currentFolder && (
+                        <Button variant="ghost" size="sm" onClick={() => loadOneDriveFolder("")}>
+                          <ArrowLeft className="h-4 w-4 mr-1" />
+                          Voltar
+                        </Button>
+                      )}
+                    </div>
+
+                    {currentFolder && (
+                      <p className="text-xs text-muted-foreground mb-2 font-mono">{currentFolder}</p>
+                    )}
+
+                    <ScrollArea className="h-[350px]">
+                      {oneDriveFiles.length === 0 ? (
+                        <div className="text-center text-muted-foreground text-sm py-8">
+                          <FolderOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>Sem ficheiros</p>
+                          <p className="text-xs mt-1">Configure o OneDrive para ver documentos</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          {oneDriveFiles.map((file) => (
+                            <div
+                              key={file.id}
+                              className="flex items-center justify-between p-2 hover:bg-muted/50 rounded-md cursor-pointer"
+                              onClick={() => file.is_folder ? loadOneDriveFolder(currentFolder ? `${currentFolder}/${file.name}` : file.name) : handleDownloadFile(file.id)}
+                            >
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                {file.is_folder ? (
+                                  <FolderOpen className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                                ) : (
+                                  <File className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                                )}
+                                <span className="text-sm truncate">{file.name}</span>
+                              </div>
+                              {file.is_folder ? (
+                                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <Button variant="ghost" size="icon" className="h-6 w-6">
+                                  <Download className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>
