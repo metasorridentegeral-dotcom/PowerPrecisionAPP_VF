@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 class CreditoIMOTester:
-    def __init__(self, base_url="https://client-register-sys.preview.emergentagent.com"):
+    def __init__(self, base_url="https://realmgr.preview.emergentagent.com"):
         self.base_url = base_url
         self.admin_token = None
         self.client_token = None

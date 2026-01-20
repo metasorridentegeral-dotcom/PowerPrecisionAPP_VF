@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 
 class SpecificFeaturesTester:
-    def __init__(self, base_url="https://client-register-sys.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://realmgr.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.admin_token = None
         self.client_token = None
