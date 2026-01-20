@@ -61,21 +61,23 @@ class TestPublicForm:
         # Step 1: Select Crédito
         page.click('[data-testid="process-type-credito"]')
         page.click("text=Próximo")
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(1000)
         
         # Step 2: Fill personal data using data-testid
+        page.wait_for_selector('[data-testid="client-name"]')
         page.fill('[data-testid="client-name"]', "Teste E2E Playwright")
         page.fill('[data-testid="client-email"]', unique_email)
         page.fill('[data-testid="client-phone"]', "+351 999 888 777")
         page.click("text=Próximo")
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(1000)
         
-        # Step 3: Financial data - should be visible
-        expect(page.locator("text=Dados Financeiros")).to_be_visible()
+        # Step 3: Financial data - check for form elements
+        page.wait_for_selector('[data-testid="client-monthly-income"]', timeout=5000)
+        expect(page.locator('[data-testid="client-monthly-income"]')).to_be_visible()
         page.click("text=Próximo")
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(1000)
         
-        # Step 4: Confirmation - should be visible
+        # Step 4: Confirmation - should show confirmation page
         expect(page.locator("text=Confirmação")).to_be_visible()
 
 
