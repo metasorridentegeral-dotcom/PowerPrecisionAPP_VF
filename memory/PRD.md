@@ -75,8 +75,10 @@ Sistema de registo de clientes que podem precisar de crédito e de ajuda imobili
 - ✅ Separação em models/, routes/, services/
 - ✅ server.py simplificado (~130 linhas)
 - ✅ Código mais manutenível e escalável
-- ✅ Suite de testes pytest criada (37 testes)
-- ✅ Cobertura: auth, processos, admin, activities, public
+- ✅ Suite de testes pytest criada (37 testes API)
+- ✅ Cobertura API: auth, processos, admin, activities, public
+- ✅ Suite de testes E2E Playwright (17 testes)
+- ✅ Cobertura E2E: formulário público, login, dashboards, navegação, responsividade
 
 ## Processos de Simulação
 | Cliente | Tipo | Estado |
