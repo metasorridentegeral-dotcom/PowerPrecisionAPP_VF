@@ -12,7 +12,7 @@ from services.auth import hash_password
 from routes import (
     auth_router, processes_router, admin_router, 
     deadlines_router, activities_router, onedrive_router,
-    public_router, stats_router
+    public_router, stats_router, ai_router
 )
 
 
@@ -33,6 +33,7 @@ app.include_router(deadlines_router, prefix="/api")
 app.include_router(activities_router, prefix="/api")
 app.include_router(onedrive_router, prefix="/api")
 app.include_router(stats_router, prefix="/api")
+app.include_router(ai_router, prefix="/api")
 
 
 app.add_middleware(
