@@ -11,6 +11,11 @@ export const assignProcess = (id, consultorId, mediadorId) =>
   axios.post(`${API_URL}/processes/${id}/assign`, null, {
     params: { consultor_id: consultorId, mediador_id: mediadorId }
   });
+export const getKanbanBoard = () => axios.get(`${API_URL}/processes/kanban`);
+export const moveProcessKanban = (processId, newStatus) => 
+  axios.put(`${API_URL}/processes/kanban/${processId}/move`, null, {
+    params: { new_status: newStatus }
+  });
 
 // Deadlines
 export const getDeadlines = (processId) => 
