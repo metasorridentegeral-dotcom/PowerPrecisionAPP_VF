@@ -118,7 +118,6 @@ async def get_calendar_deadlines(
     """Get all deadlines with process info for calendar view"""
     # Build process filter
     process_query = {}
-    deadline_query = {}
     
     if consultor_id:
         process_query["assigned_consultor_id"] = consultor_id
@@ -131,7 +130,12 @@ async def get_calendar_deadlines(
     process_ids = list(process_map.keys())
     
     # Build deadline query
-    if process_ids or consultor_id or mediador_id:
+    # When no filters, get ALL deadlines
+    if not consultor_id and not mediador_id:
+        # No filters - get all deadlines
+        deadline_query = {}
+    else:
+        # With filters - get deadlines from matching processes OR directly assigned
         or_conditions = []
         if process_ids:
             or_conditions.append({"process_id": {"$in": process_ids}})
@@ -147,6 +151,10 @@ async def get_calendar_deadlines(
     result = []
     for d in deadlines:
         process = process_map.get(d.get("process_id"), {})
+        if not process and d.get("process_id"):
+            # Load process if not in map (might be filtered out)
+            process = await db.processes.find_one({"id": d["process_id"]}, {"_id": 0}) or {}
+        
         result.append({
             **d,
             "client_name": process.get("client_name", "Evento Geral"),
