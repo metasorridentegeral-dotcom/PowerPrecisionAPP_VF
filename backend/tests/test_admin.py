@@ -1,0 +1,144 @@
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_get_workflow_statuses(client, admin_token):
+    """Test get all workflow statuses"""
+    response = await client.get(
+        "/api/workflow-statuses",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) >= 5  # Default statuses
+
+
+@pytest.mark.asyncio
+async def test_workflow_statuses_have_required_fields(client, admin_token):
+    """Test workflow statuses have all required fields"""
+    response = await client.get(
+        "/api/workflow-statuses",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    statuses = response.json()
+    
+    for status in statuses:
+        assert "id" in status
+        assert "name" in status
+        assert "label" in status
+        assert "order" in status
+        assert "color" in status
+
+
+@pytest.mark.asyncio
+async def test_get_users_as_admin(client, admin_token):
+    """Test admin can get all users"""
+    response = await client.get(
+        "/api/users",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+
+@pytest.mark.asyncio
+async def test_get_users_as_consultor_forbidden(client, consultor_token):
+    """Test consultor cannot get users list"""
+    response = await client.get(
+        "/api/users",
+        headers={"Authorization": f"Bearer {consultor_token}"}
+    )
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_filter_users_by_role(client, admin_token):
+    """Test filtering users by role"""
+    response = await client.get(
+        "/api/users?role=consultor",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == 200
+    users = response.json()
+    for user in users:
+        assert user["role"] == "consultor"
+
+
+@pytest.mark.asyncio
+async def test_create_workflow_status_as_admin(client, admin_token):
+    """Test admin can create workflow status"""
+    response = await client.post(
+        "/api/workflow-statuses",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "name": "test_status_pytest",
+            "label": "Test Status",
+            "order": 99,
+            "color": "purple",
+            "description": "Status created by pytest"
+        }
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "test_status_pytest"
+    
+    # Cleanup - delete the created status
+    await client.delete(
+        f"/api/workflow-statuses/{data['id']}",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+
+
+@pytest.mark.asyncio
+async def test_create_duplicate_workflow_status_fails(client, admin_token):
+    """Test cannot create duplicate workflow status"""
+    # Try to create a status with existing name
+    response = await client.post(
+        "/api/workflow-statuses",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "name": "pedido_inicial",  # Already exists
+            "label": "Duplicate",
+            "order": 99,
+            "color": "red"
+        }
+    )
+    assert response.status_code == 400
+    assert "existe" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_cannot_delete_default_workflow_status(client, admin_token):
+    """Test cannot delete default workflow statuses"""
+    # Get statuses
+    response = await client.get(
+        "/api/workflow-statuses",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    statuses = response.json()
+    
+    # Find a default status
+    default_status = next((s for s in statuses if s.get("is_default")), None)
+    
+    if default_status:
+        delete_response = await client.delete(
+            f"/api/workflow-statuses/{default_status['id']}",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert delete_response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_get_stats_as_admin(client, admin_token):
+    """Test admin can get stats"""
+    response = await client.get(
+        "/api/stats",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "total_processes" in data
+    assert "total_users" in data
