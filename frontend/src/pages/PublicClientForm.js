@@ -903,7 +903,7 @@ const PublicClientForm = () => {
             <div className="flex items-center gap-3">
               <Building2 className="h-8 w-8 text-primary" />
               <div>
-                <h1 className="text-xl font-bold">CreditoIMO</h1>
+                <h1 className="text-xl font-bold">Power Real Estate & Precision</h1>
                 <p className="text-sm text-muted-foreground">Registo de Cliente</p>
               </div>
             </div>
@@ -928,7 +928,7 @@ const PublicClientForm = () => {
             <div className="flex items-center gap-3">
               <Building2 className="h-8 w-8 text-primary" />
               <div>
-                <h1 className="text-xl font-bold">CreditoIMO</h1>
+                <h1 className="text-xl font-bold">Power Real Estate & Precision</h1>
                 <p className="text-sm text-muted-foreground">Registo de Cliente</p>
               </div>
             </div>

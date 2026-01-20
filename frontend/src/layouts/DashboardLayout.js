@@ -108,7 +108,7 @@ const DashboardLayout = ({ children, title }) => {
           <div className="h-16 flex items-center justify-between px-6 border-b border-border">
             <div className="flex items-center gap-2">
               <Building2 className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg tracking-tight">CreditoIMO</span>
+              <span className="font-bold text-lg tracking-tight">Power Real Estate & Precision</span>
             </div>
             <Button
               variant="ghost"

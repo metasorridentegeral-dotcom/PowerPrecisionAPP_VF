@@ -58,7 +58,7 @@ const RegisterPage = () => {
         <div className="absolute inset-0 bg-indigo-900/80" />
         <div className="relative z-10 flex flex-col justify-center px-12 text-white">
           <Building2 className="h-12 w-12 mb-6" />
-          <h1 className="text-4xl font-bold mb-4 tracking-tight">CreditoIMO</h1>
+          <h1 className="text-4xl font-bold mb-4 tracking-tight">Power Real Estate & Precision</h1>
           <p className="text-lg text-white/80 max-w-md">
             Crie a sua conta e comece a gerir os seus processos de crédito e imobiliária de forma simples e eficiente.
           </p>
