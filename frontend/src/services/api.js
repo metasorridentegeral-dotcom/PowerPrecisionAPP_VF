@@ -55,7 +55,15 @@ export const createWorkflowStatus = (data) => axios.post(`${API_URL}/workflow-st
 export const updateWorkflowStatus = (id, data) => axios.put(`${API_URL}/workflow-statuses/${id}`, data);
 export const deleteWorkflowStatus = (id) => axios.delete(`${API_URL}/workflow-statuses/${id}`);
 
-// OneDrive
+// OneDrive Links (Manual)
+export const getProcessOneDriveLinks = (processId) => 
+  axios.get(`${API_URL}/onedrive/links/${processId}`);
+export const addProcessOneDriveLink = (processId, data) => 
+  axios.post(`${API_URL}/onedrive/links/${processId}`, data);
+export const deleteProcessOneDriveLink = (processId, linkId) => 
+  axios.delete(`${API_URL}/onedrive/links/${processId}/${linkId}`);
+
+// OneDrive (Legacy - API based)
 export const getOneDriveFiles = (folder) => 
   axios.get(`${API_URL}/onedrive/files`, { params: { folder } });
 export const getClientOneDriveFiles = (clientName, subfolder) => 
