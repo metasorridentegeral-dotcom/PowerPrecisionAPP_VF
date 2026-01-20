@@ -2,116 +2,109 @@
 ## Power Real Estate & Precision
 
 ## Problem Statement
-Sistema de registo de clientes que podem precisar de crédito e de ajuda imobiliária ou as duas coisas. O cliente preenche um formulário público inicial (sem login). O mediador e o consultor gerem depois o cliente.
-
-## User Personas
-1. **Cliente** - Preenche formulário público (sem login), recebe acompanhamento
-2. **Consultor** - Gere dados imobiliários, altera estados, adiciona prazos
-3. **Mediador** - Gere dados de crédito (após autorização bancária), altera estados
-4. **Admin** - Gestão de utilizadores, gestão de fluxos de processos, configurações. Tem acesso a TODAS as funcionalidades de consultor e mediador
-
-## Core Requirements
-- Formulário público para clientes (sem autenticação)
-- Autenticação JWT apenas para staff (consultor, mediador, admin)
-- Processos com fases configuráveis pelo admin
-- Histórico de alterações
-- Sistema de comentários/atividade
-- Integração OneDrive para documentos (preparado)
-- Notificações por email (Resend - preparado)
-- Análise AI de documentos (GPT-4o - preparado)
-
-## Architecture
-- **Backend**: FastAPI + MongoDB + JWT Auth
-- **Frontend**: React + Tailwind CSS + Shadcn/UI
-- **Database**: MongoDB
-
-### Backend Structure
-```
-/app/backend/
-├── server.py          # Main app
-├── config.py          # Configurações
-├── database.py        # Conexão MongoDB
-├── models/            # Pydantic models
-├── routes/            # API endpoints
-│   ├── auth.py        # /api/auth/*
-│   ├── public.py      # /api/public/*
-│   ├── processes.py   # /api/processes/*
-│   ├── admin.py       # /api/users/*, /api/workflow-statuses/*
-│   ├── deadlines.py   # /api/deadlines/* (com atribuições)
-│   ├── activities.py  # /api/activities/*, /api/history
-│   ├── documents.py   # /api/documents/*
-│   ├── ai.py          # /api/ai/*
-│   ├── onedrive.py    # /api/onedrive/*
-│   └── stats.py       # /api/stats, /api/health
-└── services/          # Business logic
-    ├── auth.py        # JWT, password hashing
-    ├── email.py       # Email notifications (Resend)
-    ├── ai_document.py # GPT-4o document analysis
-    ├── history.py     # Change logging
-    └── onedrive.py    # OneDrive integration
-```
-
-## What's Been Implemented
-
-### Fase 1-4 (Anteriores)
-- ✅ Sistema de autenticação para staff
-- ✅ 4 dashboards por role
-- ✅ Sistema de prazos com calendário
-- ✅ Histórico de alterações
-- ✅ Sistema de comentários/atividade
-- ✅ Gestão de estados de fluxo pelo admin
-- ✅ Formulário público para clientes
-- ✅ Backend refatorado para estrutura modular
-
-### Fase 5 - Formulário Completo
-- ✅ Formulário baseado na ficha de cliente PDF
-- ✅ 6 passos: Dados Pessoais > 2º Titular > Imóvel > Situação Financeira > Créditos/Capital > Confirmação
-- ✅ Mensagens de ajuda em todos os campos
-
-### Fase 6 - Dashboard Admin Avançado
-- ✅ Tabs: Visão Geral, Calendário, Documentos, Análise IA, Utilizadores, Fluxo, Configurações
-- ✅ Calendário visual com filtros por consultor/mediador
-- ✅ Estatísticas: Total Processos, Utilizadores, Prazos Pendentes, Estados
-
-### Fase 7 - Melhorias (2026-01-20)
-- ✅ **Removido estado "Autorização Bancária"** do workflow
-- ✅ **Limpeza de utilizadores de teste** (30 eliminados)
-- ✅ **Criar eventos no calendário com atribuição de consultor/mediador**
-- ✅ **Admin tem acesso a todas funcionalidades** de consultor e mediador
-- ✅ Dashboard do Consultor com análise AI
-- ✅ Dashboard do Mediador com análise AI
-- ✅ Documentos a expirar tracking
-
-## Workflow Statuses (Atual)
-| Ordem | Nome | Label |
-|-------|------|-------|
-| 1 | pedido_inicial | Pedido Inicial |
-| 2 | em_analise | Em Análise |
-| 4 | aprovado | Aprovado |
-| 5 | rejeitado | Rejeitado |
-
-## Credentials (Dev)
-- **Admin**: admin@sistema.pt / admin123
-- **Consultor**: consultor@sistema.pt / consultor123
-- **Mediador**: mediador@sistema.pt / mediador123
-
-## URLs
-- **Formulário Público**: / ou /registo
-- **Login Staff**: /login
-
-## Integrações
-| Integração | Estado | Notas |
-|------------|--------|-------|
-| Resend (Email) | MOCKED | RESEND_API_KEY vazio, emails simulados |
-| OneDrive | MOCKED | Aguarda credenciais Azure AD |
-| GPT-4o (AI) | Preparado | EMERGENT_LLM_KEY presente |
+Sistema de registo de clientes para crédito e assistência imobiliária. Clientes preenchem formulário público (sem login). Consultores, mediadores e CEO gerem os processos num quadro Kanban visual estilo Trello.
 
 ## Sites de Referência
 - **Imobiliária**: https://www.powerealestate.pt/
 - **Crédito**: https://precision-credito.pt/
 
+## User Roles (Hierarquia)
+1. **Admin** - Gestão total do sistema, utilizadores e workflow
+2. **CEO** - Vê todos os processos, pode fazer tudo que consultor e mediador fazem
+3. **Consultor/Mediador** - Pode fazer tarefas de consultor E mediador
+4. **Consultor** - Gere dados imobiliários, vê apenas os seus clientes atribuídos
+5. **Mediador** - Gere dados de crédito, vê apenas os seus clientes atribuídos
+6. **Cliente** - Preenche formulário público (sem login no sistema)
+
+## What's Been Implemented
+
+### ✅ Dados Importados do Trello (2026-01-20)
+- **153 clientes** importados com todas as informações
+- **14 fases** do workflow conforme Trello:
+  1. Clientes em Espera
+  2. Fase Documental
+  3. Fase Documental II
+  4. Enviado ao Bruno
+  5. Enviado ao Luís
+  6. Enviado BCP Rui
+  7. Entradas Precision
+  8. Fase Bancária - Pré Aprovação
+  9. Fase de Visitas
+  10. CH Aprovado - Avaliação
+  11. Fase de Escritura
+  12. Escritura Agendada
+  13. Concluídos
+  14. Desistências
+
+### ✅ Utilizadores Criados
+| Nome | Email | Role | Password |
+|------|-------|------|----------|
+| Pedro Borges | pedro@powerealestate.pt | CEO | power2026 |
+| Tiago Borges | tiago@powerealestate.pt | Consultor | power2026 |
+| Flávio da Silva | flavio@powerealestate.pt | Consultor | power2026 |
+| Estácio Miranda | estacio@precisioncredito.pt | Mediador | power2026 |
+| Fernando Andrade | fernando@precisioncredito.pt | Mediador | power2026 |
+| Carina Amuedo | carina@powerealestate.pt | Consultor/Mediador | power2026 |
+| Marisa Rodrigues | marisa@powerealestate.pt | Consultor/Mediador | power2026 |
+| Admin | admin@sistema.pt | Admin | admin2026 |
+
+### ✅ Quadro Kanban Visual (Estilo Trello)
+- Colunas coloridas por fase
+- Drag & drop para mover clientes entre fases
+- Filtro automático por role:
+  - Admin/CEO: Vê todos os 153 processos
+  - Consultor: Vê apenas os seus (~50)
+  - Mediador: Vê apenas os seus (~5)
+- Cards mostram: nome, telefone, valor, prioridade, badges de atribuição
+- Pesquisa por nome/email
+
+### ✅ Email SMTP Funcional
+- Servidor: mail.precisioncredito.pt:465 (SSL)
+- Email de envio: admin@precisioncredito.pt
+- Notificações automáticas quando cliente muda de fase
+
+### ✅ Funcionalidades Anteriores
+- Formulário público multi-step (6 passos)
+- Sistema de prazos com calendário
+- Histórico de alterações
+- Sistema de comentários
+- Análise AI de documentos (GPT-4o)
+- Gestão de documentos a expirar
+
+## Architecture
+```
+/app/backend/
+├── server.py
+├── models/auth.py (inclui UserRole com 6 roles)
+├── routes/
+│   ├── processes.py (/api/processes/kanban endpoint)
+│   ├── stats.py (stats filtrados por role)
+│   └── ...
+└── services/
+    └── email.py (SMTP SSL)
+
+/app/frontend/
+├── src/
+│   ├── components/
+│   │   └── KanbanBoard.js (componente Kanban)
+│   └── pages/
+│       └── StaffDashboard.js (dashboard unificado)
+```
+
+## URLs
+- **Formulário Público**: / ou /registo
+- **Login Staff**: /login
+- **Dashboard Staff**: /staff (Kanban)
+- **Dashboard Admin**: /admin
+
+## Integrações
+| Integração | Estado | Config |
+|------------|--------|--------|
+| SMTP Email | ✅ FUNCIONAL | mail.precisioncredito.pt:465 |
+| GPT-4o (AI) | ✅ Preparado | EMERGENT_LLM_KEY |
+| OneDrive | 🔴 Aguarda | Precisa Azure AD credentials |
+
 ## Próximas Tarefas
-- [ ] Configurar Resend API key para emails reais
-- [ ] Configurar OneDrive com credenciais Azure AD
-- [ ] Testar análise AI de documentos
-- [ ] CI/CD pipeline para testes automatizados
+- [ ] CI/CD Pipeline para testes automatizados
+- [ ] Integração OneDrive (aguarda credenciais Azure AD)
+- [ ] Testar análise AI com documentos reais
