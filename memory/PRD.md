@@ -23,6 +23,35 @@ Sistema de registo de clientes que podem precisar de crédito e de ajuda imobili
 - **Frontend**: React + Tailwind CSS + Shadcn/UI
 - **Database**: MongoDB
 
+### Backend Structure (Refatorado 2026-01-20)
+```
+/app/backend/
+├── server.py          # Main app (~130 linhas)
+├── config.py          # Configurações
+├── database.py        # Conexão MongoDB
+├── models/            # Pydantic models
+│   ├── auth.py        # UserRole, UserResponse, etc
+│   ├── process.py     # ProcessCreate, ProcessResponse, etc
+│   ├── deadline.py    # DeadlineCreate, DeadlineResponse
+│   ├── workflow.py    # WorkflowStatusCreate, etc
+│   ├── activity.py    # ActivityCreate, HistoryResponse
+│   └── onedrive.py    # OneDriveFile
+├── routes/            # API endpoints
+│   ├── auth.py        # /api/auth/*
+│   ├── public.py      # /api/public/*
+│   ├── processes.py   # /api/processes/*
+│   ├── admin.py       # /api/users/*, /api/workflow-statuses/*
+│   ├── deadlines.py   # /api/deadlines/*
+│   ├── activities.py  # /api/activities/*, /api/history
+│   ├── onedrive.py    # /api/onedrive/*
+│   └── stats.py       # /api/stats, /api/health
+└── services/          # Business logic
+    ├── auth.py        # JWT, password hashing
+    ├── email.py       # Email notifications
+    ├── history.py     # Change logging
+    └── onedrive.py    # OneDrive integration
+```
+
 ## What's Been Implemented
 
 ### Fase 1 (2026-01-20)
