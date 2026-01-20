@@ -1,210 +1,169 @@
+"""
+Email Service - Sends real emails via SMTP SSL
+"""
 import os
-import asyncio
-import logging
-import uuid
-from datetime import datetime, timezone
-from typing import Optional
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
-logger = logging.getLogger(__name__)
-
-# Resend configuration
-RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
-SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
-
-# Check if Resend is configured
-resend_configured = bool(RESEND_API_KEY)
-
-if resend_configured:
-    import resend
-    resend.api_key = RESEND_API_KEY
-    logger.info("Resend email service configured")
-else:
-    logger.warning("Resend not configured - emails will be simulated")
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
-async def send_email_notification(to_email: str, subject: str, body: str, html: Optional[str] = None):
+# SMTP Configuration
+SMTP_SERVER = os.environ.get("SMTP_SERVER", "")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "465"))
+SMTP_EMAIL = os.environ.get("SMTP_EMAIL", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+
+
+def is_smtp_configured() -> bool:
+    """Check if SMTP is properly configured"""
+    return all([SMTP_SERVER, SMTP_PORT, SMTP_EMAIL, SMTP_PASSWORD])
+
+
+async def send_email_notification(to_email: str, subject: str, body: str, html_body: str = None) -> bool:
     """
-    Send email notification using Resend or simulate if not configured.
+    Send email notification via SMTP SSL
     
     Args:
         to_email: Recipient email address
         subject: Email subject
-        body: Plain text body (used for logging/fallback)
-        html: HTML content (optional, used if Resend is configured)
+        body: Plain text body
+        html_body: Optional HTML body
+    
+    Returns:
+        True if email sent successfully, False otherwise
     """
-    from database import db
+    if not is_smtp_configured():
+        print(f"[EMAIL SIMULATED] SMTP not configured")
+        print(f"  To: {to_email}")
+        print(f"  Subject: {subject}")
+        print(f"  Body: {body[:100]}...")
+        return False
     
-    # Generate HTML if not provided
-    if html is None:
-        html = generate_html_email(subject, body)
-    
-    # Log the email
-    email_log = {
-        "id": str(uuid.uuid4()),
-        "to": to_email,
-        "subject": subject,
-        "body": body,
-        "sent_at": datetime.now(timezone.utc).isoformat(),
-        "status": "pending"
-    }
-    
-    if resend_configured:
-        try:
-            params = {
-                "from": SENDER_EMAIL,
-                "to": [to_email],
-                "subject": subject,
-                "html": html
-            }
-            
-            # Run sync SDK in thread to keep FastAPI non-blocking
-            result = await asyncio.to_thread(resend.Emails.send, params)
-            
-            email_log["status"] = "sent"
-            email_log["resend_id"] = result.get("id")
-            logger.info(f"📧 Email sent to {to_email}: {subject}")
-            
-        except Exception as e:
-            email_log["status"] = "failed"
-            email_log["error"] = str(e)
-            logger.error(f"❌ Failed to send email to {to_email}: {e}")
-    else:
-        # Simulate email
-        email_log["status"] = "simulated"
-        logger.info(f"📧 EMAIL SIMULADO")
-        logger.info(f"   To: {to_email}")
-        logger.info(f"   Subject: {subject}")
-        logger.info(f"   Body: {body[:100]}...")
-    
-    # Save to database
-    await db.email_logs.insert_one(email_log)
-    return email_log["status"] == "sent" or email_log["status"] == "simulated"
+    try:
+        # Create message
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = f"Power Real Estate & Precision <{SMTP_EMAIL}>"
+        msg["To"] = to_email
+        
+        # Add plain text part
+        part1 = MIMEText(body, "plain", "utf-8")
+        msg.attach(part1)
+        
+        # Add HTML part if provided
+        if html_body:
+            part2 = MIMEText(html_body, "html", "utf-8")
+            msg.attach(part2)
+        
+        # Create SSL context
+        context = ssl.create_default_context()
+        
+        # Connect and send
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=context) as server:
+            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+        
+        print(f"[EMAIL SENT] To: {to_email}, Subject: {subject}")
+        return True
+        
+    except Exception as e:
+        print(f"[EMAIL ERROR] Failed to send email to {to_email}: {str(e)}")
+        return False
 
 
-def generate_html_email(subject: str, body: str) -> str:
-    """Generate a professional HTML email template."""
+async def send_new_client_notification(
+    client_name: str,
+    client_email: str,
+    client_phone: str,
+    process_type: str,
+    staff_email: str,
+    staff_name: str
+) -> bool:
+    """Send notification to staff member about new client registration"""
     
-    # Convert newlines to HTML breaks
-    html_body = body.replace('\n', '<br>')
+    subject = f"Novo Cliente Registado: {client_name}"
     
-    return f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f5;">
-        <table role="presentation" style="width: 100%; border-collapse: collapse;">
-            <tr>
-                <td style="padding: 40px 20px;">
-                    <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                        <!-- Header -->
-                        <tr>
-                            <td style="background-color: #1e293b; padding: 30px 40px; text-align: center;">
-                                <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">
-                                    Power Real Estate & Precision
-                                </h1>
-                            </td>
-                        </tr>
-                        
-                        <!-- Content -->
-                        <tr>
-                            <td style="padding: 40px;">
-                                <h2 style="margin: 0 0 20px 0; color: #1e293b; font-size: 20px; font-weight: 600;">
-                                    {subject}
-                                </h2>
-                                <div style="color: #475569; font-size: 16px; line-height: 1.6;">
-                                    {html_body}
-                                </div>
-                            </td>
-                        </tr>
-                        
-                        <!-- Footer -->
-                        <tr>
-                            <td style="background-color: #f8fafc; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
-                                <p style="margin: 0; color: #94a3b8; font-size: 12px;">
-                                    Este email foi enviado automaticamente pelo sistema Power Real Estate & Precision.
-                                    <br>
-                                    Por favor, não responda a este email.
-                                </p>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
-    </body>
-    </html>
-    """
+    body = f"""
+Olá {staff_name},
 
+Foi registado um novo cliente que lhe foi atribuído:
 
-async def send_new_client_notification(client_name: str, client_email: str, client_phone: str, 
-                                       process_type: str, staff_email: str, staff_name: str):
-    """Send notification to staff when a new client registers."""
-    
-    subject = f"🆕 Novo Cliente: {client_name}"
-    
-    body = f"""Olá {staff_name},
-
-Um novo cliente registou-se através do formulário público.
-
-📋 DADOS DO CLIENTE
 Nome: {client_name}
 Email: {client_email}
 Telefone: {client_phone}
 Tipo de Processo: {process_type}
 
-Aceda ao sistema para dar seguimento ao processo.
+Aceda à plataforma para ver todos os detalhes.
 
 Cumprimentos,
-Sistema Power Real Estate & Precision"""
-
-    await send_email_notification(staff_email, subject, body)
-
-
-async def send_status_update_notification(client_email: str, client_name: str, 
-                                          new_status: str, process_type: str):
-    """Send notification to client when their process status changes."""
+Power Real Estate & Precision
+"""
     
-    subject = f"📋 Atualização do seu Processo"
+    html_body = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #1F845A 0%, #3FA495 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-top: none; }}
+        .client-info {{ background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }}
+        .label {{ font-weight: bold; color: #666; }}
+        .footer {{ text-align: center; padding: 15px; color: #888; font-size: 12px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 style="margin: 0;">🏠 Novo Cliente Registado</h2>
+        </div>
+        <div class="content">
+            <p>Olá <strong>{staff_name}</strong>,</p>
+            <p>Foi registado um novo cliente que lhe foi atribuído:</p>
+            
+            <div class="client-info">
+                <p><span class="label">Nome:</span> {client_name}</p>
+                <p><span class="label">Email:</span> <a href="mailto:{client_email}">{client_email}</a></p>
+                <p><span class="label">Telefone:</span> {client_phone}</p>
+                <p><span class="label">Tipo de Processo:</span> {process_type}</p>
+            </div>
+            
+            <p>Aceda à plataforma para ver todos os detalhes do cliente.</p>
+        </div>
+        <div class="footer">
+            <p>Power Real Estate & Precision</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
     
-    body = f"""Olá {client_name},
+    return await send_email_notification(staff_email, subject, body, html_body)
 
-O estado do seu processo de {process_type} foi atualizado.
 
-Novo Estado: {new_status}
+async def send_status_update_notification(
+    client_email: str,
+    client_name: str,
+    new_status: str,
+    message: str = ""
+) -> bool:
+    """Send notification to client about status update"""
+    
+    subject = f"Atualização do seu processo - {new_status}"
+    
+    body = f"""
+Olá {client_name},
 
-Em breve entraremos em contacto consigo com mais informações.
+O estado do seu processo foi atualizado para: {new_status}
+
+{message}
+
+Para mais informações, entre em contacto connosco.
 
 Cumprimentos,
-Equipa Power Real Estate & Precision"""
-
-    await send_email_notification(client_email, subject, body)
-
-
-async def send_deadline_reminder(staff_email: str, staff_name: str, 
-                                 deadline_title: str, due_date: str, 
-                                 client_name: str):
-    """Send deadline reminder to staff."""
+Power Real Estate & Precision
+"""
     
-    subject = f"⏰ Prazo a Aproximar: {deadline_title}"
-    
-    body = f"""Olá {staff_name},
-
-Tem um prazo a aproximar-se:
-
-📅 Prazo: {deadline_title}
-📆 Data Limite: {due_date}
-👤 Cliente: {client_name}
-
-Por favor, verifique o processo e tome as ações necessárias.
-
-Cumprimentos,
-Sistema Power Real Estate & Precision"""
-
-    await send_email_notification(staff_email, subject, body)
+    return await send_email_notification(client_email, subject, body)
