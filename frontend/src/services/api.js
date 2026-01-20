@@ -15,6 +15,11 @@ export const assignProcess = (id, consultorId, mediadorId) =>
 // Deadlines
 export const getDeadlines = (processId) => 
   axios.get(`${API_URL}/deadlines`, { params: { process_id: processId } });
+export const getAllDeadlines = () => axios.get(`${API_URL}/deadlines`);
+export const getCalendarDeadlines = (consultorId, mediadorId) => 
+  axios.get(`${API_URL}/deadlines/calendar`, { 
+    params: { consultor_id: consultorId, mediador_id: mediadorId } 
+  });
 export const createDeadline = (data) => axios.post(`${API_URL}/deadlines`, data);
 export const updateDeadline = (id, data) => axios.put(`${API_URL}/deadlines/${id}`, data);
 export const deleteDeadline = (id) => axios.delete(`${API_URL}/deadlines/${id}`);
