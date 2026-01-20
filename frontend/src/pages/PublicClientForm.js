@@ -657,6 +657,7 @@ const PublicClientForm = () => {
             required
             data-testid="fin-portal-financas"
           />
+          <FieldHint>Necessário para validação de rendimentos. Pode criar em portaldasfinancas.gov.pt</FieldHint>
         </div>
         
         <div className="space-y-2">
@@ -670,6 +671,7 @@ const PublicClientForm = () => {
               <SelectItem value="nao">Não</SelectItem>
             </SelectContent>
           </Select>
+          <FieldHint>A CMD facilita a assinatura digital de documentos. Pode ativar em autenticacao.gov.pt</FieldHint>
         </div>
         
         <div className="space-y-2">
@@ -682,6 +684,7 @@ const PublicClientForm = () => {
             placeholder="0.00"
             data-testid="fin-renda-atual"
           />
+          <FieldHint>Se vive em casa própria ou com familiares, deixe em branco ou coloque 0.</FieldHint>
         </div>
         
         <div className="space-y-2">
@@ -695,6 +698,7 @@ const PublicClientForm = () => {
               <SelectItem value="nao">Não</SelectItem>
             </SelectContent>
           </Select>
+          <FieldHint>Se precisa vender para ter capital de entrada ou liquidar crédito existente.</FieldHint>
         </div>
         
         <div className="space-y-2">
@@ -708,6 +712,7 @@ const PublicClientForm = () => {
               <SelectItem value="nao">Não</SelectItem>
             </SelectContent>
           </Select>
+          <FieldHint>Se tem contrato de trabalho sem termo (efetivo) ou está em período experimental.</FieldHint>
         </div>
         
         <div className="space-y-2">
@@ -721,6 +726,7 @@ const PublicClientForm = () => {
               <SelectItem value="nao">Não</SelectItem>
             </SelectContent>
           </Select>
+          <FieldHint>Ter um fiador disponível pode ajudar na aprovação do crédito.</FieldHint>
         </div>
         
         <div className="space-y-2 md:col-span-2">
