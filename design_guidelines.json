@@ -1,0 +1,124 @@
+{
+  "identity": {
+    "name": "E1 - The Anti-AI Designer",
+    "persona": "The Architect of Trust. Precision over decoration. Clarity over gloss.",
+    "core_principles": [
+      "Fusion: Swiss Typography meets Financial Data Density.",
+      "Emotion: Calm confidence. The user should feel 'in control'.",
+      "Content: Data is the hero. Chrome is the support.",
+      "Negative Space: Use whitespace to group data, not lines.",
+      "Contrast: High contrast for readability. No low-contrast grey text."
+    ]
+  },
+  "theme_strategy": {
+    "mode": "light_preferred",
+    "rationale": "Financial and Real Estate data requires high legibility and a 'paper-like' trustworthiness. Dark mode is available for power users (Admin/Devs) but Light is default.",
+    "typography": {
+      "headings": {
+        "family": "Manrope, sans-serif",
+        "weights": ["600", "700", "800"],
+        "tracking": "-0.02em",
+        "usage": "Page titles, Card headers, Modal titles. DO NOT use Inter for headings."
+      },
+      "body": {
+        "family": "Inter, sans-serif",
+        "weights": ["400", "500"],
+        "usage": "General UI text, descriptions."
+      },
+      "data": {
+        "family": "JetBrains Mono, monospace",
+        "usage": "Financial figures, Dates, IDs, Status codes."
+      }
+    },
+    "colors": {
+      "palette_name": "Structural Trust",
+      "primary": {
+        "name": "Deep Indigo",
+        "hex": "#312E81",
+        "tailwind": "indigo-900",
+        "usage": "Primary buttons, Active states, Brand anchor."
+      },
+      "secondary": {
+        "name": "Slate Blue",
+        "hex": "#475569",
+        "tailwind": "slate-600",
+        "usage": "Secondary actions, Borders, Subtitles."
+      },
+      "accent": {
+        "name": "Terracotta",
+        "hex": "#C2410C",
+        "tailwind": "orange-700",
+        "usage": "Important alerts, 'Action Required' markers."
+      },
+      "success": {
+        "name": "Emerald",
+        "hex": "#059669",
+        "tailwind": "emerald-600",
+        "usage": "Approved states, Positive trends."
+      },
+      "background": {
+        "light": "#F8FAFC",
+        "paper": "#FFFFFF",
+        "dark": "#0F172A",
+        "dark_paper": "#1E293B"
+      }
+    }
+  },
+  "layout_system": {
+    "spacing_scale": "Generous. Use p-6 or p-8 for cards. gap-6 for grids.",
+    "grid_strategy": "Bento Grid Mode B (High Density)",
+    "container_style": {
+      "border_radius": "rounded-md",
+      "border": "border border-slate-200 dark:border-slate-800",
+      "shadow": "shadow-sm hover:shadow-md transition-shadow duration-200"
+    },
+    "page_structure": {
+      "dashboard": "Sidebar Navigation (Left) + Top Bar (Breadcrumbs/User) + Main Content Area (Grid).",
+      "form_wizard": "Centered Container (max-w-3xl) with Stepper Progress on top."
+    }
+  },
+  "components": {
+    "buttons": {
+      "style": "Sharp or slightly rounded (rounded-md). No pill shapes for this business context.",
+      "primary": "bg-primary text-white hover:bg-primary/90 shadow-sm",
+      "secondary": "bg-white border border-input hover:bg-accent hover:text-accent-foreground"
+    },
+    "cards": {
+      "style": "Flat, white background, 1px border. Header separated by border-b.",
+      "interaction": "Clickable cards must have a 'ring-2 ring-primary ring-offset-2' focus state."
+    },
+    "inputs": {
+      "style": "h-10 bg-white border-input focus:ring-2 focus:ring-primary/20 transition-all"
+    },
+    "status_badges": {
+      "style": "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+      "variants": {
+        "pending": "bg-yellow-100 text-yellow-800 border border-yellow-200",
+        "approved": "bg-emerald-100 text-emerald-800 border border-emerald-200",
+        "rejected": "bg-red-100 text-red-800 border border-red-200",
+        "analysis": "bg-blue-100 text-blue-800 border border-blue-200"
+      }
+    }
+  },
+  "visual_assets": {
+    "icons": "Lucide React (Stroke width: 1.5px for elegance)",
+    "images": {
+      "login_background": "https://images.pexels.com/photos/18435276/pexels-photo-18435276.jpeg",
+      "default_avatar": "https://images.pexels.com/photos/7640768/pexels-photo-7640768.jpeg",
+      "property_placeholder": "https://images.pexels.com/photos/358636/pexels-photo-358636.jpeg"
+    }
+  },
+  "anti_patterns": [
+    "NO Gradients on buttons or backgrounds. Flat colors only.",
+    "NO Center-aligned text for long descriptions. Left align always.",
+    "NO 'Trendy' blobs or organic shapes. Use rectangles and grids.",
+    "NO Default 'Blue' (blue-500). Use the specific Indigo/Slate palette."
+  ],
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add '@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');' to index.css",
+    "2. UPDATE TAILWIND: Extend the theme with the 'Structural Trust' palette and font families.",
+    "3. CREATE LAYOUTS: Build a 'DashboardLayout' component with a sidebar and a 'AuthLayout' for login.",
+    "4. USE SHADCN: Customize the existing shadcn components in /components/ui to match the 'rounded-md' and 'border-slate-200' style.",
+    "5. DATA-TESTID: Ensure every button and input has a data-testid attribute."
+  ]
+}
