@@ -3,6 +3,7 @@ import { Toaster } from "./components/ui/sonner";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import PublicClientForm from "./pages/PublicClientForm";
 import ClientDashboard from "./pages/ClientDashboard";
 import ConsultorDashboard from "./pages/ConsultorDashboard";
 import MediadorDashboard from "./pages/MediadorDashboard";
