@@ -70,6 +70,12 @@ Sistema de registo de clientes que podem precisar de crédito e de ajuda imobili
 - ✅ Processos de simulação criados
 - ✅ Fluxo completo: cliente regista-se → consultor/mediador gerem
 
+### Fase 4 - Refatoração (2026-01-20)
+- ✅ Backend refatorado de 1340 linhas para estrutura modular
+- ✅ Separação em models/, routes/, services/
+- ✅ server.py simplificado (~130 linhas)
+- ✅ Código mais manutenível e escalável
+
 ## Processos de Simulação
 | Cliente | Tipo | Estado |
 |---------|------|--------|
