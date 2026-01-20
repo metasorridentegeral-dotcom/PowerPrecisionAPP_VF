@@ -16,27 +16,7 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
 5. **Mediador** - Gere dados de crédito, vê apenas os seus clientes atribuídos
 6. **Cliente** - Preenche formulário público (sem login no sistema)
 
-## What's Been Implemented
-
-### ✅ Dados Importados do Trello (2026-01-20)
-- **153 clientes** importados com todas as informações
-- **14 fases** do workflow conforme Trello:
-  1. Clientes em Espera
-  2. Fase Documental
-  3. Fase Documental II
-  4. Enviado ao Bruno
-  5. Enviado ao Luís
-  6. Enviado BCP Rui
-  7. Entradas Precision
-  8. Fase Bancária - Pré Aprovação
-  9. Fase de Visitas
-  10. CH Aprovado - Avaliação
-  11. Fase de Escritura
-  12. Escritura Agendada
-  13. Concluídos
-  14. Desistências
-
-### ✅ Utilizadores Criados
+## Credenciais de Acesso
 | Nome | Email | Role | Password |
 |------|-------|------|----------|
 | Pedro Borges | pedro@powerealestate.pt | CEO | power2026 |
@@ -48,48 +28,44 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
 | Marisa Rodrigues | marisa@powerealestate.pt | Consultor/Mediador | power2026 |
 | Admin | admin@sistema.pt | Admin | admin2026 |
 
+## What's Been Implemented
+
+### ✅ Dados Importados do Trello (2026-01-20)
+- **153 clientes** importados com todas as informações
+- **14 fases** do workflow conforme Trello
+
 ### ✅ Quadro Kanban Visual (Estilo Trello)
 - Colunas coloridas por fase
 - Drag & drop para mover clientes entre fases
-- Filtro automático por role:
-  - Admin/CEO: Vê todos os 153 processos
-  - Consultor: Vê apenas os seus (~50)
-  - Mediador: Vê apenas os seus (~5)
-- Cards mostram: nome, telefone, valor, prioridade, badges de atribuição
-- Pesquisa por nome/email
+- Filtro automático por role (Admin/CEO vêem tudo, staff vê apenas os seus)
+- Cards com nome, telefone, valor, prioridade, badges de atribuição
 
 ### ✅ Email SMTP Funcional
 - Servidor: mail.precisioncredito.pt:465 (SSL)
 - Email de envio: admin@precisioncredito.pt
 - Notificações automáticas quando cliente muda de fase
 
-### ✅ Funcionalidades Anteriores
-- Formulário público multi-step (6 passos)
-- Sistema de prazos com calendário
-- Histórico de alterações
-- Sistema de comentários
-- Análise AI de documentos (GPT-4o)
-- Gestão de documentos a expirar
+### ✅ OneDrive - Links de Partilha Manual
+- Cada processo pode ter múltiplos links de pastas partilhadas
+- Interface simples para adicionar/remover links
+- Instruções integradas de como criar links de partilha
+- Não requer subscrição Microsoft 365 Business
 
-## Architecture
-```
-/app/backend/
-├── server.py
-├── models/auth.py (inclui UserRole com 6 roles)
-├── routes/
-│   ├── processes.py (/api/processes/kanban endpoint)
-│   ├── stats.py (stats filtrados por role)
-│   └── ...
-└── services/
-    └── email.py (SMTP SSL)
-
-/app/frontend/
-├── src/
-│   ├── components/
-│   │   └── KanbanBoard.js (componente Kanban)
-│   └── pages/
-│       └── StaffDashboard.js (dashboard unificado)
-```
+## 14 Fases do Workflow
+1. Clientes em Espera (Amarelo)
+2. Fase Documental (Azul)
+3. Fase Documental II (Azul)
+4. Enviado ao Bruno (Roxo)
+5. Enviado ao Luís (Roxo)
+6. Enviado BCP Rui (Roxo)
+7. Entradas Precision (Laranja)
+8. Fase Bancária - Pré Aprovação (Laranja)
+9. Fase de Visitas (Azul)
+10. CH Aprovado - Avaliação (Verde)
+11. Fase de Escritura (Verde)
+12. Escritura Agendada (Verde)
+13. Concluídos (Verde)
+14. Desistências (Vermelho)
 
 ## URLs
 - **Formulário Público**: / ou /registo
@@ -101,10 +77,9 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
 | Integração | Estado | Config |
 |------------|--------|--------|
 | SMTP Email | ✅ FUNCIONAL | mail.precisioncredito.pt:465 |
-| GPT-4o (AI) | ✅ Preparado | EMERGENT_LLM_KEY |
-| OneDrive | 🔴 Aguarda | Precisa Azure AD credentials |
+| OneDrive (Links) | ✅ FUNCIONAL | Links de partilha manuais |
+| GPT-4o (AI) | ⏳ Preparado | EMERGENT_LLM_KEY |
 
 ## Próximas Tarefas
 - [ ] CI/CD Pipeline para testes automatizados
-- [ ] Integração OneDrive (aguarda credenciais Azure AD)
 - [ ] Testar análise AI com documentos reais
