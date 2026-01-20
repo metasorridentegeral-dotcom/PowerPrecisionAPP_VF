@@ -7,3 +7,4 @@ from .onedrive import router as onedrive_router
 from .public import router as public_router
 from .stats import router as stats_router
 from .ai import router as ai_router
+from .documents import router as documents_router
