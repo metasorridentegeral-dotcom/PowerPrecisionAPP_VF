@@ -3,7 +3,7 @@ from .auth import (
     UserCreate, UserUpdate
 )
 from .process import (
-    ProcessType, PersonalData, FinancialData, RealEstateData, CreditData,
+    ProcessType, PersonalData, Titular2Data, FinancialData, RealEstateData, CreditData,
     ProcessCreate, ProcessUpdate, ProcessResponse, PublicClientRegistration
 )
 from .deadline import DeadlineCreate, DeadlineUpdate, DeadlineResponse
