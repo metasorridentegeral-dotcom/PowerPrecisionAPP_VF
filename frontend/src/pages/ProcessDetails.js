@@ -41,9 +41,8 @@ import {
   deleteActivity,
   getHistory,
   getWorkflowStatuses,
-  getClientOneDriveFiles,
-  getOneDriveDownloadUrl,
 } from "../services/api";
+import OneDriveLinks from "../components/OneDriveLinks";
 import {
   ArrowLeft,
   User,
