@@ -325,6 +325,7 @@ const PublicClientForm = () => {
             required
             data-testid="client-naturalidade"
           />
+          <FieldHint>Freguesia/concelho onde nasceu.</FieldHint>
         </div>
         
         <div className="space-y-2">
@@ -349,6 +350,7 @@ const PublicClientForm = () => {
             required
             data-testid="client-morada"
           />
+          <FieldHint>Morada completa conforme registada nas Finanças.</FieldHint>
         </div>
         
         <div className="space-y-2">
@@ -375,6 +377,7 @@ const PublicClientForm = () => {
               ))}
             </SelectContent>
           </Select>
+          <FieldHint>Se casado/a, indique o regime de bens do casamento.</FieldHint>
         </div>
         
         <div className="space-y-2 md:col-span-2">
@@ -388,6 +391,7 @@ const PublicClientForm = () => {
               <SelectItem value="outra_pessoa">Com outra pessoa</SelectItem>
             </SelectContent>
           </Select>
+          <FieldHint>Se comprar com outra pessoa (cônjuge, familiar, etc.), selecione "Com outra pessoa" para preencher os dados do 2º titular no próximo passo.</FieldHint>
         </div>
       </div>
     </div>
