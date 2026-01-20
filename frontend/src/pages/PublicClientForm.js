@@ -575,6 +575,7 @@ const PublicClientForm = () => {
               ))}
             </SelectContent>
           </Select>
+          <FieldHint>T0 = Estúdio/Loft, T1 = 1 quarto, T2 = 2 quartos, etc.</FieldHint>
         </div>
         
         <div className="space-y-2 md:col-span-2">
@@ -587,10 +588,12 @@ const PublicClientForm = () => {
             required
             data-testid="imovel-localizacao"
           />
+          <FieldHint>Pode indicar várias zonas separadas por vírgula. Quanto mais específico, melhor podemos ajudar.</FieldHint>
         </div>
         
         <div className="space-y-3 md:col-span-2">
           <Label>Características obrigatórias (selecione apenas as imprescindíveis) *</Label>
+          <FieldHint>Selecione apenas características que são absolutamente essenciais. Menos seleções = mais opções de imóveis.</FieldHint>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {CARACTERISTICAS.map((c) => (
               <div key={c.value} className="flex items-center space-x-2">
