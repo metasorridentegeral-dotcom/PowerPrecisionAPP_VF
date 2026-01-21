@@ -447,10 +447,10 @@ const AdminDashboard = () => {
                   <div className="space-y-2">
                     <Label>Mediador</Label>
                     <Select value={mediadorFilter} onValueChange={setMediadorFilter}>
-                      <SelectTrigger><SelectValue placeholder="Todos os mediadores" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Todos os intermediários" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Todos os mediadores</SelectItem>
-                        {mediadors.map((m) => (<SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>))}
+                        <SelectItem value="all">Todos os intermediários</SelectItem>
+                        {intermediarios.map((m) => (<SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -471,7 +471,7 @@ const AdminDashboard = () => {
                         <TableHead>Email</TableHead>
                         <TableHead>Estado</TableHead>
                         <TableHead>Consultor</TableHead>
-                        <TableHead>Mediador</TableHead>
+                        <TableHead>Intermediário</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -532,7 +532,7 @@ const AdminDashboard = () => {
                       <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos</SelectItem>
-                        {mediadors.map((m) => (<SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>))}
+                        {intermediarios.map((m) => (<SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -910,12 +910,12 @@ const AdminDashboard = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Atribuir Mediador</Label>
+                  <Label>Atribuir Intermediário</Label>
                   <Select value={eventFormData.assigned_mediador_id || "none"} onValueChange={(v) => setEventFormData({ ...eventFormData, assigned_mediador_id: v === "none" ? "" : v })}>
                     <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Nenhum</SelectItem>
-                      {mediadors.map((m) => (<SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>))}
+                      {intermediarios.map((m) => (<SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>))}
                     </SelectContent>
                   </Select>
                 </div>
