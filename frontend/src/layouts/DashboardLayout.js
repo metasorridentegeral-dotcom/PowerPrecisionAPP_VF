@@ -23,6 +23,7 @@ import {
   CreditCard,
   PlusCircle,
   BarChart3,
+  Home,
 } from "lucide-react";
 import { useState } from "react";
 
