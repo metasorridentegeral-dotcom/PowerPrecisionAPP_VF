@@ -294,7 +294,7 @@ const KanbanBoard = ({ token }) => {
                                     {process.mediador_name && (
                                       <Badge variant="outline" className="text-xs bg-emerald-50 border-emerald-200">
                                         <User className="h-3 w-3 mr-1" />
-                                        {process.mediador_name.split(' ')[0]}
+                                        Int. {process.mediador_name.split(' ')[0]}
                                       </Badge>
                                     )}
                                   </div>
