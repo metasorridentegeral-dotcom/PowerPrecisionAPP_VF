@@ -149,14 +149,13 @@ const ClientDashboard = () => {
               <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <PlusCircle className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Comece agora</h3>
+              <h3 className="text-lg font-semibold mb-2">Ainda sem processos</h3>
               <p className="text-muted-foreground mb-4">
-                Ainda não tem processos. Crie o seu primeiro processo de crédito ou imobiliária.
+                Os seus processos aparecerão aqui assim que forem criados pela nossa equipa.
               </p>
-              <Button onClick={() => navigate("/cliente/novo-processo")} data-testid="new-process-btn">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Novo Processo
-              </Button>
+              <p className="text-sm text-muted-foreground">
+                Entre em contacto connosco para iniciar um novo processo de crédito ou imobiliária.
+              </p>
             </CardContent>
           </Card>
         )}
@@ -166,15 +165,6 @@ const ClientDashboard = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Os Meus Processos</h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/cliente/novo-processo")}
-                data-testid="new-process-btn"
-              >
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Novo Processo
-              </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {processes.map((process) => {
