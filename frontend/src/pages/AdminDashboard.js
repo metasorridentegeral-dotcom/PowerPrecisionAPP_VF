@@ -434,14 +434,17 @@ const AdminDashboard = () => {
             <Card className="border-border">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Filter className="h-5 w-5" />
-                  Filtros de Visualização
+                  <LayoutGrid className="h-5 w-5" />
+                  Quadro Geral de Processos
                 </CardTitle>
+                <CardDescription>
+                  {filteredProcesses.length} processos • Filtre por consultor ou intermediário
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div className="space-y-2">
-                    <Label>Consultor</Label>
+                    <Label>Filtrar por Consultor</Label>
                     <Select value={consultorFilter} onValueChange={setConsultorFilter}>
                       <SelectTrigger><SelectValue placeholder="Todos os consultores" /></SelectTrigger>
                       <SelectContent>
@@ -451,7 +454,7 @@ const AdminDashboard = () => {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Intermediário</Label>
+                    <Label>Filtrar por Intermediário</Label>
                     <Select value={mediadorFilter} onValueChange={setMediadorFilter}>
                       <SelectTrigger><SelectValue placeholder="Todos os intermediários" /></SelectTrigger>
                       <SelectContent>
@@ -461,50 +464,9 @@ const AdminDashboard = () => {
                     </Select>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="text-lg">Processos ({filteredProcesses.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Cliente</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead>Consultor</TableHead>
-                        <TableHead>Intermediário</TableHead>
-                        <TableHead className="text-right">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredProcesses.length === 0 ? (
-                        <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhum processo encontrado</TableCell></TableRow>
-                      ) : (
-                        filteredProcesses.map((process) => (
-                          <TableRow key={process.id}>
-                            <TableCell className="font-medium">{process.client_name}</TableCell>
-                            <TableCell>{process.client_email}</TableCell>
-                            <TableCell>
-                              <Badge className={`${getColorClass(workflowStatuses.find(s => s.name === process.status)?.color || "gray")} border`}>
-                                {workflowStatuses.find(s => s.name === process.status)?.label || process.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{getUserName(process.assigned_consultor_id)}</TableCell>
-                            <TableCell>{getUserName(process.assigned_mediador_id)}</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="icon" onClick={() => navigate(`/process/${process.id}`)}><Eye className="h-4 w-4" /></Button>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                {/* Kanban Board */}
+                <KanbanBoard token={localStorage.getItem('token')} />
               </CardContent>
             </Card>
           </TabsContent>
