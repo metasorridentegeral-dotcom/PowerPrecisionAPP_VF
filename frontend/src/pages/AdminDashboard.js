@@ -426,18 +426,6 @@ const AdminDashboard = () => {
               <Search className="h-4 w-4" />
               Pesquisar Cliente
             </TabsTrigger>
-            <TabsTrigger value="users" className="gap-2">
-              <Users className="h-4 w-4" />
-              Gestão de Utilizadores
-            </TabsTrigger>
-            <TabsTrigger value="workflow" className="gap-2">
-              <GitBranch className="h-4 w-4" />
-              Gestão de Fluxos
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2">
-              <Settings className="h-4 w-4" />
-              Definições do Sistema
-            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
