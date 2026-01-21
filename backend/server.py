@@ -81,78 +81,34 @@ async def startup():
         await db.workflow_statuses.insert_many(default_statuses)
         logger.info("14 workflow statuses created (conforme Trello)")
     
-    # Create default admin if not exists
-    admin_exists = await db.users.find_one({"role": UserRole.ADMIN})
-    if not admin_exists:
-        admin_doc = {
-            "id": str(uuid.uuid4()),
-            "email": "admin@sistema.pt",
-            "password": hash_password("admin123"),
-            "name": "Administrador",
-            "phone": None,
-            "role": UserRole.ADMIN,
-            "is_active": True,
-            "onedrive_folder": None,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        await db.users.insert_one(admin_doc)
-        logger.info("Admin user created: admin@sistema.pt / admin123")
+    # Create default users if they don't exist (conforme PRD)
+    default_users = [
+        {"email": "admin@sistema.pt", "password": "admin2026", "name": "Admin", "role": UserRole.ADMIN, "phone": None},
+        {"email": "pedro@powerealestate.pt", "password": "power2026", "name": "Pedro Borges", "role": UserRole.CEO, "phone": "+351 912 000 001"},
+        {"email": "tiago@powerealestate.pt", "password": "power2026", "name": "Tiago Borges", "role": UserRole.CONSULTOR, "phone": "+351 912 000 002"},
+        {"email": "flavio@powerealestate.pt", "password": "power2026", "name": "Flávio da Silva", "role": UserRole.CONSULTOR, "phone": "+351 912 000 003"},
+        {"email": "estacio@precisioncredito.pt", "password": "power2026", "name": "Estácio Miranda", "role": UserRole.INTERMEDIARIO, "phone": "+351 912 000 004"},
+        {"email": "fernando@precisioncredito.pt", "password": "power2026", "name": "Fernando Andrade", "role": UserRole.INTERMEDIARIO, "phone": "+351 912 000 005"},
+        {"email": "carina@powerealestate.pt", "password": "power2026", "name": "Carina Amuedo", "role": UserRole.CONSULTOR_INTERMEDIARIO, "phone": "+351 912 000 006"},
+        {"email": "marisa@powerealestate.pt", "password": "power2026", "name": "Marisa Rodrigues", "role": UserRole.CONSULTOR_INTERMEDIARIO, "phone": "+351 912 000 007"},
+    ]
     
-    # Create test clients if none exist
-    client_count = await db.users.count_documents({"role": UserRole.CLIENTE})
-    if client_count == 0:
-        test_clients = [
-            {"name": "João Silva", "email": "joao.silva@email.pt", "phone": "+351 912 345 678", "onedrive_folder": "João Silva"},
-            {"name": "Maria Santos", "email": "maria.santos@email.pt", "phone": "+351 923 456 789", "onedrive_folder": "Maria Santos"},
-            {"name": "Pedro Costa", "email": "pedro.costa@email.pt", "phone": "+351 934 567 890", "onedrive_folder": "Pedro Costa"},
-        ]
-        for test_client in test_clients:
-            client_doc = {
+    for user_data in default_users:
+        user_exists = await db.users.find_one({"email": user_data["email"]})
+        if not user_exists:
+            user_doc = {
                 "id": str(uuid.uuid4()),
-                "email": test_client["email"],
-                "password": hash_password("cliente123"),
-                "name": test_client["name"],
-                "phone": test_client["phone"],
-                "role": UserRole.CLIENTE,
+                "email": user_data["email"],
+                "password": hash_password(user_data["password"]),
+                "name": user_data["name"],
+                "phone": user_data.get("phone"),
+                "role": user_data["role"],
                 "is_active": True,
-                "onedrive_folder": test_client["onedrive_folder"],
+                "onedrive_folder": None,
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
-            await db.users.insert_one(client_doc)
-        logger.info("Test clients created (password: cliente123)")
-    
-    # Create test consultor and mediador if none exist
-    consultor_exists = await db.users.find_one({"role": UserRole.CONSULTOR})
-    if not consultor_exists:
-        consultor_doc = {
-            "id": str(uuid.uuid4()),
-            "email": "consultor@sistema.pt",
-            "password": hash_password("consultor123"),
-            "name": "Carlos Consultor",
-            "phone": "+351 961 234 567",
-            "role": UserRole.CONSULTOR,
-            "is_active": True,
-            "onedrive_folder": None,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        await db.users.insert_one(consultor_doc)
-        logger.info("Test consultor created: consultor@sistema.pt / consultor123")
-    
-    mediador_exists = await db.users.find_one({"role": UserRole.MEDIADOR})
-    if not mediador_exists:
-        mediador_doc = {
-            "id": str(uuid.uuid4()),
-            "email": "mediador@sistema.pt",
-            "password": hash_password("mediador123"),
-            "name": "Ana Mediadora",
-            "phone": "+351 962 345 678",
-            "role": UserRole.MEDIADOR,
-            "is_active": True,
-            "onedrive_folder": None,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        await db.users.insert_one(mediador_doc)
-        logger.info("Test mediador created: mediador@sistema.pt / mediador123")
+            await db.users.insert_one(user_doc)
+            logger.info(f"User created: {user_data['name']} ({user_data['role']}) - {user_data['email']}")
 
 
 @app.on_event("shutdown")
