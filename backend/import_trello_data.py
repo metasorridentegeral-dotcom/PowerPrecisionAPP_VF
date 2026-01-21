@@ -94,16 +94,25 @@ def extract_value(text, keywords=['financiad', 'valor', 'compra', '€']):
             # Pegar o primeiro valor numérico mais alto encontrado
             values = []
             for match in matches:
-                if isinstance(match, tuple):
-                    # Para padrão com grupos
-                    if len(match) == 2 and match[1]:
-                        value = int(match[0]) * 1000 + int(match[1])
+                try:
+                    if isinstance(match, tuple):
+                        # Para padrão com grupos
+                        if len(match) == 2 and match[1]:
+                            value = int(match[0]) * 1000 + int(match[1])
+                        else:
+                            # Limpar e converter
+                            clean_match = match[0].replace('.', '').replace(',', '') if isinstance(match[0], str) else str(match[0])
+                            value = int(clean_match)
                     else:
-                        value = int(match[0].replace('.', '').replace(',', ''))
-                else:
-                    # Para padrão simples
-                    value = int(match) * 1000
-                values.append(value)
+                        # Para padrão simples - limpar primeiro
+                        clean_match = str(match).replace('.', '').replace(',', '').replace('€', '').strip()
+                        if 'k' in clean_match.lower():
+                            value = int(clean_match.lower().replace('k', '')) * 1000
+                        else:
+                            value = int(clean_match) if clean_match.isdigit() else int(clean_match) * 1000
+                    values.append(value)
+                except (ValueError, AttributeError):
+                    continue
             
             if values:
                 return max(values)  # Retornar o maior valor (geralmente o valor do imóvel)
