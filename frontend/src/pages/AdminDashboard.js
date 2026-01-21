@@ -14,7 +14,8 @@ import { Calendar } from "../components/ui/calendar";
 import { Textarea } from "../components/ui/textarea";
 import { 
   Users, Settings, Plus, Edit, Trash2, Search, UserPlus, GitBranch, FolderOpen, 
-  Loader2, CheckCircle, XCircle, FileText, Calendar as CalendarIcon, Filter, Eye, Sparkles
+  Loader2, CheckCircle, XCircle, FileText, Calendar as CalendarIcon, Filter, Eye, Sparkles,
+  UserX, UserCheck, LayoutGrid
 } from "lucide-react";
 import { toast } from "sonner";
 import { 
