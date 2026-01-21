@@ -60,9 +60,17 @@ const DashboardLayout = ({ children, title }) => {
       },
     ];
 
+    // Estatísticas para todos os utilizadores autenticados
+    const statsItem = {
+      label: "Estatísticas",
+      icon: BarChart3,
+      href: "/estatisticas",
+    };
+
     if (user?.role === "cliente") {
       return [
         ...baseItems,
+        statsItem,
         {
           label: "Novo Processo",
           icon: PlusCircle,
