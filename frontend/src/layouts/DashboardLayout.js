@@ -22,6 +22,7 @@ import {
   Building2,
   CreditCard,
   PlusCircle,
+  BarChart3,
 } from "lucide-react";
 import { useState } from "react";
 
