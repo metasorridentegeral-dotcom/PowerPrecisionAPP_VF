@@ -81,6 +81,11 @@ const DashboardLayout = ({ children, title }) => {
         ...baseItems,
         statsItem,
         {
+          label: "Quadro Geral",
+          icon: LayoutGrid,
+          href: "/staff",
+        },
+        {
           label: "Utilizadores",
           icon: Users,
           href: "/utilizadores",
