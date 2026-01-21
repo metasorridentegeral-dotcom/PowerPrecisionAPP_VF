@@ -213,7 +213,7 @@ const DashboardLayout = ({ children, title }) => {
                 onClick={() => navigate("/")}
                 className="gap-2"
               >
-                <Building2 className="h-4 w-4" />
+                <Home className="h-4 w-4" />
                 <span className="hidden sm:inline">Página Inicial</span>
               </Button>
               
@@ -236,6 +236,7 @@ const DashboardLayout = ({ children, title }) => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+          </div>
         </header>
 
         {/* Page content */}
