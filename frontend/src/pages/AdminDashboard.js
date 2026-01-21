@@ -215,6 +215,17 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleToggleUserStatus = async (userId, currentStatus) => {
+    try {
+      await updateUser(userId, { is_active: !currentStatus });
+      toast.success(`Utilizador ${!currentStatus ? 'ativado' : 'desativado'} com sucesso`);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erro ao atualizar utilizador");
+    }
+  };
+
+
   // Status handlers
   const handleCreateStatus = async (e) => {
     e.preventDefault();
