@@ -13,7 +13,7 @@ import StatisticsPage from "./pages/StatisticsPage";
 import "./App.css";
 
 // Staff roles that can access the Kanban dashboard
-const STAFF_ROLES = ["consultor", "mediador", "consultor_mediador", "ceo", "admin"];
+const STAFF_ROLES = ["consultor", "mediador", "intermediario", "consultor_mediador", "consultor_intermediario", "ceo", "admin"];
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
