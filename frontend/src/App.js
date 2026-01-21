@@ -121,6 +121,30 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/intermediario"
+            element={
+              <ProtectedRoute allowedRoles={STAFF_ROLES}>
+                <Navigate to="/staff" replace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ceo"
+            element={
+              <ProtectedRoute allowedRoles={STAFF_ROLES}>
+                <Navigate to="/staff" replace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/consultor_intermediario"
+            element={
+              <ProtectedRoute allowedRoles={STAFF_ROLES}>
+                <Navigate to="/staff" replace />
+              </ProtectedRoute>
+            }
+          />
           
           {/* Admin Dashboard - Full access */}
           <Route
