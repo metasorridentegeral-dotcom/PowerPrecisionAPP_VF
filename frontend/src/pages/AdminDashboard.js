@@ -54,6 +54,7 @@ const AdminDashboard = () => {
   
   const [activeTab, setActiveTab] = useState("overview");
   const [searchTerm, setSearchTerm] = useState("");
+  const [userSearchTerm, setUserSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [consultorFilter, setConsultorFilter] = useState("all");
   const [mediadorFilter, setMediadorFilter] = useState("all");
