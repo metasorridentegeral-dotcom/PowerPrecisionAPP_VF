@@ -22,7 +22,17 @@ const LoginPage = () => {
     try {
       const user = await login(email, password);
       toast.success("Login efetuado com sucesso!");
-      navigate(`/${user.role}`);
+      
+      // Redirecionar baseado no role
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else if (user.role === "cliente") {
+        navigate("/cliente");
+      } else if (["consultor", "mediador", "intermediario", "consultor_intermediario", "consultor_mediador", "ceo"].includes(user.role)) {
+        navigate("/staff");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Login error:", error);
       toast.error(error.response?.data?.detail || "Erro ao fazer login");
