@@ -133,7 +133,7 @@ const LoginPage = () => {
                 <strong>Consultor:</strong> flavio@powerealestate.pt / power2026
               </p>
               <p className="text-xs text-muted-foreground text-center">
-                <strong>Mediador:</strong> estacio@precisioncredito.pt / power2026
+                <strong>Int. Crédito:</strong> estacio@precisioncredito.pt / power2026
               </p>
             </div>
           </CardContent>
