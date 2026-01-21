@@ -168,9 +168,9 @@ const KanbanBoard = ({ token }) => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold">Quadro de Processos</h2>
+          <h2 className="text-xl font-bold">Quadro Geral de Processos</h2>
           <p className="text-sm text-muted-foreground">
-            {kanbanData.total_processes} processos • Arraste para mover entre fases
+            {kanbanData.total_processes} processos • Arraste para mover entre fases ou clique para ver detalhes
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
