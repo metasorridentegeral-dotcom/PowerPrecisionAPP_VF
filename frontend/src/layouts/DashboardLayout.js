@@ -82,6 +82,7 @@ const DashboardLayout = ({ children, title }) => {
     if (user?.role === "admin") {
       return [
         ...baseItems,
+        statsItem,
         {
           label: "Utilizadores",
           icon: Users,
