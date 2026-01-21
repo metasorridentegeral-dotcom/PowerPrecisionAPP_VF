@@ -5,7 +5,7 @@ import KanbanBoard from "../components/KanbanBoard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Badge } from "../components/ui/badge";
-import { Loader2, LayoutGrid, Calendar, Users, Settings, FileText, Sparkles } from "lucide-react";
+import { Loader2, LayoutGrid, Calendar, Users, Settings, FileText, CheckCircle, XCircle, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { getStats, getUsers, getUpcomingExpiries, getCalendarDeadlines } from "../services/api";
 
@@ -13,8 +13,10 @@ const roleLabels = {
   admin: "Administrador",
   ceo: "CEO",
   consultor: "Consultor",
-  mediador: "Mediador",
-  consultor_mediador: "Consultor/Mediador",
+  intermediario: "Intermediário de Crédito",
+  mediador: "Intermediário de Crédito",
+  consultor_intermediario: "Consultor/Intermediário",
+  consultor_mediador: "Consultor/Intermediário",
   cliente: "Cliente"
 };
 
@@ -82,13 +84,46 @@ const StaffDashboard = () => {
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Quick Stats - Updated with Active/Concluded/Dropped */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-3xl font-bold text-primary">{stats.total_processes || 0}</p>
-                <p className="text-sm text-muted-foreground">Processos</p>
+                <p className="text-sm text-muted-foreground">Total</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1">
+                  <TrendingUp className="h-5 w-5 text-blue-600" />
+                  <p className="text-3xl font-bold text-blue-600">{stats.active_processes || 0}</p>
+                </div>
+                <p className="text-sm text-blue-600/80">Ativos</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1">
+                  <CheckCircle className="h-5 w-5 text-emerald-600" />
+                  <p className="text-3xl font-bold text-emerald-600">{stats.concluded_processes || 0}</p>
+                </div>
+                <p className="text-sm text-emerald-600/80">Concluídos</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-red-50 dark:bg-red-950/30 border-red-200">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1">
+                  <XCircle className="h-5 w-5 text-red-600" />
+                  <p className="text-3xl font-bold text-red-600">{stats.dropped_processes || 0}</p>
+                </div>
+                <p className="text-sm text-red-600/80">Desistências</p>
               </div>
             </CardContent>
           </Card>
@@ -100,24 +135,6 @@ const StaffDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-red-500">{expiries.length}</p>
-                <p className="text-sm text-muted-foreground">Docs a Expirar</p>
-              </div>
-            </CardContent>
-          </Card>
-          {canSeeAllStats && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-emerald-500">{users.length}</p>
-                  <p className="text-sm text-muted-foreground">Utilizadores</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Main Tabs */}
@@ -220,18 +237,32 @@ const StaffDashboard = () => {
             <TabsContent value="users" className="mt-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Gestão de Utilizadores</CardTitle>
-                  <CardDescription>Para gestão completa, aceda ao painel de administração</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Gestão de Utilizadores</CardTitle>
+                      <CardDescription>
+                        {stats.active_users || 0} ativos • {stats.inactive_users || 0} inativos
+                      </CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     {users.map((u) => (
-                      <div key={u.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <div>
-                          <p className="font-medium">{u.name}</p>
-                          <p className="text-sm text-muted-foreground">{u.email}</p>
+                      <div key={u.id} className={`flex items-center justify-between p-3 rounded-lg ${u.is_active === false ? 'bg-red-50 dark:bg-red-950/20' : 'bg-muted/30'}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${u.is_active === false ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                          <div>
+                            <p className={`font-medium ${u.is_active === false ? 'text-muted-foreground' : ''}`}>
+                              {u.name}
+                              {u.is_active === false && <span className="text-xs text-red-500 ml-2">(Inativo)</span>}
+                            </p>
+                            <p className="text-sm text-muted-foreground">{u.email}</p>
+                          </div>
                         </div>
-                        <Badge>{roleLabels[u.role] || u.role}</Badge>
+                        <Badge variant={u.is_active === false ? "secondary" : "default"}>
+                          {roleLabels[u.role] || u.role}
+                        </Badge>
                       </div>
                     ))}
                   </div>
