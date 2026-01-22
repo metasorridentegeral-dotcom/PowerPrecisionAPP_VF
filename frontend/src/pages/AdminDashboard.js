@@ -73,6 +73,7 @@ const AdminDashboard = () => {
   const [roleFilter, setRoleFilter] = useState("all");
   const [consultorFilter, setConsultorFilter] = useState("all");
   const [mediadorFilter, setMediadorFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");  // Novo filtro de prioridade
   const [selectedDate, setSelectedDate] = useState(new Date());
   
   // Dialogs
