@@ -518,7 +518,7 @@ const SettingsPage = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <p className="text-sm text-muted-foreground">
                         O sistema está configurado com 14 estados de workflow:
                       </p>
@@ -548,6 +548,18 @@ const SettingsPage = () => {
                           Desistências
                         </li>
                       </ul>
+                      <div className="pt-4 border-t">
+                        <Button 
+                          onClick={() => window.location.href = '/admin'}
+                          className="w-full bg-blue-900 hover:bg-blue-800"
+                        >
+                          <Workflow className="h-4 w-4 mr-2" />
+                          Editar Estados de Workflow
+                        </Button>
+                        <p className="text-xs text-muted-foreground mt-2 text-center">
+                          Aceda ao Painel de Administração para gerir os estados do workflow
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
