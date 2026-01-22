@@ -18,7 +18,9 @@
 8. [Documentos e Validades](#8-documentos-e-validades)
 9. [Estatísticas](#9-estatísticas)
 10. [Formulário Público](#10-formulário-público)
-11. [Referência Técnica](#11-referência-técnica)
+11. [Gestão de Utilizadores (Admin)](#11-gestão-de-utilizadores-admin)
+12. [Editor de Fluxos de Workflow (Admin)](#12-editor-de-fluxos-de-workflow-admin)
+13. [Referência Técnica](#13-referência-técnica)
 
 ---
 
