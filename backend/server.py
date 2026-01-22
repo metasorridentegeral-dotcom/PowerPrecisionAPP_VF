@@ -14,6 +14,7 @@ from routes import (
     deadlines_router, activities_router, onedrive_router,
     public_router, stats_router, ai_router, documents_router
 )
+from routes.alerts import router as alerts_router
 
 
 # Configure logging
@@ -35,6 +36,7 @@ app.include_router(onedrive_router, prefix="/api")
 app.include_router(stats_router, prefix="/api")
 app.include_router(ai_router, prefix="/api")
 app.include_router(documents_router, prefix="/api")
+app.include_router(alerts_router, prefix="/api")
 
 
 app.add_middleware(
