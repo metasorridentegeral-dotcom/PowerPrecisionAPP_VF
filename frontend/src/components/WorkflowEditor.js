@@ -517,7 +517,7 @@ const WorkflowEditor = () => {
           <div className="py-4">
             <p>
               Tem a certeza que deseja eliminar o estado{" "}
-              <strong>"{selectedStatus?.label}"</strong>?
+              <strong>&ldquo;{selectedStatus?.label}&rdquo;</strong>?
             </p>
             <p className="text-sm text-muted-foreground mt-2">
               Esta ação não pode ser revertida. Certifique-se de que não existem

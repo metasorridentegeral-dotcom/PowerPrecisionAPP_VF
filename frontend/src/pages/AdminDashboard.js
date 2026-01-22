@@ -895,7 +895,7 @@ const AdminDashboard = () => {
                           ).length === 0 && (
                             <TableRow>
                               <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                Nenhum cliente encontrado com "{searchTerm}"
+                              Nenhum cliente encontrado com &ldquo;{searchTerm}&rdquo;
                               </TableCell>
                             </TableRow>
                           )}
@@ -905,7 +905,7 @@ const AdminDashboard = () => {
                   ) : (
                     <div className="text-center py-12 text-muted-foreground">
                       <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Digite pelo menos 2 caracteres para pesquisar</p>
+                      <p className="text-sm text-muted-foreground">Digite pelo menos 2 caracteres para pesquisar</p>
                     </div>
                   )}
                 </div>
