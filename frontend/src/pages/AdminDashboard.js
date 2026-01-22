@@ -487,6 +487,10 @@ const AdminDashboard = () => {
               <FileText className="h-4 w-4" />
               Documentos
             </TabsTrigger>
+            <TabsTrigger value="users" className="gap-2">
+              <Users className="h-4 w-4" />
+              Utilizadores
+            </TabsTrigger>
             <TabsTrigger value="ai" className="gap-2">
               <Sparkles className="h-4 w-4" />
               Análise IA
