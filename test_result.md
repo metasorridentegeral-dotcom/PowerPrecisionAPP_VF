@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Realizar testes completos do frontend da aplicação CreditoIMO - Sistema de gestão de processos imobiliários e crédito com React + Tailwind CSS + shadcn/ui"
+user_problem_statement: "Atualização do sistema CreditoIMO: 1) Corrigir atribuições de Flávio e Estácio, 2) Adicionar comentários ao código, 3) Criar documentação e apresentação em PT-PT, 4) Atualizar documentos para expirar em 60 dias, 5) Ajustar cores dos sites Power Real Estate e Precision Crédito, 6) Sugerir novas funcionalidades"
 
 backend:
   - task: "Authentication System"
