@@ -204,6 +204,54 @@ backend:
           agent: "testing"
           comment: "GET /api/processes/kanban returns 14 columns with proper process distribution. Total 154 processes correctly organized by workflow status."
 
+  - task: "Process Assignments - Flávio & Estácio"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/processes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Process assignments working correctly. Flávio da Silva (flavio@powerealestate.pt) has 1 process assigned as consultor, Estácio Miranda (estacio@precisioncredito.pt) has 1 process assigned as intermediário. Role-based filtering working - users only see their assigned processes. Fixed bug in role filtering for INTERMEDIARIO role."
+
+  - task: "Documents Expiring in 60 Days API"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/documents.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/documents/expiry/upcoming?days=60 working correctly. Returns 3 documents expiring in next 60 days with proper fields: days_until_expiry, urgency (critical/warning/normal). Urgency calculation working: ≤7 days=critical, ≤30 days=warning, >30 days=normal."
+
+  - task: "Document Calendar Events API"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/documents.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/documents/expiry/calendar working correctly. Returns 3 calendar events properly formatted with id, title, date, type, priority, color fields. Events include client names and document details for easy calendar integration."
+
+  - task: "Main Users Login (Flávio & Estácio)"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Both main users can login successfully: flavio@powerealestate.pt and estacio@precisioncredito.pt with password power2026. JWT tokens generated correctly and role-based access working."
+
 frontend:
   - task: "Public Client Registration Form"
     implemented: true
