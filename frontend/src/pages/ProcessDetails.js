@@ -531,7 +531,7 @@ const ProcessDetails = () => {
 
                   {/* Real Estate Tab */}
                   <TabsContent value="realestate" className="space-y-4 mt-4">
-                    {!canEditRealEstate && !realEstateData?.property_type ? (
+                    {!canEditRealEstate && !realEstateData?.tipo_imovel && !realEstateData?.property_type ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
                         <p>Dados imobiliários serão preenchidos pelo consultor</p>
@@ -541,8 +541,8 @@ const ProcessDetails = () => {
                         <div className="space-y-2">
                           <Label>Tipo de Imóvel</Label>
                           <Select
-                            value={realEstateData.property_type || ""}
-                            onValueChange={(value) => setRealEstateData({ ...realEstateData, property_type: value })}
+                            value={realEstateData.tipo_imovel || realEstateData.property_type || ""}
+                            onValueChange={(value) => setRealEstateData({ ...realEstateData, tipo_imovel: value })}
                             disabled={!canEditRealEstate}
                           >
                             <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
@@ -555,10 +555,10 @@ const ProcessDetails = () => {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label>Zona Pretendida</Label>
+                          <Label>Localização Pretendida</Label>
                           <Input
-                            value={realEstateData.property_zone || ""}
-                            onChange={(e) => setRealEstateData({ ...realEstateData, property_zone: e.target.value })}
+                            value={realEstateData.localizacao || realEstateData.property_zone || ""}
+                            onChange={(e) => setRealEstateData({ ...realEstateData, localizacao: e.target.value })}
                             disabled={!canEditRealEstate}
                           />
                         </div>
