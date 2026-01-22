@@ -50,6 +50,7 @@ from services.alerts import (
     create_deed_reminder,
     notify_pre_approval_countdown
 )
+from services.realtime_notifications import notify_process_status_change
 
 
 # ====================================================================
