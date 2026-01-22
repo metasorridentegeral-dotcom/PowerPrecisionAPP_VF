@@ -107,9 +107,13 @@ async def public_client_registration(data: PublicClientRegistration):
         "created_at": now
     })
     
-    # Send notifications to staff
+    # Notificar administradores sobre novo registo
+    # Se já tem imóvel, indicar para atribuir apenas a intermediários
+    await notify_new_client_registration(process_doc, has_property)
+    
+    # Notificação legacy para compatibilidade
     staff = await db.users.find(
-        {"role": {"$in": [UserRole.ADMIN, UserRole.CONSULTOR, UserRole.MEDIADOR]}}, 
+        {"role": {"$in": [UserRole.ADMIN, UserRole.CEO]}}, 
         {"_id": 0}
     ).to_list(100)
     
@@ -126,5 +130,7 @@ async def public_client_registration(data: PublicClientRegistration):
     return {
         "success": True,
         "message": "Registo criado com sucesso",
-        "process_id": process_id
+        "process_id": process_id,
+        "has_property": has_property,
+        "idade_menos_35": idade_menos_35
     }
