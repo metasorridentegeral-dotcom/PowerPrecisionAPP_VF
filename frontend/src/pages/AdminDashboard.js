@@ -909,6 +909,206 @@ const AdminDashboard = () => {
           </TabsContent>
 
           {/* Users Tab */}
+          <TabsContent value="users" className="mt-6">
+            <Card className="border-border">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Gestão de Utilizadores
+                    </CardTitle>
+                    <CardDescription>{users.length} utilizadores no sistema</CardDescription>
+                  </div>
+                  <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm"><UserPlus className="h-4 w-4 mr-1" /> Novo Utilizador</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Criar Novo Utilizador</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleCreateUser} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Nome *</Label>
+                          <Input
+                            value={userFormData.name}
+                            onChange={(e) => setUserFormData({ ...userFormData, name: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Email *</Label>
+                          <Input
+                            type="email"
+                            value={userFormData.email}
+                            onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Password *</Label>
+                          <Input
+                            type="password"
+                            value={userFormData.password}
+                            onChange={(e) => setUserFormData({ ...userFormData, password: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Papel *</Label>
+                          <Select
+                            value={userFormData.role}
+                            onValueChange={(value) => setUserFormData({ ...userFormData, role: value })}
+                          >
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="consultor">Consultor</SelectItem>
+                              <SelectItem value="intermediario">Intermediário de Crédito</SelectItem>
+                              <SelectItem value="diretor">Diretor(a)</SelectItem>
+                              <SelectItem value="administrativo">Administrativo(a)</SelectItem>
+                              <SelectItem value="ceo">CEO</SelectItem>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Telefone</Label>
+                          <Input
+                            value={userFormData.phone || ""}
+                            onChange={(e) => setUserFormData({ ...userFormData, phone: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Empresa</Label>
+                          <Input
+                            value={userFormData.company || ""}
+                            onChange={(e) => setUserFormData({ ...userFormData, company: e.target.value })}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button type="button" variant="outline" onClick={() => setIsCreateUserDialogOpen(false)}>
+                            Cancelar
+                          </Button>
+                          <Button type="submit" disabled={formLoading}>
+                            {formLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Criar Utilizador"}
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Filtros */}
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Pesquisar por nome ou email..."
+                          className="pl-10"
+                          value={userSearchTerm}
+                          onChange={(e) => setUserSearchTerm(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <Select value={roleFilter} onValueChange={setRoleFilter}>
+                      <SelectTrigger className="w-[200px]"><SelectValue placeholder="Filtrar por papel" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os papéis</SelectItem>
+                        <SelectItem value="admin">Administrador</SelectItem>
+                        <SelectItem value="ceo">CEO</SelectItem>
+                        <SelectItem value="diretor">Diretor(a)</SelectItem>
+                        <SelectItem value="administrativo">Administrativo(a)</SelectItem>
+                        <SelectItem value="consultor">Consultor</SelectItem>
+                        <SelectItem value="intermediario">Intermediário</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Lista de Utilizadores */}
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Papel</TableHead>
+                          <TableHead>Empresa</TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                              Nenhum utilizador encontrado
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          filteredUsers.map((u) => (
+                            <TableRow key={u.id}>
+                              <TableCell className="font-medium">{u.name}</TableCell>
+                              <TableCell>{u.email}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={roleColors[u.role] || ""}>
+                                  {roleLabels[u.role] || u.role}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{u.company || "-"}</TableCell>
+                              <TableCell>
+                                {u.is_active !== false ? (
+                                  <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Ativo</Badge>
+                                ) : (
+                                  <Badge variant="secondary"><XCircle className="h-3 w-3 mr-1" />Inativo</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleToggleUserStatus(u.id, u.is_active !== false)}
+                                    title={u.is_active !== false ? "Desativar" : "Ativar"}
+                                  >
+                                    {u.is_active !== false ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      setEditingUser(u);
+                                      setUserFormData({ name: u.name, email: u.email, role: u.role, phone: u.phone || "", company: u.company || "", password: "" });
+                                      setIsEditUserDialogOpen(true);
+                                    }}
+                                    title="Editar"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDeleteUser(u.id)}
+                                    disabled={u.id === user?.id}
+                                    title="Eliminar"
+                                  >
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
         </Tabs>
       </div>
