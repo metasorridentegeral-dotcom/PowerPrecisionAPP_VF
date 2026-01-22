@@ -968,7 +968,21 @@ const AdminDashboard = () => {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Atribuir a (selecione um ou mais)</Label>
+              <div className="flex items-center justify-between">
+                <Label>Atribuir a (selecione um ou mais)</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    const allUserIds = staffUsers.map(u => u.id);
+                    setEventFormData({ ...eventFormData, assigned_user_ids: allUserIds });
+                  }}
+                >
+                  Selecionar Todos
+                </Button>
+              </div>
               <p className="text-xs text-muted-foreground mb-2">
                 O evento será sempre adicionado ao seu calendário. Selecione outros colaboradores para partilhar.
               </p>
@@ -987,7 +1001,7 @@ const AdminDashboard = () => {
                     >
                       {staffUser.name}
                       {staffUser.id === user?.id && <Badge variant="outline" className="text-xs">Você</Badge>}
-                      <span className="text-xs text-muted-foreground">({staffUser.role})</span>
+                      <span className="text-xs text-muted-foreground">({roleLabels[staffUser.role] || staffUser.role})</span>
                     </label>
                   </div>
                 ))}
