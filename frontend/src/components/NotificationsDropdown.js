@@ -134,7 +134,7 @@ const NotificationsDropdown = () => {
     // Fast polling for real-time notifications (10 seconds)
     const interval = setInterval(fetchNotifications, POLLING_INTERVAL);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchNotifications]);
 
   const handleNotificationClick = async (notification) => {
     try {
