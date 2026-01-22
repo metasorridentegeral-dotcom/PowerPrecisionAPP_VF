@@ -675,6 +675,9 @@ const PublicClientForm = () => {
 | `/api/documents/expiry/upcoming` | GET | Docs a expirar |
 | `/api/users` | GET | Listar utilizadores |
 | `/api/public/register` | POST | Registo público |
+| `/api/processes/{id}/alerts` | GET | Alertas do processo |
+| `/api/alerts/notifications` | GET | Notificações do utilizador |
+| `/api/alerts/notifications/{id}/read` | PUT | Marcar como lida |
 
 ### Variáveis de Ambiente
 
