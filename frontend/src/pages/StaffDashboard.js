@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import DashboardLayout from "../layouts/DashboardLayout";
 import KanbanBoard from "../components/KanbanBoard";
@@ -15,12 +16,13 @@ const roleLabels = {
   consultor: "Consultor",
   intermediario: "Intermediário de Crédito",
   mediador: "Intermediário de Crédito",
-  consultor_intermediario: "Consultor/Intermediário",
-  consultor_mediador: "Consultor/Intermediário",
+  diretor: "Diretor(a)",
+  administrativo: "Administrativo(a)",
   cliente: "Cliente"
 };
 
 const StaffDashboard = () => {
+  const navigate = useNavigate();
   const { user, token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});
