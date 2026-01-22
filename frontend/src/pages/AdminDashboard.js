@@ -121,13 +121,14 @@ const AdminDashboard = () => {
     });
   }, [calendarDeadlines, priorityFilter]);
 
-  // Próximos 7 prazos mais próximos
+  // Próximos 7 prazos mais próximos (ordenados por data crescente)
   const upcomingDeadlines = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     return sortedCalendarDeadlines
       .filter(d => new Date(d.due_date) >= today)
+      .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))  // Garantir ordenação por data
       .slice(0, 7);
   }, [sortedCalendarDeadlines]);
 
