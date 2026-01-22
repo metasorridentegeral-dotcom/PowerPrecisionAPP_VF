@@ -213,7 +213,26 @@ const NotificationsDropdown = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80" data-testid="notifications-dropdown">
         <div className="flex items-center justify-between px-3 py-2 border-b">
-          <span className="font-semibold text-sm">Notificações</span>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-sm">Notificações</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSoundEnabled(!soundEnabled);
+                toast.info(soundEnabled ? "Som desativado" : "Som ativado");
+              }}
+              title={soundEnabled ? "Desativar som" : "Ativar som"}
+            >
+              {soundEnabled ? (
+                <Volume2 className="h-3.5 w-3.5 text-green-600" />
+              ) : (
+                <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+            </Button>
+          </div>
           {unreadCount > 0 && (
             <Button 
               variant="ghost" 
