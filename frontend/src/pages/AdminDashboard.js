@@ -101,8 +101,35 @@ const AdminDashboard = () => {
   // Get all staff users for assignment
   const staffUsers = useMemo(() => users.filter(u => u.role !== "cliente"), [users]);
   // Get consultors and intermediários for filters
-  const consultors = useMemo(() => users.filter(u => u.role === "consultor" || u.role === "consultor_mediador" || u.role === "consultor_intermediario" || u.role === "ceo"), [users]);
-  const intermediarios = useMemo(() => users.filter(u => u.role === "mediador" || u.role === "intermediario" || u.role === "consultor_mediador" || u.role === "consultor_intermediario"), [users]);
+  const consultors = useMemo(() => users.filter(u => u.role === "consultor" || u.role === "diretor" || u.role === "ceo"), [users]);
+  const intermediarios = useMemo(() => users.filter(u => u.role === "mediador" || u.role === "intermediario" || u.role === "diretor"), [users]);
+
+  // Ordenar e filtrar eventos do calendário
+  const sortedCalendarDeadlines = useMemo(() => {
+    let filtered = [...calendarDeadlines];
+    
+    // Aplicar filtro de prioridade
+    if (priorityFilter !== "all") {
+      filtered = filtered.filter(d => d.priority === priorityFilter);
+    }
+    
+    // Ordenar por data (crescente) e depois por prioridade (alta primeiro)
+    return filtered.sort((a, b) => {
+      const dateCompare = new Date(a.due_date) - new Date(b.due_date);
+      if (dateCompare !== 0) return dateCompare;
+      return (priorityOrder[a.priority] || 3) - (priorityOrder[b.priority] || 3);
+    });
+  }, [calendarDeadlines, priorityFilter]);
+
+  // Próximos 7 prazos mais próximos
+  const upcomingDeadlines = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return sortedCalendarDeadlines
+      .filter(d => new Date(d.due_date) >= today)
+      .slice(0, 7);
+  }, [sortedCalendarDeadlines]);
 
   useEffect(() => {
     fetchData();
