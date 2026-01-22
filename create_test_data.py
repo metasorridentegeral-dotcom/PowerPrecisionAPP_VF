@@ -66,13 +66,12 @@ def create_sample_processes():
             "financial_data": {
                 "monthly_income": 3500.0,
                 "employment_type": "conta_outrem",
-                "company_name": "Tech Solutions Lda",
-                "employment_duration": 60,
+                "employer_name": "Tech Solutions Lda",
+                "employment_duration": "60 meses",
                 "other_income": 0.0,
                 "monthly_expenses": 1200.0,
-                "existing_credits": 0.0,
-                "requested_amount": 250000.0,
-                "property_value": 300000.0
+                "debt_amount": 0.0,
+                "capital_proprio": 50000.0
             }
         },
         {
