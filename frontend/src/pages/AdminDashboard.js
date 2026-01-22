@@ -731,6 +731,132 @@ const AdminDashboard = () => {
 
         </Tabs>
       </div>
+
+      {/* Dialog para Criar Evento */}
+      <Dialog open={isCreateEventDialogOpen} onOpenChange={setIsCreateEventDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Criar Novo Evento</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateEvent} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="event-title">Título *</Label>
+              <Input
+                id="event-title"
+                value={eventFormData.title}
+                onChange={(e) => setEventFormData({ ...eventFormData, title: e.target.value })}
+                placeholder="Ex: Reunião com cliente"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="event-description">Descrição</Label>
+              <Textarea
+                id="event-description"
+                value={eventFormData.description}
+                onChange={(e) => setEventFormData({ ...eventFormData, description: e.target.value })}
+                placeholder="Detalhes do evento..."
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="event-date">Data *</Label>
+                <Input
+                  id="event-date"
+                  type="date"
+                  value={eventFormData.due_date}
+                  onChange={(e) => setEventFormData({ ...eventFormData, due_date: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="event-priority">Prioridade</Label>
+                <Select
+                  value={eventFormData.priority}
+                  onValueChange={(value) => setEventFormData({ ...eventFormData, priority: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Baixa</SelectItem>
+                    <SelectItem value="medium">Média</SelectItem>
+                    <SelectItem value="high">Alta</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="event-process">Processo (opcional)</Label>
+              <Select
+                value={eventFormData.process_id || "none"}
+                onValueChange={(value) => setEventFormData({ ...eventFormData, process_id: value === "none" ? "" : value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar processo..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum (Evento Geral)</SelectItem>
+                  {processes.slice(0, 50).map((process) => (
+                    <SelectItem key={process.id} value={process.id}>
+                      {process.client_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Consultor</Label>
+                <Select
+                  value={eventFormData.assigned_consultor_id || "none"}
+                  onValueChange={(value) => setEventFormData({ ...eventFormData, assigned_consultor_id: value === "none" ? "" : value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {consultors.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Intermediário</Label>
+                <Select
+                  value={eventFormData.assigned_mediador_id || "none"}
+                  onValueChange={(value) => setEventFormData({ ...eventFormData, assigned_mediador_id: value === "none" ? "" : value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {intermediarios.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsCreateEventDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={formLoading} className="bg-blue-900 hover:bg-blue-800">
+                {formLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Criar Evento"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
