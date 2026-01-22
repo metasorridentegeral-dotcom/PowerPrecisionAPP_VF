@@ -151,20 +151,66 @@ async def get_upcoming_expiries(
     }
     
     # Filtrar por papel do utilizador
-    if user["role"] == UserRole.CONSULTOR:
+    user_role = user["role"]
+    
+    if user_role in [UserRole.ADMIN, UserRole.CEO]:
+        # Admin e CEO vêem todos os documentos
+        pass
+    elif user_role == UserRole.CONSULTOR:
+        # Consultor vê documentos dos seus processos
         processes = await db.processes.find(
-            {"assigned_consultor_id": user["id"]}, 
+            {"$or": [
+                {"assigned_consultor_id": user["id"]},
+                {"consultor_id": user["id"]}
+            ]}, 
             {"id": 1, "_id": 0}
         ).to_list(1000)
         process_ids = [p["id"] for p in processes]
-        query["process_id"] = {"$in": process_ids}
-    elif user["role"] == UserRole.MEDIADOR:
+        if process_ids:
+            query["process_id"] = {"$in": process_ids}
+        else:
+            return []  # Sem processos, sem documentos
+    elif user_role in [UserRole.MEDIADOR, UserRole.INTERMEDIARIO]:
+        # Intermediário vê documentos dos seus processos
         processes = await db.processes.find(
-            {"assigned_mediador_id": user["id"]}, 
+            {"$or": [
+                {"assigned_mediador_id": user["id"]},
+                {"intermediario_id": user["id"]}
+            ]}, 
             {"id": 1, "_id": 0}
         ).to_list(1000)
         process_ids = [p["id"] for p in processes]
-        query["process_id"] = {"$in": process_ids}
+        if process_ids:
+            query["process_id"] = {"$in": process_ids}
+        else:
+            return []
+    elif user_role == UserRole.CONSULTOR_MEDIADOR:
+        # Papel misto vê documentos de ambos os tipos de processos
+        processes = await db.processes.find(
+            {"$or": [
+                {"assigned_consultor_id": user["id"]},
+                {"consultor_id": user["id"]},
+                {"assigned_mediador_id": user["id"]},
+                {"intermediario_id": user["id"]}
+            ]}, 
+            {"id": 1, "_id": 0}
+        ).to_list(1000)
+        process_ids = [p["id"] for p in processes]
+        if process_ids:
+            query["process_id"] = {"$in": process_ids}
+        else:
+            return []
+    elif user_role == UserRole.CLIENTE:
+        # Cliente vê documentos dos próprios processos
+        processes = await db.processes.find(
+            {"client_id": user["id"]}, 
+            {"id": 1, "_id": 0}
+        ).to_list(1000)
+        process_ids = [p["id"] for p in processes]
+        if process_ids:
+            query["process_id"] = {"$in": process_ids}
+        else:
+            return []
     
     docs = await db.document_expiries.find(query, {"_id": 0}).sort("expiry_date", 1).to_list(1000)
     
