@@ -209,9 +209,9 @@ async def get_processes(user: dict = Depends(get_current_user)):
         pass
     elif role == UserRole.CONSULTOR:
         query["assigned_consultor_id"] = user["id"]
-    elif role == UserRole.MEDIADOR:
+    elif role in [UserRole.MEDIADOR, UserRole.INTERMEDIARIO]:
         query["assigned_mediador_id"] = user["id"]
-    elif role == UserRole.CONSULTOR_MEDIADOR:
+    elif role in [UserRole.CONSULTOR_MEDIADOR, UserRole.CONSULTOR_INTERMEDIARIO]:
         query["$or"] = [
             {"assigned_consultor_id": user["id"]},
             {"assigned_mediador_id": user["id"]}
