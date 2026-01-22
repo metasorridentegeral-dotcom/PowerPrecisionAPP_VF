@@ -530,45 +530,96 @@ const AdminDashboard = () => {
           {/* Calendar Tab */}
           <TabsContent value="calendar" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Calendário e Filtros */}
               <Card className="border-border lg:col-span-1">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Filtros & Calendário</CardTitle>
+                    <CardTitle className="text-lg">Calendário</CardTitle>
                     <Button size="sm" onClick={() => openCreateEventDialog()}>
                       <Plus className="h-4 w-4 mr-1" />Evento
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Consultor</Label>
-                    <Select value={consultorFilter} onValueChange={setConsultorFilter}>
-                      <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos</SelectItem>
-                        {consultors.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
+                  {/* Calendário */}
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    className="rounded-md border"
+                    modifiers={{ hasDeadline: datesWithDeadlines }}
+                    modifiersStyles={{ hasDeadline: { backgroundColor: "rgb(254 202 202)", fontWeight: "bold" } }}
+                  />
+                  
+                  {/* Filtros */}
+                  <div className="space-y-3 pt-4 border-t">
+                    <h4 className="font-medium text-sm">Filtros</h4>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Prioridade</Label>
+                      <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                        <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Todas" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas as prioridades</SelectItem>
+                          <SelectItem value="high">🔴 Alta</SelectItem>
+                          <SelectItem value="medium">🟡 Média</SelectItem>
+                          <SelectItem value="low">🟢 Baixa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Consultor</Label>
+                      <Select value={consultorFilter} onValueChange={setConsultorFilter}>
+                        <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Todos" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          {consultors.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Intermediário</Label>
+                      <Select value={mediadorFilter} onValueChange={setMediadorFilter}>
+                        <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Todos" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          {intermediarios.map((m) => (<SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Intermediário</Label>
-                    <Select value={mediadorFilter} onValueChange={setMediadorFilter}>
-                      <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos</SelectItem>
-                        {intermediarios.map((m) => (<SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="pt-4 border-t">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => date && setSelectedDate(date)}
-                      className="rounded-md border"
-                      modifiers={{ hasDeadline: datesWithDeadlines }}
-                      modifiersStyles={{ hasDeadline: { backgroundColor: "rgb(254 202 202)", fontWeight: "bold" } }}
-                    />
+                  
+                  {/* Próximos Prazos */}
+                  <div className="space-y-3 pt-4 border-t">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <ClockIcon className="h-4 w-4" />
+                      Próximos Prazos
+                    </h4>
+                    {upcomingDeadlines.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Sem prazos próximos</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {upcomingDeadlines.map((deadline) => {
+                          const daysUntil = Math.ceil((new Date(deadline.due_date) - new Date()) / (1000 * 60 * 60 * 24));
+                          return (
+                            <div 
+                              key={deadline.id} 
+                              className={`p-2 rounded border text-xs cursor-pointer hover:opacity-80 ${priorityColors[deadline.priority] || 'bg-gray-50'}`}
+                              onClick={() => setSelectedDate(new Date(deadline.due_date))}
+                            >
+                              <div className="flex justify-between items-start">
+                                <span className="font-medium truncate flex-1">{deadline.title}</span>
+                                <Badge variant="outline" className="ml-1 text-[10px] shrink-0">
+                                  {daysUntil === 0 ? 'Hoje' : daysUntil === 1 ? 'Amanhã' : `${daysUntil}d`}
+                                </Badge>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground mt-1">
+                                {new Date(deadline.due_date).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -578,7 +629,10 @@ const AdminDashboard = () => {
                   <CardTitle className="text-lg">
                     Prazos - {selectedDate.toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                   </CardTitle>
-                  <CardDescription>{deadlinesForDate.length} prazo(s) nesta data</CardDescription>
+                  <CardDescription>
+                    {deadlinesForDate.length} prazo(s) nesta data
+                    {priorityFilter !== "all" && ` (filtro: ${priorityLabels[priorityFilter]})`}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {deadlinesForDate.length === 0 ? (
