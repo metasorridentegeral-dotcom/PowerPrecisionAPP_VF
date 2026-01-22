@@ -11,10 +11,11 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
 ## User Roles (Hierarquia)
 1. **Admin** - Gestão total do sistema, utilizadores e workflow
 2. **CEO** - Vê todos os processos, pode fazer tudo que consultor e mediador fazem
-3. **Consultor/Mediador** - Pode fazer tarefas de consultor E mediador
-4. **Consultor** - Gere dados imobiliários, vê apenas os seus clientes atribuídos
-5. **Mediador** - Gere dados de crédito, vê apenas os seus clientes atribuídos
-6. **Cliente** - Preenche formulário público (sem login no sistema)
+3. **Diretor(a)** - Pode fazer tarefas de consultor E mediador
+4. **Administrativo(a)** - Gestão administrativa, vê todos os processos
+5. **Consultor** - Gere dados imobiliários, vê apenas os seus clientes atribuídos
+6. **Intermediário/Mediador** - Gere dados de crédito, vê apenas os seus clientes atribuídos
+7. **Cliente** - Preenche formulário público (sem login no sistema)
 
 ## Credenciais de Acesso
 | Nome | Email | Role | Password |
@@ -22,10 +23,10 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
 | Pedro Borges | pedro@powerealestate.pt | CEO | power2026 |
 | Tiago Borges | tiago@powerealestate.pt | Consultor | power2026 |
 | Flávio da Silva | flavio@powerealestate.pt | Consultor | power2026 |
-| Estácio Miranda | estacio@precisioncredito.pt | Mediador | power2026 |
-| Fernando Andrade | fernando@precisioncredito.pt | Mediador | power2026 |
-| Carina Amuedo | carina@powerealestate.pt | Consultor/Mediador | power2026 |
-| Marisa Rodrigues | marisa@powerealestate.pt | Consultor/Mediador | power2026 |
+| Estácio Miranda | estacio@precisioncredito.pt | Intermediário | power2026 |
+| Fernando Andrade | fernando@precisioncredito.pt | Intermediário | power2026 |
+| Carina Amuedo | carina@powerealestate.pt | Diretor(a) | power2026 |
+| Marisa Rodrigues | marisa@powerealestate.pt | Administrativo(a) | power2026 |
 | Admin | admin@sistema.pt | Admin | admin2026 |
 
 ## What's Been Implemented
