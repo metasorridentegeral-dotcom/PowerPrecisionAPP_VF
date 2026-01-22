@@ -388,6 +388,18 @@ async def move_process_kanban(
             f"O estado do seu processo foi atualizado para: {status_label}"
         )
     
+    # === CRIAR NOTIFICAÇÃO NA BASE DE DADOS ===
+    status_doc = await db.workflow_statuses.find_one({"name": new_status}, {"_id": 0})
+    status_label = status_doc.get("label", new_status) if status_doc else new_status
+    
+    await notify_process_status_change(
+        process=process,
+        old_status=old_status,
+        new_status=new_status,
+        new_status_label=status_label,
+        changed_by=user
+    )
+    
     return {
         "message": "Processo movido com sucesso", 
         "new_status": new_status,
