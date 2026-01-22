@@ -289,7 +289,8 @@ const AdminDashboard = () => {
       priority: "medium",
       process_id: "",
       assigned_consultor_id: "",
-      assigned_mediador_id: ""
+      assigned_mediador_id: "",
+      assigned_user_ids: [user?.id].filter(Boolean)
     });
     setIsCreateEventDialogOpen(true);
   };
