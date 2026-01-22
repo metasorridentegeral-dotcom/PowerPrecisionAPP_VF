@@ -92,13 +92,12 @@ def create_sample_processes():
             "financial_data": {
                 "monthly_income": 2800.0,
                 "employment_type": "conta_outrem",
-                "company_name": "Marketing Plus",
-                "employment_duration": 36,
+                "employer_name": "Marketing Plus",
+                "employment_duration": "36 meses",
                 "other_income": 500.0,
                 "monthly_expenses": 900.0,
-                "existing_credits": 150.0,
-                "requested_amount": 180000.0,
-                "property_value": 220000.0
+                "debt_amount": 150.0,
+                "capital_proprio": 30000.0
             }
         },
         {
