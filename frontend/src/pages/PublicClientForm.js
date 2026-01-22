@@ -155,6 +155,7 @@ const PublicClientForm = () => {
           birth_date: formData.birth_date,
           estado_civil: formData.estado_civil,
           compra_tipo: formData.compra_tipo,
+          menor_35_anos: formData.menor_35_anos,
         },
         titular2_data: formData.compra_tipo === "outra_pessoa" ? {
           name: formData.titular2_name,
