@@ -237,15 +237,18 @@ frontend:
 
   - task: "Admin Dashboard"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/AdminDashboard.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Admin dashboard with Kanban view, filters, and multiple tabs to test."
+        - working: true
+          agent: "testing"
+          comment: "✅ ADMIN DASHBOARD: Kanban board displays correctly with 154 processes. Shows 5 tabs (Visão Geral, Calendário, Documentos, Análise IA, Pesquisar Cliente). Statistics cards show correct data (154 processes, 8 users, 14 states). Filters for Consultor/Intermediário present."
 
   - task: "Staff Dashboard"
     implemented: true
