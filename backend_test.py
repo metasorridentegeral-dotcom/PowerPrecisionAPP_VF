@@ -392,15 +392,180 @@ class CreditoIMOTester:
         
         return success
 
+    def test_specific_user_assignments(self) -> bool:
+        """Test specific user assignments as requested in review"""
+        if not self.tokens.get("Admin"):
+            return False
+
+        # Get all processes to check assignments
+        success, processes = self.run_test(
+            "Get Processes for Assignment Check",
+            "GET",
+            "processes",
+            200,
+            token=self.tokens["Admin"]
+        )
+        
+        if not success or not isinstance(processes, list):
+            return False
+
+        # Get user IDs for Flávio and Estácio
+        success_users, users = self.run_test(
+            "Get Users for ID Lookup",
+            "GET",
+            "users",
+            200,
+            token=self.tokens["Admin"]
+        )
+        
+        if not success_users:
+            return False
+
+        flavio_id = None
+        estacio_id = None
+        
+        for user in users:
+            if user.get("email") == "flavio@powerealestate.pt":
+                flavio_id = user.get("id")
+            elif user.get("email") == "estacio@precisioncredito.pt":
+                estacio_id = user.get("id")
+
+        # Count assignments
+        flavio_processes = 0
+        estacio_processes = 0
+        
+        for process in processes:
+            if process.get("assigned_consultor_id") == flavio_id:
+                flavio_processes += 1
+            if process.get("assigned_mediador_id") == estacio_id:
+                estacio_processes += 1
+
+        self.log(f"✅ Process Assignments Check:")
+        self.log(f"   Flávio da Silva (consultor): {flavio_processes} processes")
+        self.log(f"   Estácio Miranda (intermediário): {estacio_processes} processes")
+        
+        # Test filtering by consultor_id (Flávio)
+        if flavio_id and self.tokens.get("Consultor2"):  # Flávio's token
+            success_flavio, flavio_filtered = self.run_test(
+                "Flávio's Filtered Processes",
+                "GET",
+                "processes",
+                200,
+                token=self.tokens["Consultor2"]
+            )
+            if success_flavio:
+                self.log(f"   Flávio sees {len(flavio_filtered)} processes (filtered)")
+
+        # Test filtering by intermediario_id (Estácio)
+        if estacio_id and self.tokens.get("Intermediario1"):  # Estácio's token
+            success_estacio, estacio_filtered = self.run_test(
+                "Estácio's Filtered Processes",
+                "GET",
+                "processes",
+                200,
+                token=self.tokens["Intermediario1"]
+            )
+            if success_estacio:
+                self.log(f"   Estácio sees {len(estacio_filtered)} processes (filtered)")
+
+        return True
+
+    def test_documents_expiry_60_days(self) -> bool:
+        """Test documents expiring in 60 days endpoint"""
+        if not self.tokens.get("Admin"):
+            return False
+
+        success, response = self.run_test(
+            "Documents Expiring in 60 Days",
+            "GET",
+            "documents/expiry/upcoming?days=60",
+            200,
+            token=self.tokens["Admin"]
+        )
+        
+        if success:
+            doc_count = len(response) if isinstance(response, list) else 0
+            self.log(f"✅ Found {doc_count} documents expiring in next 60 days")
+            
+            # Check required fields in response
+            if doc_count > 0 and isinstance(response, list):
+                first_doc = response[0]
+                required_fields = ["days_until_expiry", "urgency"]
+                missing_fields = [field for field in required_fields if field not in first_doc]
+                
+                if missing_fields:
+                    self.log(f"⚠️ Missing required fields: {missing_fields}", "WARNING")
+                else:
+                    self.log(f"✅ Required fields present: days_until_expiry={first_doc.get('days_until_expiry')}, urgency={first_doc.get('urgency')}")
+            elif doc_count == 0:
+                self.log("ℹ️ No documents expiring in next 60 days")
+        
+        return success
+
+    def test_documents_calendar_events(self) -> bool:
+        """Test document calendar events endpoint"""
+        if not self.tokens.get("Admin"):
+            return False
+
+        success, response = self.run_test(
+            "Document Calendar Events",
+            "GET",
+            "documents/expiry/calendar",
+            200,
+            token=self.tokens["Admin"]
+        )
+        
+        if success:
+            event_count = len(response) if isinstance(response, list) else 0
+            self.log(f"✅ Found {event_count} calendar events for document expiry")
+            
+            # Check event format
+            if event_count > 0 and isinstance(response, list):
+                first_event = response[0]
+                expected_fields = ["id", "title", "date", "type", "priority", "color"]
+                missing_fields = [field for field in expected_fields if field not in first_event]
+                
+                if missing_fields:
+                    self.log(f"⚠️ Missing event fields: {missing_fields}", "WARNING")
+                else:
+                    self.log(f"✅ Calendar event properly formatted")
+                    self.log(f"   Sample event: {first_event.get('title', 'N/A')}")
+            elif event_count == 0:
+                self.log("ℹ️ No calendar events for document expiry")
+        
+        return success
+
+    def test_main_users_login(self) -> bool:
+        """Test login for the main users mentioned in review request"""
+        main_users = [
+            ("flavio@powerealestate.pt", "power2026", "Flávio da Silva"),
+            ("estacio@precisioncredito.pt", "power2026", "Estácio Miranda"),
+        ]
+        
+        results = []
+        for email, password, name in main_users:
+            success = self.test_user_login(email, password, name)
+            results.append(success)
+            if success:
+                self.log(f"✅ {name} login successful")
+            else:
+                self.log(f"❌ {name} login failed", "ERROR")
+        
+        return all(results)
+
     def run_all_tests(self) -> int:
         """Run all tests in sequence"""
-        self.log("🚀 Starting CreditoIMO Backend API Tests")
+        self.log("🚀 Starting CreditoIMO Backend API Tests - Review Request Focus")
         self.log(f"🌐 Testing against: {self.base_url}")
         
-        # Core functionality tests based on review request
+        # Tests based on specific review request requirements
         tests = [
             ("Health Check", self.test_health_check),
+            ("Main Users Login (Flávio & Estácio)", self.test_main_users_login),
             ("All User Logins (8 users)", self.test_all_user_logins),
+            ("Specific User Process Assignments", self.test_specific_user_assignments),
+            ("Documents Expiring in 60 Days", self.test_documents_expiry_60_days),
+            ("Document Calendar Events", self.test_documents_calendar_events),
             ("Get All Processes (~154)", self.test_get_processes),
             ("Get Process Details", self.test_get_process_details),
             ("Get Statistics", self.test_get_statistics),
