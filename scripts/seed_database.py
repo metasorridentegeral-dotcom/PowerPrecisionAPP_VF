@@ -279,10 +279,12 @@ async def seed_database():
     
     # Conectar à base de dados
     mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+    db_name = os.environ.get('DB_NAME', 'test_database')  # Usar a mesma DB do backend
     client = AsyncIOMotorClient(mongo_url)
-    db = client.creditoimo
+    db = client[db_name]
     
     print(f"📡 Conectado a: {mongo_url}")
+    print(f"📁 Base de dados: {db_name}")
     print()
     
     # ----------------------------------------------------------------
