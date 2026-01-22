@@ -853,31 +853,32 @@ const AdminDashboard = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Consultor</Label>
-                <Select
-                  value={eventFormData.assigned_consultor_id || "none"}
-                  onValueChange={(value) => setEventFormData({ ...eventFormData, assigned_consultor_id: value === "none" ? "" : value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecionar..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nenhum</SelectItem>
-                    {consultors.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-2">
+              <Label>Atribuir a (selecione um ou mais)</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                O evento será sempre adicionado ao seu calendário. Selecione outros colaboradores para partilhar.
+              </p>
+              <div className="border rounded-md p-3 max-h-40 overflow-y-auto space-y-2">
+                {staffUsers.map((staffUser) => (
+                  <div key={staffUser.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`user-${staffUser.id}`}
+                      checked={eventFormData.assigned_user_ids?.includes(staffUser.id) || staffUser.id === user?.id}
+                      disabled={staffUser.id === user?.id}
+                      onCheckedChange={() => toggleUserAssignment(staffUser.id)}
+                    />
+                    <label
+                      htmlFor={`user-${staffUser.id}`}
+                      className={`text-sm cursor-pointer flex items-center gap-2 ${staffUser.id === user?.id ? 'font-medium' : ''}`}
+                    >
+                      {staffUser.name}
+                      {staffUser.id === user?.id && <Badge variant="outline" className="text-xs">Você</Badge>}
+                      <span className="text-xs text-muted-foreground">({staffUser.role})</span>
+                    </label>
+                  </div>
+                ))}
               </div>
-              <div className="space-y-2">
-                <Label>Intermediário</Label>
-                <Select
-                  value={eventFormData.assigned_mediador_id || "none"}
-                  onValueChange={(value) => setEventFormData({ ...eventFormData, assigned_mediador_id: value === "none" ? "" : value })}
+            </div>
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecionar..." />
