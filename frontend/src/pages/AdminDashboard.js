@@ -879,21 +879,6 @@ const AdminDashboard = () => {
                 ))}
               </div>
             </div>
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecionar..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nenhum</SelectItem>
-                    {intermediarios.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsCreateEventDialogOpen(false)}>
                 Cancelar
