@@ -118,13 +118,12 @@ def create_sample_processes():
             "financial_data": {
                 "monthly_income": 4200.0,
                 "employment_type": "trabalhador_independente",
-                "company_name": "Consultoria CP Unipessoal",
-                "employment_duration": 120,
+                "employer_name": "Consultoria CP Unipessoal",
+                "employment_duration": "120 meses",
                 "other_income": 800.0,
                 "monthly_expenses": 1500.0,
-                "existing_credits": 300.0,
-                "requested_amount": 320000.0,
-                "property_value": 380000.0
+                "debt_amount": 300.0,
+                "capital_proprio": 80000.0
             }
         }
     ]
