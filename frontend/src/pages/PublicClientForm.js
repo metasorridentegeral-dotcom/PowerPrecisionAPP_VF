@@ -227,11 +227,11 @@ const PublicClientForm = () => {
         <div key={s} className="flex items-center">
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors
-              ${step >= s ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+              ${step >= s ? "bg-blue-900 text-white" : "bg-gray-200 text-gray-500"}`}
           >
             {step > s ? <Check className="h-4 w-4" /> : s}
           </div>
-          {s < 6 && <div className={`w-8 md:w-12 h-0.5 ${step > s ? "bg-primary" : "bg-muted"}`} />}
+          {s < 6 && <div className={`w-8 md:w-12 h-0.5 ${step > s ? "bg-blue-900" : "bg-gray-200"}`} />}
         </div>
       ))}
     </div>
@@ -241,8 +241,8 @@ const PublicClientForm = () => {
   const renderStep1 = () => (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <User className="h-10 w-10 mx-auto mb-2 text-primary" />
-        <h2 className="text-xl font-semibold mb-2">Dados Pessoais - Titular</h2>
+        <User className="h-10 w-10 mx-auto mb-2 text-blue-900" />
+        <h2 className="text-xl font-semibold mb-2 text-blue-950">Dados Pessoais - Titular</h2>
         <p className="text-muted-foreground">Informações do titular principal</p>
       </div>
       
