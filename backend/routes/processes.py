@@ -1,3 +1,36 @@
+"""
+====================================================================
+ROTAS DE GESTÃO DE PROCESSOS - CREDITOIMO
+====================================================================
+Módulo principal para gestão de processos de crédito habitação
+e transações imobiliárias.
+
+FUNCIONALIDADES PRINCIPAIS:
+- Criar e atualizar processos de clientes
+- Visualização em quadro Kanban
+- Movimentação entre fases do workflow
+- Atribuição de consultores e intermediários
+- Filtros por papel do utilizador
+
+WORKFLOW DE 14 FASES:
+1. Clientes em Espera
+2. Fase Documental
+3. Fase Documental II
+4. Enviado ao Bruno
+5. Enviado ao Luís
+6. Enviado BCP Rui
+7. Entradas Precision
+8. Fase Bancária
+9. Fase de Visitas
+10. CH Aprovado
+11. Fase de Escritura
+12. Escritura Agendada
+13. Concluídos
+14. Desistências
+
+Autor: CreditoIMO Development Team
+====================================================================
+"""
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
@@ -13,41 +46,101 @@ from services.email import send_email_notification
 from services.history import log_history, log_data_changes
 
 
+# ====================================================================
+# CONFIGURAÇÃO DO ROUTER
+# ====================================================================
 router = APIRouter(prefix="/processes", tags=["Processes"])
 
 
+# ====================================================================
+# FUNÇÕES AUXILIARES DE PERMISSÕES
+# ====================================================================
+
 def can_view_process(user: dict, process: dict) -> bool:
-    """Check if user can view a specific process"""
+    """
+    Verifica se um utilizador pode visualizar um processo específico.
+    
+    REGRAS DE ACESSO:
+    - Admin/CEO: Acesso a todos os processos
+    - Cliente: Apenas o próprio processo
+    - Consultor: Processos onde está atribuído como consultor
+    - Intermediário: Processos onde está atribuído como intermediário
+    - Consultor/Intermediário: Ambos os tipos de atribuição
+    
+    Args:
+        user: Dados do utilizador autenticado
+        process: Dados do processo a verificar
+    
+    Returns:
+        bool: True se tem permissão, False caso contrário
+    """
     role = user["role"]
     user_id = user["id"]
     
+    # Administradores e CEO têm acesso total
     if role == UserRole.ADMIN:
         return True
     if role == UserRole.CEO:
         return True
+    
+    # Clientes só vêem os próprios processos
     if role == UserRole.CLIENTE:
         return process.get("client_id") == user_id
+    
+    # Consultores vêem processos atribuídos
     if role == UserRole.CONSULTOR:
         return process.get("assigned_consultor_id") == user_id
+    
+    # Intermediários vêem processos atribuídos
     if role == UserRole.MEDIADOR:
         return process.get("assigned_mediador_id") == user_id
+    
+    # Papel misto: acesso a ambos os tipos de atribuição
     if role == UserRole.CONSULTOR_MEDIADOR:
         return (process.get("assigned_consultor_id") == user_id or 
                 process.get("assigned_mediador_id") == user_id)
+    
     return False
 
 
+# ====================================================================
+# ENDPOINTS DE CRIAÇÃO
+# ====================================================================
+
 @router.post("", response_model=ProcessResponse)
 async def create_process(data: ProcessCreate, user: dict = Depends(get_current_user)):
+    """
+    Criar um novo processo.
+    
+    Este endpoint é utilizado quando um cliente autenticado
+    submete um novo pedido de crédito/imobiliário.
+    
+    NOTA: Para registos públicos (sem autenticação),
+    utilize o endpoint /api/public/register
+    
+    Args:
+        data: Dados do processo (tipo, dados pessoais, financeiros)
+        user: Utilizador autenticado (deve ser cliente)
+    
+    Returns:
+        ProcessResponse: Processo criado
+    
+    Raises:
+        HTTPException 403: Se não for cliente
+    """
+    # Apenas clientes podem criar processos por este endpoint
     if user["role"] != UserRole.CLIENTE:
         raise HTTPException(status_code=403, detail="Apenas clientes podem criar processos")
     
+    # Obter o primeiro estado do workflow (Clientes em Espera)
     first_status = await db.workflow_statuses.find_one({}, {"_id": 0}, sort=[("order", 1)])
     initial_status = first_status["name"] if first_status else "clientes_espera"
     
+    # Gerar ID único e timestamp
     process_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     
+    # Construir documento do processo
     process_doc = {
         "id": process_id,
         "client_id": user["id"],
@@ -65,10 +158,13 @@ async def create_process(data: ProcessCreate, user: dict = Depends(get_current_u
         "updated_at": now
     }
     
+    # Inserir na base de dados
     await db.processes.insert_one(process_doc)
+    
+    # Registar no histórico
     await log_history(process_id, user, "Criou processo")
     
-    # Notify admin and CEO
+    # Notificar administradores e CEO
     staff = await db.users.find(
         {"role": {"$in": [UserRole.ADMIN, UserRole.CEO]}}, 
         {"_id": 0}
@@ -83,16 +179,33 @@ async def create_process(data: ProcessCreate, user: dict = Depends(get_current_u
     return ProcessResponse(**{k: v for k, v in process_doc.items() if k != "_id"})
 
 
+# ====================================================================
+# ENDPOINTS DE LISTAGEM
+# ====================================================================
+
 @router.get("", response_model=List[ProcessResponse])
 async def get_processes(user: dict = Depends(get_current_user)):
-    """Get processes based on user role"""
+    """
+    Listar processos com base no papel do utilizador.
+    
+    FILTRAGEM AUTOMÁTICA:
+    - Admin/CEO: Todos os processos
+    - Cliente: Apenas os próprios processos
+    - Consultor: Processos atribuídos como consultor
+    - Intermediário: Processos atribuídos como intermediário
+    - Misto: Ambos os tipos de atribuição
+    
+    Returns:
+        Lista de ProcessResponse
+    """
     role = user["role"]
     query = {}
     
+    # Construir query baseada no papel
     if role == UserRole.CLIENTE:
         query["client_id"] = user["id"]
     elif role in [UserRole.ADMIN, UserRole.CEO]:
-        # Admin and CEO see all processes
+        # Admin e CEO vêem todos os processos
         pass
     elif role == UserRole.CONSULTOR:
         query["assigned_consultor_id"] = user["id"]
