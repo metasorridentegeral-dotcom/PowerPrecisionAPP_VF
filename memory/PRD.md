@@ -31,6 +31,27 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
 
 ## What's Been Implemented
 
+### ✅ Segurança e Configuração (2026-01)
+- Variáveis de ambiente obrigatórias (JWT_SECRET, MONGO_URL, DB_NAME)
+- Falha rápida se variáveis críticas não definidas
+- Passwords movidas para variáveis de ambiente no seed.py
+- Validador de NIF (9 dígitos numéricos) nos modelos Pydantic
+- Campos legacy removidos dos modelos (address, monthly_income, etc.)
+
+### ✅ Tarefas Agendadas - Cron Jobs (2026-01)
+- `services/scheduled_tasks.py` - Sistema de tarefas agendadas
+- Verificação diária de documentos a expirar
+- Verificação de prazos próximos (24h)
+- Countdown de pré-aprovação (90 dias)
+- Limpeza de notificações antigas
+- Suporte a modo daemon (--daemon) e execução manual
+
+### ✅ Colecção Notifications MongoDB (2026-01)
+- Índices criados no startup do servidor
+- Notificações criadas quando processo muda de fase
+- Frontend actualizado com ícone para `process_status_change`
+- Integração com WebSocket para tempo real
+
 ### ✅ CI/CD Pipeline (2026-01)
 - GitHub Actions workflow completo (`.github/workflows/ci-cd.yml`)
 - Testes backend (pytest com MongoDB)
