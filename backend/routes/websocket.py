@@ -22,7 +22,7 @@ router = APIRouter(tags=["WebSocket"])
 async def verify_websocket_token(token: str) -> dict:
     """Verificar token JWT para conexão WebSocket."""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user_id = payload.get("sub")
         
         if not user_id:
