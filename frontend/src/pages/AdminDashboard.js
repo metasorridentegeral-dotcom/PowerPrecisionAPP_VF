@@ -17,7 +17,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { 
   Users, Settings, Plus, Edit, Trash2, Search, UserPlus, GitBranch, FolderOpen, 
   Loader2, CheckCircle, XCircle, FileText, Calendar as CalendarIcon, Filter, Eye, Sparkles,
-  UserX, UserCheck, LayoutGrid
+  UserX, UserCheck, LayoutGrid, Clock as ClockIcon
 } from "lucide-react";
 import { toast } from "sonner";
 import { 
