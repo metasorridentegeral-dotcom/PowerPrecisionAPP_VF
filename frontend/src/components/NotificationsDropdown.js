@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { ScrollArea } from "./ui/scroll-area";
-import { Bell, BellRing, UserPlus, Clock, FileText, Calendar, AlertTriangle, CheckCircle } from "lucide-react";
+import { Bell, BellRing, UserPlus, Clock, FileText, Calendar, AlertTriangle, CheckCircle, Volume2, VolumeX } from "lucide-react";
 import { getNotifications, markNotificationRead } from "../services/api";
 import { toast } from "sonner";
 
@@ -34,30 +34,105 @@ const notificationColors = {
   default: "text-gray-500 bg-gray-50"
 };
 
+// Polling interval for real-time notifications (10 seconds)
+const POLLING_INTERVAL = 10000;
+
 const NotificationsDropdown = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const previousUnreadCount = useRef(0);
+  const isFirstLoad = useRef(true);
 
-  const fetchNotifications = async () => {
+  // Play notification sound
+  const playNotificationSound = useCallback(() => {
+    if (!soundEnabled) return;
+    
     try {
-      setLoading(true);
+      // Create a simple beep sound using Web Audio API
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.value = 0.3;
+      
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.15);
+      
+      // Second beep
+      setTimeout(() => {
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        osc2.frequency.value = 1000;
+        osc2.type = 'sine';
+        gain2.gain.value = 0.3;
+        osc2.start();
+        osc2.stop(audioContext.currentTime + 0.15);
+      }, 150);
+    } catch (e) {
+      console.log("Audio not available");
+    }
+  }, [soundEnabled]);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      if (!isFirstLoad.current) {
+        setLoading(true);
+      }
       const res = await getNotifications();
-      setNotifications(res.data.notifications || []);
-      setUnreadCount(res.data.unread || 0);
+      const newNotifications = res.data.notifications || [];
+      const newUnreadCount = res.data.unread || 0;
+      
+      setNotifications(newNotifications);
+      setUnreadCount(newUnreadCount);
+      
+      // Check for new notifications (after first load)
+      if (!isFirstLoad.current && newUnreadCount > previousUnreadCount.current) {
+        const newCount = newUnreadCount - previousUnreadCount.current;
+        const latestNotification = newNotifications.find(n => !n.read);
+        
+        // Show toast for new notification
+        if (latestNotification) {
+          playNotificationSound();
+          
+          toast.info(
+            latestNotification.message,
+            {
+              description: latestNotification.client_name || "Nova notificação",
+              action: latestNotification.process_id ? {
+                label: "Ver",
+                onClick: () => navigate(`/process/${latestNotification.process_id}`)
+              } : undefined,
+              duration: 8000,
+              icon: <UserPlus className="h-4 w-4 text-blue-500" />
+            }
+          );
+        }
+      }
+      
+      previousUnreadCount.current = newUnreadCount;
+      isFirstLoad.current = false;
     } catch (error) {
       console.error("Erro ao carregar notificações:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, playNotificationSound]);
 
   useEffect(() => {
     fetchNotifications();
-    // Refresh every 60 seconds
-    const interval = setInterval(fetchNotifications, 60000);
+    // Fast polling for real-time notifications (10 seconds)
+    const interval = setInterval(fetchNotifications, POLLING_INTERVAL);
     return () => clearInterval(interval);
   }, []);
 
