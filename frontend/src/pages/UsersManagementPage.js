@@ -118,12 +118,15 @@ const UsersManagementPage = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Tem a certeza que deseja eliminar este utilizador?")) return;
+    if (!window.confirm("Tem a certeza que deseja eliminar este utilizador? Esta ação não pode ser revertida.")) {
+      return;
+    }
     try {
       await deleteUser(userId);
-      toast.success("Utilizador eliminado");
+      toast.success("Utilizador eliminado com sucesso");
       fetchUsers();
     } catch (error) {
+      console.error("Erro ao eliminar:", error);
       toast.error(error.response?.data?.detail || "Erro ao eliminar utilizador");
     }
   };
