@@ -297,7 +297,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "All backend tests completed successfully"
+    - "Public Client Registration Form"
+    - "Authentication System - Login Page"
+    - "Admin Dashboard"
+    - "Staff Dashboard"
+    - "User Management Page"
+    - "All Processes Page"
+    - "Statistics Page"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
