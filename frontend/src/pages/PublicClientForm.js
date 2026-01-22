@@ -87,6 +87,7 @@ const PublicClientForm = () => {
     birth_date: "",
     estado_civil: "",
     compra_tipo: "individual",
+    menor_35_anos: false,  // Checkbox para apoio ao estado
     
     // Dados do 2º Titular
     titular2_name: "",
@@ -378,6 +379,25 @@ const PublicClientForm = () => {
             </SelectContent>
           </Select>
           <FieldHint>Se casado/a, indique o regime de bens do casamento.</FieldHint>
+        </div>
+        
+        <div className="space-y-3 md:col-span-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-start space-x-3">
+            <Checkbox
+              id="menor_35_anos"
+              checked={formData.menor_35_anos}
+              onCheckedChange={(checked) => updateField("menor_35_anos", checked)}
+              data-testid="client-menor-35"
+            />
+            <div className="space-y-1">
+              <Label htmlFor="menor_35_anos" className="text-sm font-medium cursor-pointer">
+                Tenho menos de 35 anos e pretendo usufruir do Apoio ao Estado
+              </Label>
+              <p className="text-xs text-amber-700">
+                Se tem menos de 35 anos, pode ser elegível para benefícios fiscais na compra da primeira habitação própria permanente (isenção/redução de IMT e Imposto de Selo).
+              </p>
+            </div>
+          </div>
         </div>
         
         <div className="space-y-2 md:col-span-2">
