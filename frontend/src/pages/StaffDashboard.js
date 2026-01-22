@@ -251,7 +251,16 @@ const StaffDashboard = () => {
                             <div className="py-2 px-4 bg-muted/40 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4 text-blue-900" />
-                                <span className="font-semibold">{clientName}</span>
+                                {clientData.process_id ? (
+                                  <span 
+                                    className="font-semibold text-blue-900 hover:text-blue-700 cursor-pointer hover:underline"
+                                    onClick={() => navigate(`/process/${clientData.process_id}`)}
+                                  >
+                                    {clientName}
+                                  </span>
+                                ) : (
+                                  <span className="font-semibold">{clientName}</span>
+                                )}
                                 <Badge variant="outline">{clientData.documents.length} doc(s)</Badge>
                               </div>
                             </div>
