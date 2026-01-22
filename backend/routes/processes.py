@@ -448,11 +448,11 @@ async def update_process(process_id: str, data: ProcessUpdate, user: dict = Depe
     valid_statuses = [s["name"] for s in await db.workflow_statuses.find({}, {"name": 1, "_id": 0}).to_list(100)]
     
     # Check role-based permissions
-    can_update_personal = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.CONSULTOR_MEDIADOR]
-    can_update_financial = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.MEDIADOR, UserRole.CONSULTOR_MEDIADOR]
+    can_update_personal = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.DIRETOR, UserRole.ADMINISTRATIVO]
+    can_update_financial = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.MEDIADOR, UserRole.DIRETOR, UserRole.ADMINISTRATIVO]
     can_update_real_estate = UserRole.can_act_as_consultor(role)
     can_update_credit = UserRole.can_act_as_mediador(role)
-    can_update_status = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.MEDIADOR, UserRole.CONSULTOR_MEDIADOR]
+    can_update_status = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.MEDIADOR, UserRole.DIRETOR, UserRole.ADMINISTRATIVO]
     
     if role == UserRole.CLIENTE:
         if process.get("client_id") != user["id"]:
