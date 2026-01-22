@@ -153,24 +153,6 @@ async def get_calendar_deadlines(
     processes = await db.processes.find({}, {"_id": 0}).to_list(1000)
     process_map = {p["id"]: p for p in processes}
     
-    # Build deadline query
-    # When no filters, get ALL deadlines
-    if not consultor_id and not mediador_id:
-        # No filters - get all deadlines
-        deadline_query = {}
-    else:
-        # With filters - get deadlines from matching processes OR directly assigned
-        or_conditions = []
-        if process_ids:
-            or_conditions.append({"process_id": {"$in": process_ids}})
-        if consultor_id:
-            or_conditions.append({"assigned_consultor_id": consultor_id})
-        if mediador_id:
-            or_conditions.append({"assigned_mediador_id": mediador_id})
-        deadline_query = {"$or": or_conditions} if or_conditions else {}
-    
-    deadlines = await db.deadlines.find(deadline_query, {"_id": 0}).to_list(1000)
-    
     # Enrich deadlines with process info
     result = []
     for d in deadlines:
