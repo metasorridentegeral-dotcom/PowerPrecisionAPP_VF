@@ -43,6 +43,7 @@ import {
   getWorkflowStatuses,
 } from "../services/api";
 import OneDriveLinks from "../components/OneDriveLinks";
+import ProcessAlerts from "../components/ProcessAlerts";
 import {
   ArrowLeft,
   User,
@@ -372,6 +373,9 @@ const ProcessDetails = () => {
             )}
           </div>
         </div>
+
+        {/* Alertas do Processo */}
+        <ProcessAlerts processId={id} className="mb-2" />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
