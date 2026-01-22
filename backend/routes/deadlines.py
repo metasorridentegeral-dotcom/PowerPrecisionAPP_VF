@@ -16,6 +16,13 @@ router = APIRouter(prefix="/deadlines", tags=["Deadlines"])
 
 @router.post("", response_model=DeadlineResponse)
 async def create_deadline(data: DeadlineCreate, user: dict = Depends(get_current_user)):
+    """
+    Criar um novo evento/prazo no calendário.
+    
+    - Todos os utilizadores (exceto clientes) podem criar eventos
+    - O evento é sempre atribuído ao próprio utilizador
+    - Pode também ser atribuído a outros utilizadores (lista)
+    """
     if user["role"] == UserRole.CLIENTE:
         raise HTTPException(status_code=403, detail="Clientes não podem criar prazos")
     
@@ -28,6 +35,11 @@ async def create_deadline(data: DeadlineCreate, user: dict = Depends(get_current
     deadline_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     
+    # Lista de utilizadores atribuídos - inclui sempre o criador
+    assigned_users = data.assigned_user_ids or []
+    if user["id"] not in assigned_users:
+        assigned_users.append(user["id"])
+    
     deadline_doc = {
         "id": deadline_id,
         "process_id": data.process_id,
@@ -38,6 +50,8 @@ async def create_deadline(data: DeadlineCreate, user: dict = Depends(get_current
         "completed": False,
         "created_by": user["id"],
         "created_at": now,
+        "assigned_user_ids": assigned_users,
+        # Campos legacy para compatibilidade
         "assigned_consultor_id": data.assigned_consultor_id,
         "assigned_mediador_id": data.assigned_mediador_id
     }
@@ -47,33 +61,19 @@ async def create_deadline(data: DeadlineCreate, user: dict = Depends(get_current
     if data.process_id:
         await log_history(data.process_id, user, "Criou prazo", "deadline", None, data.title)
     
-    # Send notification to assigned staff or client
-    if process:
-        await send_email_notification(
-            process["client_email"],
-            f"Novo Prazo: {data.title}",
-            f"Foi adicionado um novo prazo ao seu processo: {data.title} - Data limite: {data.due_date}"
-        )
-    
-    # Notify assigned consultor
-    if data.assigned_consultor_id:
-        consultor = await db.users.find_one({"id": data.assigned_consultor_id}, {"_id": 0})
-        if consultor:
-            await send_email_notification(
-                consultor["email"],
-                f"Novo Prazo Atribuído: {data.title}",
-                f"Foi-lhe atribuído um novo prazo: {data.title}\nData limite: {data.due_date}"
-            )
-    
-    # Notify assigned mediador
-    if data.assigned_mediador_id:
-        mediador = await db.users.find_one({"id": data.assigned_mediador_id}, {"_id": 0})
-        if mediador:
-            await send_email_notification(
-                mediador["email"],
-                f"Novo Prazo Atribuído: {data.title}",
-                f"Foi-lhe atribuído um novo prazo: {data.title}\nData limite: {data.due_date}"
-            )
+    # Notificar todos os utilizadores atribuídos (exceto o criador)
+    for assigned_id in assigned_users:
+        if assigned_id != user["id"]:
+            assigned_user = await db.users.find_one({"id": assigned_id}, {"_id": 0})
+            if assigned_user:
+                await send_email_notification(
+                    assigned_user["email"],
+                    f"Novo Prazo Atribuído: {data.title}",
+                    f"Foi-lhe atribuído um novo prazo por {user['name']}:\n\n"
+                    f"Título: {data.title}\n"
+                    f"Data limite: {data.due_date}\n"
+                    f"Prioridade: {data.priority}"
+                )
     
     return DeadlineResponse(**{k: v for k, v in deadline_doc.items() if k != "_id"})
 
