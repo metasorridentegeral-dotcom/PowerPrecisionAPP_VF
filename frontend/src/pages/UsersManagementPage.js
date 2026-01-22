@@ -17,10 +17,10 @@ import { getUsers, createUser, updateUser, deleteUser } from "../services/api";
 const roleLabels = {
   cliente: "Cliente",
   consultor: "Consultor",
-  intermediario: "Intermediário",
-  mediador: "Mediador",
-  consultor_intermediario: "Consultor/Intermediário",
-  consultor_mediador: "Consultor/Mediador",
+  intermediario: "Intermediário de Crédito",
+  mediador: "Intermediário de Crédito",
+  diretor: "Diretor(a)",
+  administrativo: "Administrativo(a)",
   ceo: "CEO",
   admin: "Administrador",
 };
@@ -30,9 +30,9 @@ const roleColors = {
   consultor: "bg-emerald-100 text-emerald-800",
   intermediario: "bg-purple-100 text-purple-800",
   mediador: "bg-purple-100 text-purple-800",
-  consultor_intermediario: "bg-teal-100 text-teal-800",
-  consultor_mediador: "bg-teal-100 text-teal-800",
-  ceo: "bg-amber-100 text-amber-800",
+  diretor: "bg-indigo-100 text-indigo-800",
+  administrativo: "bg-amber-100 text-amber-800",
+  ceo: "bg-orange-100 text-orange-800",
   admin: "bg-red-100 text-red-800",
 };
 
