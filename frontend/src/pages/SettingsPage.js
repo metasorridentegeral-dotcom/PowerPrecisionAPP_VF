@@ -507,64 +507,11 @@ const SettingsPage = () => {
           {/* Tab Sistema (apenas Admin) */}
           {user?.role === "admin" && (
             <TabsContent value="sistema">
-              <div className="grid gap-6 md:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Workflow className="h-5 w-5 text-blue-900" />
-                      Estados de Workflow
-                    </CardTitle>
-                    <CardDescription>
-                      Gerir as fases do processo
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        O sistema está configurado com 14 estados de workflow:
-                      </p>
-                      <ul className="text-sm space-y-1 mt-2">
-                        <li className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-amber-500"></span>
-                          Clientes em Espera
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-blue-500"></span>
-                          Fases Documentais
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-purple-500"></span>
-                          Envios a Parceiros
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-orange-500"></span>
-                          Fases Bancárias
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
-                          Aprovação e Escritura
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-red-500"></span>
-                          Desistências
-                        </li>
-                      </ul>
-                      <div className="pt-4 border-t">
-                        <Button 
-                          onClick={() => window.location.href = '/admin'}
-                          className="w-full bg-blue-900 hover:bg-blue-800"
-                        >
-                          <Workflow className="h-4 w-4 mr-2" />
-                          Editar Estados de Workflow
-                        </Button>
-                        <p className="text-xs text-muted-foreground mt-2 text-center">
-                          Aceda ao Painel de Administração para gerir os estados do workflow
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
+              <div className="space-y-6">
+                {/* Editor de Workflow */}
+                <WorkflowEditor />
+                
+                {/* Informação do Sistema */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -576,22 +523,22 @@ const SettingsPage = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between py-2 border-b">
-                        <span className="text-muted-foreground">Versão</span>
-                        <span className="font-medium">2.0.0</span>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Versão</p>
+                        <p className="font-semibold text-lg">2.1.0</p>
                       </div>
-                      <div className="flex justify-between py-2 border-b">
-                        <span className="text-muted-foreground">Ambiente</span>
-                        <span className="font-medium">Produção</span>
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Ambiente</p>
+                        <p className="font-semibold text-lg">Produção</p>
                       </div>
-                      <div className="flex justify-between py-2 border-b">
-                        <span className="text-muted-foreground">Base de Dados</span>
-                        <span className="font-medium">MongoDB</span>
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Base de Dados</p>
+                        <p className="font-semibold text-lg">MongoDB</p>
                       </div>
-                      <div className="flex justify-between py-2">
-                        <span className="text-muted-foreground">Última Atualização</span>
-                        <span className="font-medium">Janeiro 2026</span>
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Última Atualização</p>
+                        <p className="font-semibold text-lg">Janeiro 2026</p>
                       </div>
                     </div>
                   </CardContent>
