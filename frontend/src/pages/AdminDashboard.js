@@ -28,12 +28,22 @@ import {
 } from "../services/api";
 import KanbanBoard from "../components/KanbanBoard";
 
-const roleLabels = { admin: "Administrador", ceo: "CEO", consultor: "Consultor", mediador: "Intermediário de Crédito", intermediario: "Intermediário de Crédito", consultor_mediador: "Consultor/Intermediário", consultor_intermediario: "Consultor/Intermediário", cliente: "Cliente" };
+const roleLabels = { admin: "Administrador", ceo: "CEO", consultor: "Consultor", mediador: "Intermediário de Crédito", intermediario: "Intermediário de Crédito", diretor: "Diretor(a)", administrativo: "Administrativo(a)", cliente: "Cliente" };
 const roleColors = {
   admin: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
   consultor: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
   mediador: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+  diretor: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+  administrativo: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
   cliente: "bg-gray-100 text-gray-800 dark:bg-gray-800/30 dark:text-gray-400",
+};
+
+const priorityOrder = { high: 1, medium: 2, low: 3 };
+const priorityLabels = { high: "Alta", medium: "Média", low: "Baixa" };
+const priorityColors = {
+  high: "bg-red-100 text-red-800 border-red-200",
+  medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  low: "bg-green-100 text-green-800 border-green-200"
 };
 
 const statusColorOptions = [
