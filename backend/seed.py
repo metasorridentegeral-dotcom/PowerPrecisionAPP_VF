@@ -189,7 +189,9 @@ async def seed_users():
     client.close()
     
     print()
-    print("IMPORTANTE: Altere as passwords padrão em produção!")
+    if admin_password == 'admin2026' or default_password == 'power2026':
+        print("⚠️  IMPORTANTE: Altere as passwords padrão em produção!")
+        print("   Defina SEED_ADMIN_PASSWORD e SEED_DEFAULT_PASSWORD")
     print("=" * 50)
 
 
