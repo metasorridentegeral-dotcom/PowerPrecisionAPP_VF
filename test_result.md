@@ -311,3 +311,5 @@ test_plan:
 agent_communication:
     - agent: "testing"
       message: "Comprehensive backend testing completed for CreditoIMO system. All core functionality working correctly. Fixed 2 issues: user account activation and deadline model compatibility. System ready for production use."
+    - agent: "testing"
+      message: "Starting comprehensive frontend testing for CreditoIMO application. Testing 7 main components: public registration form, login system, admin dashboard, staff dashboard, user management, processes page, and statistics. Using viewport 1920x800 on https://github-reveal.preview.emergentagent.com"
