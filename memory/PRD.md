@@ -31,6 +31,21 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
 
 ## What's Been Implemented
 
+### ✅ Editor de Fluxos de Workflow (2026-01)
+- **Nova UI completa** na página de Definições para gerir estados do workflow
+- Criar, editar, eliminar e reordenar estados
+- Selecção de cores e descrições
+- Protecção contra eliminação de estados em uso
+
+### ✅ Indicador Visual Trello (2026-01)
+- Badge "Trello" visível nos cartões Kanban sincronizados
+- Preparado para integração bidirecional futura
+
+### ✅ Refatorização Admin Dashboard (2026-01)
+- Tab de Utilizadores simplificada com estatísticas rápidas
+- Redireccionamento para página dedicada de gestão
+- Remoção de código duplicado
+
 ### ✅ Múltiplas Melhorias de UI e Funcionalidades (2026-01-22)
 - **Credenciais de teste removidas** da página de login
 - **Novos perfis de utilizador**: Diretor(a) e Administrativo(a) substituem Consultor/Mediador
