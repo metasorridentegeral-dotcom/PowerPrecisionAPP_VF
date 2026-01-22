@@ -173,7 +173,7 @@ def create_sample_processes():
             if response.status_code == 200:
                 print(f"✅ Assigned process 2 to Estácio as intermediário")
             else:
-                print(f"❌ Failed to assign process 2 to Estácio: {response.status_code}")
+                print(f"❌ Failed to assign process 2 to Estácio: {response.status_code} - {response.text}")
         
         # Assign third process to both
         if len(created_processes) >= 3:
@@ -185,7 +185,7 @@ def create_sample_processes():
             if response.status_code == 200:
                 print(f"✅ Assigned process 3 to both Flávio and Estácio")
             else:
-                print(f"❌ Failed to assign process 3: {response.status_code}")
+                print(f"❌ Failed to assign process 3: {response.status_code} - {response.text}")
     
     return created_processes
 
