@@ -295,6 +295,12 @@ const KanbanBoard = ({ token }) => {
                                   
                                   {/* Assigned Staff */}
                                   <div className="flex flex-wrap gap-1 mt-2">
+                                    {process.trello_card_id && (
+                                      <Badge variant="outline" className="text-xs bg-sky-50 border-sky-200 text-sky-700">
+                                        <ExternalLink className="h-3 w-3 mr-1" />
+                                        Trello
+                                      </Badge>
+                                    )}
                                     {process.consultor_name && (
                                       <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200">
                                         <User className="h-3 w-3 mr-1" />
