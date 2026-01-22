@@ -83,7 +83,7 @@ async def get_deadlines(process_id: Optional[str] = None, user: dict = Depends(g
     """
     Obter prazos/eventos do utilizador.
     
-    - Cada utilizador vê apenas os eventos onde está atribuído
+    - Cada utilizador vê eventos onde está atribuído OU dos seus clientes/processos
     - Admin e CEO vêem todos os eventos
     """
     query = {}
@@ -91,6 +91,7 @@ async def get_deadlines(process_id: Optional[str] = None, user: dict = Depends(g
     if process_id:
         query["process_id"] = process_id
     elif user["role"] == UserRole.CLIENTE:
+        # Clientes vêem eventos dos seus processos
         processes = await db.processes.find({"client_id": user["id"]}, {"id": 1, "_id": 0}).to_list(1000)
         process_ids = [p["id"] for p in processes]
         query["process_id"] = {"$in": process_ids}
@@ -98,12 +99,26 @@ async def get_deadlines(process_id: Optional[str] = None, user: dict = Depends(g
         # Admin e CEO vêem todos
         pass
     else:
-        # Outros utilizadores vêem eventos onde estão atribuídos
+        # Consultores/Intermediários vêem:
+        # 1. Eventos onde estão diretamente atribuídos
+        # 2. Eventos criados por eles
+        # 3. Eventos dos processos dos seus clientes
+        my_processes = await db.processes.find({
+            "$or": [
+                {"assigned_consultor_id": user["id"]},
+                {"consultor_id": user["id"]},
+                {"assigned_mediador_id": user["id"]},
+                {"intermediario_id": user["id"]}
+            ]
+        }, {"id": 1, "_id": 0}).to_list(1000)
+        my_process_ids = [p["id"] for p in my_processes]
+        
         query["$or"] = [
             {"assigned_user_ids": user["id"]},
             {"created_by": user["id"]},
             {"assigned_consultor_id": user["id"]},
-            {"assigned_mediador_id": user["id"]}
+            {"assigned_mediador_id": user["id"]},
+            {"process_id": {"$in": my_process_ids}} if my_process_ids else {"process_id": None}
         ]
     
     deadlines = await db.deadlines.find(query, {"_id": 0}).to_list(1000)
@@ -119,31 +134,64 @@ async def get_calendar_deadlines(
     """
     Obter eventos para o calendário.
     
-    - Cada utilizador vê os seus próprios eventos
-    - Admin pode filtrar por consultor/mediador
+    - Cada utilizador vê os seus próprios eventos e eventos dos seus clientes
+    - Admin/CEO podem filtrar por consultor/mediador ou ver todos
     """
-    # Build deadline filter based on user role
     deadline_query = {}
     
     if user["role"] in [UserRole.ADMIN, UserRole.CEO]:
         # Admin/CEO podem filtrar ou ver todos
         if consultor_id:
+            # Filtrar por consultor específico
+            consultor_processes = await db.processes.find({
+                "$or": [
+                    {"assigned_consultor_id": consultor_id},
+                    {"consultor_id": consultor_id}
+                ]
+            }, {"id": 1, "_id": 0}).to_list(1000)
+            consultor_process_ids = [p["id"] for p in consultor_processes]
+            
             deadline_query["$or"] = [
                 {"assigned_user_ids": consultor_id},
-                {"assigned_consultor_id": consultor_id}
+                {"created_by": consultor_id},
+                {"assigned_consultor_id": consultor_id},
+                {"process_id": {"$in": consultor_process_ids}} if consultor_process_ids else {"process_id": None}
             ]
         elif mediador_id:
+            # Filtrar por intermediário específico
+            mediador_processes = await db.processes.find({
+                "$or": [
+                    {"assigned_mediador_id": mediador_id},
+                    {"intermediario_id": mediador_id}
+                ]
+            }, {"id": 1, "_id": 0}).to_list(1000)
+            mediador_process_ids = [p["id"] for p in mediador_processes]
+            
             deadline_query["$or"] = [
                 {"assigned_user_ids": mediador_id},
-                {"assigned_mediador_id": mediador_id}
+                {"created_by": mediador_id},
+                {"assigned_mediador_id": mediador_id},
+                {"process_id": {"$in": mediador_process_ids}} if mediador_process_ids else {"process_id": None}
             ]
+        # Se não houver filtro, retorna todos (query vazio)
     else:
-        # Outros utilizadores vêem apenas os seus eventos
+        # Outros utilizadores vêem apenas os seus eventos e dos seus clientes
+        my_processes = await db.processes.find({
+            "$or": [
+                {"assigned_consultor_id": user["id"]},
+                {"consultor_id": user["id"]},
+                {"assigned_mediador_id": user["id"]},
+                {"intermediario_id": user["id"]}
+            ]
+        }, {"id": 1, "_id": 0}).to_list(1000)
+        my_process_ids = [p["id"] for p in my_processes]
+        
         deadline_query["$or"] = [
             {"assigned_user_ids": user["id"]},
             {"created_by": user["id"]},
             {"assigned_consultor_id": user["id"]},
-            {"assigned_mediador_id": user["id"]}
+            {"assigned_mediador_id": user["id"]},
+            {"process_id": {"$in": my_process_ids}} if my_process_ids else {"process_id": None}
         ]
     
     # Get deadlines
@@ -158,7 +206,6 @@ async def get_calendar_deadlines(
     for d in deadlines:
         process = process_map.get(d.get("process_id"), {})
         if not process and d.get("process_id"):
-            # Load process if not in map (might be filtered out)
             process = await db.processes.find_one({"id": d["process_id"]}, {"_id": 0}) or {}
         
         result.append({
