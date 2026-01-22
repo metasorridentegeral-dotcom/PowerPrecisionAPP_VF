@@ -47,6 +47,7 @@ const statusColorOptions = [
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});
   const [users, setUsers] = useState([]);
