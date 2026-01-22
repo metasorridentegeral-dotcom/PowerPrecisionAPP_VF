@@ -354,7 +354,7 @@ LEGENDA:
 │     ═══════════════                                               │
 │     ✅ Acesso total ao sistema                                    │
 │     ✅ Gestão de utilizadores                                     │
-│     ✅ Configurações                                              │
+│     ✅ Editor de Workflow                                         │
 │     ✅ Todos os processos                                         │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
@@ -364,6 +364,22 @@ LEGENDA:
 │     ✅ Visão global de todos os processos                         │
 │     ✅ Estatísticas e relatórios                                  │
 │     ✅ Sem gestão de utilizadores                                 │
+│                                                                    │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│     DIRETOR(A)                                                     │
+│     ═══════════                                                   │
+│     ✅ Funções de consultor + intermediário                       │
+│     ✅ Todos os processos atribuídos                              │
+│     ✅ Calendário e documentos                                    │
+│                                                                    │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│     ADMINISTRATIVO(A)                                              │
+│     ═════════════════                                             │
+│     ✅ Vê todos os processos                                      │
+│     ✅ Gestão documental                                          │
+│     ✅ Calendário e prazos                                        │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
