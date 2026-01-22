@@ -163,15 +163,20 @@ async def get_notifications(
 ):
     """
     Obter notificações do sistema.
+    
+    Regras de visibilidade:
+    - Admin, CEO, Diretor: vêem TODAS as notificações (incluindo novos registos)
+    - Outros: vêem apenas notificações dos seus processos
     """
     query = {}
     
     if unread_only:
         query["read"] = False
     
-    # Admin e CEO vêem todas as notificações
-    if user["role"] not in [UserRole.ADMIN, UserRole.CEO]:
+    # Admin, CEO e Diretor vêem todas as notificações
+    if user["role"] not in [UserRole.ADMIN, UserRole.CEO, UserRole.DIRETOR]:
         # Outros utilizadores vêem apenas notificações dos seus processos
+        # E NÃO vêem notificações de novos registos
         processes = await db.processes.find({
             "$or": [
                 {"assigned_consultor_id": user["id"]},
@@ -181,7 +186,15 @@ async def get_notifications(
             ]
         }, {"id": 1, "_id": 0}).to_list(1000)
         process_ids = [p["id"] for p in processes]
-        query["process_id"] = {"$in": process_ids}
+        
+        # Excluir notificações de novos registos para utilizadores não-admin
+        query["$and"] = [
+            {"$or": [
+                {"process_id": {"$in": process_ids}},
+                {"process_id": None}  # Notificações sem processo específico
+            ]},
+            {"type": {"$ne": "new_registration"}}  # Excluir novos registos
+        ]
     
     notifications = await db.notifications.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     
