@@ -301,18 +301,29 @@ const AdminDashboard = () => {
         due_date: eventFormData.due_date,
         priority: eventFormData.priority,
         process_id: eventFormData.process_id || null,
-        assigned_consultor_id: eventFormData.assigned_consultor_id || null,
-        assigned_mediador_id: eventFormData.assigned_mediador_id || null
+        assigned_user_ids: eventFormData.assigned_user_ids.length > 0 ? eventFormData.assigned_user_ids : [user.id]
       };
       await createDeadline(data);
       toast.success("Evento criado com sucesso");
       setIsCreateEventDialogOpen(false);
+      setEventFormData({ title: "", description: "", due_date: "", priority: "medium", process_id: "", assigned_user_ids: [] });
       fetchCalendarData();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erro ao criar evento");
     } finally {
       setFormLoading(false);
     }
+  };
+
+  const toggleUserAssignment = (userId) => {
+    setEventFormData(prev => {
+      const current = prev.assigned_user_ids || [];
+      if (current.includes(userId)) {
+        return { ...prev, assigned_user_ids: current.filter(id => id !== userId) };
+      } else {
+        return { ...prev, assigned_user_ids: [...current, userId] };
+      }
+    });
   };
 
   const handleDeleteEvent = async (eventId) => {
