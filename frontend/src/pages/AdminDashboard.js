@@ -79,12 +79,13 @@ const AdminDashboard = () => {
     due_date: "", 
     priority: "medium",
     process_id: "",
-    assigned_consultor_id: "",
-    assigned_mediador_id: ""
+    assigned_user_ids: []  // Lista de utilizadores atribuídos
   });
   const [editingUserId, setEditingUserId] = useState(null);
   const [editingStatusId, setEditingStatusId] = useState(null);
 
+  // Get all staff users for assignment
+  const staffUsers = useMemo(() => users.filter(u => u.role !== "cliente"), [users]);
   // Get consultors and intermediários for filters
   const consultors = useMemo(() => users.filter(u => u.role === "consultor" || u.role === "consultor_mediador" || u.role === "consultor_intermediario" || u.role === "ceo"), [users]);
   const intermediarios = useMemo(() => users.filter(u => u.role === "mediador" || u.role === "intermediario" || u.role === "consultor_mediador" || u.role === "consultor_intermediario"), [users]);
