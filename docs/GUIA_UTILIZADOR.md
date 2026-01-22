@@ -788,6 +788,13 @@ Usar as **setas ↑ ↓** ao lado de cada estado para alterar a ordem no fluxo.
 | `/api/deadlines` | GET | Eventos/Prazos |
 | `/api/documents/expiry/upcoming` | GET | Docs a expirar |
 | `/api/users` | GET | Listar utilizadores |
+| `/api/admin/users` | POST | Criar utilizador (Admin) |
+| `/api/admin/users/{id}` | PUT | Editar utilizador (Admin) |
+| `/api/admin/users/{id}` | DELETE | Eliminar utilizador (Admin) |
+| `/api/workflow-statuses` | GET | Listar estados workflow |
+| `/api/workflow-statuses` | POST | Criar estado (Admin) |
+| `/api/workflow-statuses/{id}` | PUT | Editar estado (Admin) |
+| `/api/workflow-statuses/{id}` | DELETE | Eliminar estado (Admin) |
 | `/api/public/register` | POST | Registo público |
 | `/api/processes/{id}/alerts` | GET | Alertas do processo |
 | `/api/alerts/notifications` | GET | Notificações do utilizador |
