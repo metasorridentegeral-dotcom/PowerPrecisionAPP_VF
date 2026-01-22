@@ -138,7 +138,54 @@ code {
     }
 }
 
-/* Status badges */
+/**
+ * BADGES DE ESTADO DO PROCESSO
+ * Cores alinhadas com o workflow de 14 fases
+ */
+
+/* Estados de espera - Amarelo */
+.status-clientes_espera {
+    @apply bg-amber-100 text-amber-800 border border-amber-200;
+}
+
+/* Estados documentais - Azul */
+.status-fase_documental,
+.status-fase_documental_ii {
+    @apply bg-blue-100 text-blue-800 border border-blue-200;
+}
+
+/* Estados de envio - Roxo */
+.status-enviado_bruno,
+.status-enviado_luis,
+.status-enviado_bcp_rui {
+    @apply bg-purple-100 text-purple-800 border border-purple-200;
+}
+
+/* Estados bancários - Laranja */
+.status-entradas_precision,
+.status-fase_bancaria {
+    @apply bg-orange-100 text-orange-800 border border-orange-200;
+}
+
+/* Estado de visitas - Azul */
+.status-fase_visitas {
+    @apply bg-sky-100 text-sky-800 border border-sky-200;
+}
+
+/* Estados aprovados/escritura - Verde */
+.status-ch_aprovado,
+.status-fase_escritura,
+.status-escritura_agendada,
+.status-concluidos {
+    @apply bg-emerald-100 text-emerald-800 border border-emerald-200;
+}
+
+/* Estado de desistência - Vermelho */
+.status-desistencias {
+    @apply bg-red-100 text-red-800 border border-red-200;
+}
+
+/* Estados legados (compatibilidade) */
 .status-pedido_inicial {
     @apply bg-yellow-100 text-yellow-800 border border-yellow-200;
 }
@@ -159,20 +206,58 @@ code {
     @apply bg-red-100 text-red-800 border border-red-200;
 }
 
-/* Priority badges */
+/**
+ * BADGES DE PRIORIDADE
+ */
 .priority-low {
     @apply bg-slate-100 text-slate-700 border border-slate-200;
 }
 
 .priority-medium {
-    @apply bg-yellow-100 text-yellow-700 border border-yellow-200;
+    @apply bg-amber-100 text-amber-700 border border-amber-200;
 }
 
 .priority-high {
     @apply bg-red-100 text-red-700 border border-red-200;
 }
 
-/* Custom scrollbar */
+/**
+ * BADGES DE DOCUMENTOS A EXPIRAR
+ */
+.doc-expiring-soon {
+    @apply bg-red-50 text-red-700 border-l-4 border-red-500;
+}
+
+.doc-expiring-warning {
+    @apply bg-amber-50 text-amber-700 border-l-4 border-amber-500;
+}
+
+.doc-valid {
+    @apply bg-emerald-50 text-emerald-700 border-l-4 border-emerald-500;
+}
+
+/**
+ * CORES DAS EMPRESAS
+ */
+.power-brand {
+    @apply bg-blue-900 text-white;
+}
+
+.power-brand-light {
+    @apply bg-blue-50 text-blue-900;
+}
+
+.precision-brand {
+    @apply bg-amber-500 text-white;
+}
+
+.precision-brand-light {
+    @apply bg-amber-50 text-amber-700;
+}
+
+/**
+ * SCROLLBAR PERSONALIZADA
+ */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -192,19 +277,34 @@ code {
     background: hsl(var(--muted-foreground) / 0.5);
 }
 
-/* Sidebar transition */
+/**
+ * TRANSIÇÕES E EFEITOS
+ */
 .sidebar-transition {
     transition: width 0.2s ease-in-out;
 }
 
-/* Card hover effect */
 .card-hover {
     @apply transition-shadow duration-200 hover:shadow-md;
 }
 
-/* Focus ring */
 .focus-ring {
     @apply focus:ring-2 focus:ring-primary focus:ring-offset-2;
+}
+
+/**
+ * ANIMAÇÕES DO KANBAN
+ */
+.kanban-card {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+}
+
+.kanban-column {
+    @apply transition-colors duration-200;
+}
+
+.kanban-column-drag-over {
+    @apply bg-blue-50 ring-2 ring-blue-300;
 }
 
 @layer base {
