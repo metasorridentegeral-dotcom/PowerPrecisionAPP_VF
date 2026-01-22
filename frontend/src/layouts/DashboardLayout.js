@@ -32,14 +32,21 @@ const roleLabels = {
   cliente: "Cliente",
   consultor: "Consultor",
   mediador: "Mediador",
+  intermediario: "Intermediário de Crédito",
+  consultor_intermediario: "Consultor/Intermediário",
+  ceo: "CEO",
   admin: "Administrador",
 };
 
+// Cores dos badges de papel - Azul Power Real Estate, Dourado Precision
 const roleColors = {
   cliente: "bg-blue-100 text-blue-800",
-  consultor: "bg-emerald-100 text-emerald-800",
-  mediador: "bg-purple-100 text-purple-800",
-  admin: "bg-red-100 text-red-800",
+  consultor: "bg-blue-900 text-white",                    // Power Real Estate
+  mediador: "bg-amber-500 text-white",                    // Precision Crédito
+  intermediario: "bg-amber-500 text-white",               // Precision Crédito
+  consultor_intermediario: "bg-gradient-to-r from-blue-900 to-amber-500 text-white",
+  ceo: "bg-blue-800 text-white",                          // Power Real Estate
+  admin: "bg-slate-800 text-white",
 };
 
 const DashboardLayout = ({ children, title }) => {
