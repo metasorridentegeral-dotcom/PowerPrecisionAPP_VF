@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "./components/ui/sonner";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import ImpersonateBanner from "./components/ImpersonateBanner";
 import LoginPage from "./pages/LoginPage";
 import PublicClientForm from "./pages/PublicClientForm";
 import ClientDashboard from "./pages/ClientDashboard";
