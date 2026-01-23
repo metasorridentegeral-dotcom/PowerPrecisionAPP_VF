@@ -39,6 +39,31 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
 - Auditoria registada na colecção history
 - **BUG FIX (2026-01-23)**: Corrigido endpoint `/api/auth/me` para retornar campos `is_impersonated`, `impersonated_by`, `impersonated_by_name`
 
+### ✅ Refatorização AdminDashboard (2026-01-23)
+- AdminDashboard.js reduzido de 1200 para 315 linhas (~74% redução)
+- Criados componentes modulares em `/components/admin/`:
+  - `CalendarTab.js` - Gestão de calendário e prazos
+  - `DocumentsTab.js` - Lista de documentos a expirar
+  - `UsersTab.js` - Lista e gestão de utilizadores
+  - `ClientSearchTab.js` - Pesquisa de clientes
+  - `AIAnalysisTab.js` - Análise de documentos por IA
+  - `CreateEventDialog.js` - Dialog para criar eventos
+- Melhor manutenção e testabilidade do código
+
+### ✅ Push Notifications (2026-01-23)
+- Service Worker para receber notificações push (`/public/sw-push.js`)
+- Serviço de gestão de notificações (`/services/pushNotifications.js`)
+- Hook React para gestão de estado (`/hooks/usePushNotifications.js`)
+- Componente de configuração (`/components/NotificationSettings.js`)
+- Integração na página de Definições
+- Suporta notificações mesmo com a aplicação fechada
+- Tipos de notificação: novos processos, alterações, documentos a expirar, prazos
+
+### ✅ Correção WebSocket (2026-01-23)
+- Corrigida construção de URL do WebSocket no hook `useWebSocket.js`
+- Adicionada validação de URL antes de conectar
+- Melhor tratamento de erros de conexão
+
 ### ✅ Email Templates HTML Profissionais (2026-01)
 - Template base com estilos consistentes
 - Confirmação de registo (enviado ao cliente automaticamente)
