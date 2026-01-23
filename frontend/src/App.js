@@ -62,74 +62,15 @@ function App() {
           {/* Staff login */}
           <Route path="/login" element={<LoginPage />} />
           
+          {/* Dashboard redirect */}
           <Route path="/dashboard" element={<DashboardRedirect />} />
           
-          {/* Cliente Dashboard */}
-          <Route
-            path="/cliente"
-            element={
-              <ProtectedRoute allowedRoles={["cliente"]}>
-                <ClientDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cliente/novo-processo"
-            element={
-              <ProtectedRoute allowedRoles={["cliente"]}>
-                <NewProcess />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Staff Dashboard (Consultor, Mediador, Consultor/Mediador, CEO) */}
+          {/* Staff Dashboard (Consultor, Mediador, Diretor, Administrativo, CEO) */}
           <Route
             path="/staff"
             element={
               <ProtectedRoute allowedRoles={STAFF_ROLES}>
                 <StaffDashboard />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Legacy routes - redirect to staff dashboard */}
-          <Route
-            path="/consultor"
-            element={
-              <ProtectedRoute allowedRoles={STAFF_ROLES}>
-                <Navigate to="/staff" replace />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/mediador"
-            element={
-              <ProtectedRoute allowedRoles={STAFF_ROLES}>
-                <Navigate to="/staff" replace />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/intermediario"
-            element={
-              <ProtectedRoute allowedRoles={STAFF_ROLES}>
-                <Navigate to="/staff" replace />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/ceo"
-            element={
-              <ProtectedRoute allowedRoles={STAFF_ROLES}>
-                <Navigate to="/staff" replace />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/consultor_intermediario"
-            element={
-              <ProtectedRoute allowedRoles={STAFF_ROLES}>
-                <Navigate to="/staff" replace />
               </ProtectedRoute>
             }
           />
@@ -144,11 +85,11 @@ function App() {
             }
           />
           
-          {/* Statistics Page - All authenticated users */}
+          {/* Statistics Page - Staff and Admin */}
           <Route
             path="/estatisticas"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={STAFF_ROLES}>
                 <StatisticsPage />
               </ProtectedRoute>
             }
@@ -168,17 +109,17 @@ function App() {
           <Route
             path="/processos"
             element={
-              <ProtectedRoute allowedRoles={[...STAFF_ROLES, "admin"]}>
+              <ProtectedRoute allowedRoles={STAFF_ROLES}>
                 <ProcessesPage />
               </ProtectedRoute>
             }
           />
           
-          {/* Process Details - Any authenticated user */}
+          {/* Process Details - Staff and Admin */}
           <Route
             path="/processo/:id"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={STAFF_ROLES}>
                 <ProcessDetails />
               </ProtectedRoute>
             }
@@ -186,23 +127,24 @@ function App() {
           <Route
             path="/process/:id"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={STAFF_ROLES}>
                 <ProcessDetails />
               </ProtectedRoute>
             }
           />
           
-          {/* Settings Page - All authenticated users */}
+          {/* Settings Page - Staff and Admin */}
           <Route
             path="/definicoes"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={STAFF_ROLES}>
                 <SettingsPage />
               </ProtectedRoute>
             }
           />
           
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
         <ImpersonateBanner />
       </BrowserRouter>
