@@ -419,90 +419,96 @@ const SettingsPage = () => {
 
           {/* Tab Notificações */}
           <TabsContent value="notificacoes">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5 text-blue-900" />
-                  Preferências de Notificação
-                </CardTitle>
-                <CardDescription>
-                  Escolha como e quando deseja ser notificado
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Novo Processo</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receber email quando um novo processo for criado
-                      </p>
+            <div className="space-y-6">
+              {/* Push Notifications */}
+              <NotificationSettings />
+              
+              {/* Email Notifications */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-blue-900" />
+                    Notificações por Email
+                  </CardTitle>
+                  <CardDescription>
+                    Escolha quando deseja receber emails
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="space-y-0.5">
+                        <p className="font-medium">Novo Processo</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receber email quando um novo processo for criado
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notifications.email_new_process}
+                        onCheckedChange={(checked) => 
+                          setNotifications({ ...notifications, email_new_process: checked })
+                        }
+                      />
                     </div>
-                    <Switch
-                      checked={notifications.email_new_process}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, email_new_process: checked })
-                      }
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Mudança de Estado</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receber email quando o estado de um processo mudar
-                      </p>
+                    
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="space-y-0.5">
+                        <p className="font-medium">Mudança de Estado</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receber email quando o estado de um processo mudar
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notifications.email_status_change}
+                        onCheckedChange={(checked) => 
+                          setNotifications({ ...notifications, email_status_change: checked })
+                        }
+                      />
                     </div>
-                    <Switch
-                      checked={notifications.email_status_change}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, email_status_change: checked })
-                      }
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Documentos a Expirar</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receber alerta quando documentos estiverem próximos de expirar (60 dias)
-                      </p>
+                    
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="space-y-0.5">
+                        <p className="font-medium">Documentos a Expirar</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receber alerta quando documentos estiverem próximos de expirar (60 dias)
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notifications.email_document_expiry}
+                        onCheckedChange={(checked) => 
+                          setNotifications({ ...notifications, email_document_expiry: checked })
+                        }
+                      />
                     </div>
-                    <Switch
-                      checked={notifications.email_document_expiry}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, email_document_expiry: checked })
-                      }
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Lembretes de Prazos</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receber lembretes de eventos e prazos agendados
-                      </p>
+                    
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="space-y-0.5">
+                        <p className="font-medium">Lembretes de Prazos</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receber lembretes de eventos e prazos agendados
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notifications.email_deadline_reminder}
+                        onCheckedChange={(checked) => 
+                          setNotifications({ ...notifications, email_deadline_reminder: checked })
+                        }
+                      />
                     </div>
-                    <Switch
-                      checked={notifications.email_deadline_reminder}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, email_deadline_reminder: checked })
-                      }
-                    />
                   </div>
-                </div>
 
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={handleSaveNotifications}
-                    className="bg-blue-900 hover:bg-blue-800"
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    Guardar Preferências
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={handleSaveNotifications}
+                      className="bg-blue-900 hover:bg-blue-800"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Guardar Preferências
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Tab Sistema (apenas Admin) */}
