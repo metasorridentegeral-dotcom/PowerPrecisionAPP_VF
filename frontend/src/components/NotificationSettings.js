@@ -1,9 +1,9 @@
 /**
  * NotificationSettings - Componente de Configuração de Notificações
  */
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { Bell, BellOff, CheckCircle, XCircle, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { usePushNotifications } from "../hooks/usePushNotifications";
