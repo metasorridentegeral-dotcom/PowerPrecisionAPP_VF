@@ -8,6 +8,11 @@ import os
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://loan-bridge-2.preview.emergentagent.com')
 
+# Credenciais de teste - usar variáveis de ambiente
+TEST_ADMIN_EMAIL = os.environ.get('TEST_ADMIN_EMAIL', 'admin@sistema.pt')
+TEST_ADMIN_PASSWORD = os.environ.get('TEST_ADMIN_PASSWORD', 'admin2026')
+
+
 class TestHealthAndAuth:
     """Basic health and authentication tests"""
     
@@ -22,8 +27,8 @@ class TestHealthAndAuth:
     def test_admin_login(self):
         """Test admin login"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@sistema.pt",
-            "password": "admin2026"
+            "email": TEST_ADMIN_EMAIL,
+            "password": TEST_ADMIN_PASSWORD
         })
         assert response.status_code == 200
         data = response.json()
@@ -40,8 +45,8 @@ class TestWorkflowStatuses:
     def auth_token(self):
         """Get admin auth token"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@sistema.pt",
-            "password": "admin2026"
+            "email": TEST_ADMIN_EMAIL,
+            "password": TEST_ADMIN_PASSWORD
         })
         if response.status_code == 200:
             return response.json()["access_token"]
