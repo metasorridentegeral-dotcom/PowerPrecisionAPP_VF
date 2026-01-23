@@ -38,6 +38,7 @@ const roleColors = {
 };
 
 const UsersManagementPage = () => {
+  const { user: currentUser, impersonate } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
