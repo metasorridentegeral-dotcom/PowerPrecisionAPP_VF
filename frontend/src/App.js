@@ -216,6 +216,7 @@ function App() {
           
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        <ImpersonateBanner />
       </BrowserRouter>
       <Toaster position="top-right" richColors />
     </AuthProvider>
