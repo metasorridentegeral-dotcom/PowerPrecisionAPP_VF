@@ -163,6 +163,13 @@ export function useWebSocket(options = {}) {
     
     try {
       const url = getWebSocketUrl();
+      
+      // Se não há URL, não conectar
+      if (!url) {
+        console.log('WebSocket: URL não disponível');
+        return;
+      }
+      
       console.log('WebSocket: Conectando a', url.replace(/token=.*/, 'token=***'));
       
       wsRef.current = new WebSocket(url);
