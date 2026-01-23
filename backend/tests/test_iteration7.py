@@ -72,9 +72,13 @@ class TestDashboardEndpoints:
         response = requests.get(f"{BASE_URL}/api/processes/kanban", headers=self.headers)
         assert response.status_code == 200
         data = response.json()
-        # API returns object with columns array
-        assert "columns" in data or isinstance(data, list)
-        columns = data.get("columns", data) if isinstance(data, dict) else data
+        # API returns object with columns array or direct list
+        if isinstance(data, dict):
+            assert "columns" in data
+            columns = data["columns"]
+        else:
+            columns = data
+        assert isinstance(columns, list)
         print(f"✓ Kanban board endpoint working: {len(columns)} columns")
     
     def test_get_workflow_statuses(self):
@@ -107,9 +111,13 @@ class TestDashboardEndpoints:
         response = requests.get(f"{BASE_URL}/api/alerts/notifications", headers=self.headers)
         assert response.status_code == 200
         data = response.json()
-        # API returns object with notifications array
-        assert "notifications" in data or isinstance(data, list)
-        notifications = data.get("notifications", data) if isinstance(data, dict) else data
+        # API returns object with notifications array or direct list
+        if isinstance(data, dict):
+            assert "notifications" in data
+            notifications = data["notifications"]
+        else:
+            notifications = data
+        assert isinstance(notifications, list)
         print(f"✓ Notifications endpoint working: {len(notifications)} notifications")
 
 
