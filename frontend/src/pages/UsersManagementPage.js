@@ -334,6 +334,25 @@ const UsersManagementPage = () => {
                         </TableCell>
                         <TableCell className="font-mono text-sm">{user.onedrive_folder || "-"}</TableCell>
                         <TableCell className="text-right">
+                          {/* Botão Impersonate - só para admins e não para si próprio */}
+                          {currentUser?.role === "admin" && user.id !== currentUser?.id && user.role !== "admin" && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={async () => {
+                                try {
+                                  await impersonate(user.id);
+                                  toast.success(`A ver como ${user.name}`);
+                                } catch (error) {
+                                  toast.error("Erro ao iniciar visualização");
+                                }
+                              }}
+                              title="Ver como este utilizador"
+                              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button 
                             variant="ghost" 
                             size="icon" 
