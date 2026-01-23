@@ -6,7 +6,7 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Bell, BellOff, CheckCircle, XCircle, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { usePushNotifications } from "../../hooks/usePushNotifications";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 
 const NotificationSettings = () => {
   const {
