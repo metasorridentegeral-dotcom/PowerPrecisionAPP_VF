@@ -922,7 +922,7 @@ const AdminDashboard = () => {
                   Gestão de Utilizadores
                 </CardTitle>
                 <CardDescription>
-                  {users.length} utilizadores no sistema. Aceda à página completa para gerir utilizadores.
+                  {users.length} utilizadores no sistema
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -955,9 +955,19 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Recent Users */}
+                  {/* Users Table with Actions */}
                   <div>
-                    <h4 className="font-medium mb-3">Últimos utilizadores adicionados</h4>
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-medium">Todos os Utilizadores</h4>
+                      <Button 
+                        size="sm"
+                        onClick={() => navigate('/utilizadores')}
+                        className="bg-blue-900 hover:bg-blue-800"
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Novo Utilizador
+                      </Button>
+                    </div>
                     <div className="rounded-md border">
                       <Table>
                         <TableHeader>
@@ -966,10 +976,11 @@ const AdminDashboard = () => {
                             <TableHead>Email</TableHead>
                             <TableHead>Papel</TableHead>
                             <TableHead>Estado</TableHead>
+                            <TableHead className="text-right">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {users.slice(0, 5).map((u) => (
+                          {users.map((u) => (
                             <TableRow key={u.id}>
                               <TableCell className="font-medium">{u.name}</TableCell>
                               <TableCell>{u.email}</TableCell>
@@ -985,22 +996,69 @@ const AdminDashboard = () => {
                                   <Badge variant="secondary"><XCircle className="h-3 w-3 mr-1" />Inativo</Badge>
                                 )}
                               </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-1">
+                                  {/* Email rápido */}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => window.open(`mailto:${u.email}`, '_blank')}
+                                    title="Enviar Email"
+                                    className="h-8 w-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                  >
+                                    <Mail className="h-4 w-4" />
+                                  </Button>
+                                  {/* Ver como utilizador (apenas admin e não para si próprio ou outros admins) */}
+                                  {user?.role === 'admin' && u.id !== user?.id && u.role !== 'admin' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={async () => {
+                                        try {
+                                          const { impersonate } = await import('../contexts/AuthContext').then(m => ({ impersonate: null }));
+                                          // Usar API directamente
+                                          const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/impersonate/${u.id}`, {
+                                            method: 'POST',
+                                            headers: {
+                                              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                                              'Content-Type': 'application/json'
+                                            }
+                                          });
+                                          if (response.ok) {
+                                            const data = await response.json();
+                                            localStorage.setItem('originalToken', localStorage.getItem('token'));
+                                            localStorage.setItem('token', data.access_token);
+                                            window.location.reload();
+                                          } else {
+                                            toast.error('Erro ao iniciar visualização');
+                                          }
+                                        } catch (error) {
+                                          toast.error('Erro ao iniciar visualização');
+                                        }
+                                      }}
+                                      title="Ver como este utilizador"
+                                      className="h-8 w-8 text-purple-600 hover:text-purple-800 hover:bg-purple-50"
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  {/* Ver detalhes/editar */}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => navigate('/utilizadores')}
+                                    title="Ver Detalhes"
+                                    className="h-8 w-8"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
                       </Table>
                     </div>
-                  </div>
-
-                  {/* Link to full page */}
-                  <div className="flex justify-center pt-4 border-t">
-                    <Button 
-                      onClick={() => navigate('/utilizadores')}
-                      className="bg-blue-900 hover:bg-blue-800"
-                    >
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Gerir Todos os Utilizadores
-                    </Button>
                   </div>
                 </div>
               </CardContent>
