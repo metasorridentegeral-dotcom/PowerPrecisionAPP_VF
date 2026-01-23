@@ -69,10 +69,17 @@ export function useWebSocket(options = {}) {
 
   // Obter URL do WebSocket
   const getWebSocketUrl = useCallback(() => {
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
+    
+    // Se não há URL configurada, não conectar
+    if (!backendUrl) {
+      console.warn('WebSocket: REACT_APP_BACKEND_URL não configurada');
+      return null;
+    }
+    
     // Converter http(s) para ws(s)
     const wsProtocol = backendUrl.startsWith('https') ? 'wss' : 'ws';
-    const wsUrl = backendUrl.replace(/^https?/, wsProtocol);
+    const wsUrl = backendUrl.replace(/^https?:\/\//, `${wsProtocol}://`);
     return `${wsUrl}/api/ws/notifications?token=${token}`;
   }, [token]);
 
