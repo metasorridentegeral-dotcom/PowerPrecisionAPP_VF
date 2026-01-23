@@ -40,6 +40,7 @@ import {
   Workflow,
 } from "lucide-react";
 import WorkflowEditor from "../components/WorkflowEditor";
+import NotificationSettings from "../components/NotificationSettings";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || "";
 
