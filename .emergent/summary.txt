@@ -1,322 +1,191 @@
 <analysis>**original_problem_statement:**
-O utilizador iniciou a sessão com um sistema CreditoIMO totalmente funcional, mas com uma base de dados vazia. As solicitações iniciais e subsequentes incluíram:
-1.  **Correção de Dados:** Corrigir a falta de clientes associados aos utilizadores Flávio e Estácio.
-2.  **Branding e UI:**
-    *   Ajustar as cores e logotipos da aplicação para corresponder à identidade visual de  (imobiliária) e  (crédito).
-    *   Aplicar as novas cores à página de login e ao formulário público.
-3.  **Funcionalidades:**
-    *   Alterar a validade dos documentos para que os que expiram em 60 dias apareçam numa secção de alerta.
-    *   Adicionar uma página de Definições ao menu lateral.
-    *   Remover a opção de auto-registo de utilizadores, centralizando a criação de contas no administrador.
-    *   Permitir que todos os utilizadores criem eventos no calendário, mas apenas para si próprios ou para outros utilizadores envolvidos nos seus processos. Os eventos devem suportar múltiplos utilizadores atribuídos.
-    *   Agrupar os documentos a expirar por cliente e ordená-los por data de validade crescente.
-    *   Adicionar o campo empresa ao modelo de utilizador.
-4.  **Sistema de Alertas e Notificações (PRODUCT REQUIREMENTS):**
-    *   **Alerta de Idade:** Criar um alerta (apoio ao estado) para clientes com menos de 35 anos.
-    *   **Alerta de Janela:** Iniciar uma contagem decrescente de 90 dias com notificações após a pré-aprovação de um processo.
-    *   **Alerta de Validade:** Notificar os envolvidos 15 dias antes da expiração de documentos de identificação ou IRS.
-    *   **Notificação de Novo Cliente:** Enviar uma notificação ao administrativo quando um novo cliente preenche o formulário. Se o campo Já tem imóvel estiver preenchido, a notificação deve ser direcionada para intermediários.
-    *   **Validação de Documentos:** Ao passar um processo para avaliação, confirmar se todos os documentos do imóvel estão presentes.
-    *   **Alerta de Escritura:** Ao agendar uma escritura, gerar um alerta no calendário 15 dias antes da data.
-5.  **Documentação:**
-    *   Comentar o código fonte.
-    *   Criar um guia de utilizador () com screenshots e exemplos.
-    *   Criar uma apresentação do sistema ().
-    *   Sugerir novas funcionalidades e integrações.
+O utilizador iniciou com a aplicação CreditoIMO e solicitou uma vasta gama de funcionalidades e correções, evoluindo o sistema de uma base simples para uma plataforma de gestão complexa. Os principais pedidos incluíram:
+
+1.  **Branding e UI:** Alinhar o design da aplicação (cores, logos) com a identidade visual de  e .
+2.  **Gestão de Utilizadores e Perfis:** Refatorizar perfis, implementar uma UI de gestão de utilizadores e, crucialmente, separar o conceito de Cliente (dados num processo) do de Utilizador (alguém com login no sistema). O registo público agora cria apenas processos, não utilizadores.
+3.  **Funcionalidades Principais:** Implementar um sistema de alertas e notificações em tempo real (via WebSockets), melhorar o calendário, otimizar o quadro Kanban, e adicionar uma funcionalidade de Ver como (impersonate) para administradores.
+4.  **Segurança e Qualidade:** Remover todas as credenciais e passwords hardcoded do código (incluindo ficheiros de teste), movendo-as para variáveis de ambiente, e adicionar validadores de dados (ex: NIF).
+5.  **Otimização de Custos:** Melhorar a análise de documentos por IA, mudando para o modelo  e implementando uma abordagem híbrida (extração de texto primeiro, visão como fallback) para reduzir o uso da API.
+6.  **Infraestrutura:** Criar um pipeline de CI/CD para testes automatizados com GitHub Actions.
+7.  **Integração com Trello (EM STANDBY):** O utilizador solicitou uma integração bidirecional, que foi iniciada mas colocada em pausa a pedido do mesmo.
 
 **User's preferred language**: Portuguese (Portugal). O próximo agente DEVE comunicar exclusivamente em português de Portugal.
 
 **what currently exists?**
-Um sistema full-stack de gestão de crédito e imobiliário (CreditoIMO) com frontend em React e backend em FastAPI, utilizando MongoDB. O sistema possui autenticação por papéis, um quadro Kanban para gestão de processos, calendário, e dashboards. A identidade visual foi atualizada com as cores e logotipos das empresas. A base de dados foi populada com 155 processos, 8 utilizadores e centenas de documentos através de um script de seed. Várias correções de bugs e melhorias de funcionalidades foram implementadas, incluindo a adição de uma página de Definições e melhorias na visualização de documentos e eventos.
+Um sistema full-stack (React/FastAPI/MongoDB) de gestão de crédito imobiliário. As funcionalidades incluem um quadro Kanban para processos, um sistema de notificações em tempo real via WebSockets, um calendário de eventos, e uma gestão de utilizadores robusta com perfis de acesso definidos e uma funcionalidade de impersonate para admins. O sistema foi significativamente melhorado em termos de segurança, com credenciais geridas por variáveis de ambiente, e eficiência, com uma análise de documentos por IA otimizada. Foi estabelecido um pipeline de CI/CD básico. O conceito de Cliente foi separado do de Utilizador, e os emails transacionais foram melhorados com templates HTML.
 
 **Last working item**:
-    - Last item agent was working: O agente estava a meio da implementação de um novo e complexo sistema de alertas e notificações. Já criou a estrutura base no backend (serviço  e rota ), adicionou o campo  ao modelo  e modificou a rota de submissão do formulário público para gerar uma notificação. O trabalho foi interrompido antes de implementar a lógica para a maioria dos alertas solicitados.
+    - Last item agent was working: O agente estava a trabalhar num conjunto de correções e melhorias solicitadas pelo utilizador na sua última mensagem. Especificamente:
+        1.  Filtrar documentos a expirar para excluir processos concluídos/desistidos (CONCLUÍDO).
+        2.  Remover o botão Configurações do menu lateral (CONCLUÍDO).
+        3.  Corrigir erros de carregamento de dados (NÃO INICIADO).
+        4.  Corrigir a funcionalidade de impersonate que não funciona para o utilizador admin (NÃO INICIADO).
+        5.  Adicionar botões de ações rápidas na lista de utilizadores do Admin Dashboard (EM PROGRESSO, mas não testado).
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? backend testing agent
+    - Which testing method agent to use? both
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: Lógica de atribuição de eventos no calendário pode estar incorreta (PRIORITY: P1)
-
+  - Issue 1:  Erros ao carregar dados (PRIORITY: P0)
+  - Issue 2:  A funcionalidade de impersonate não funciona para o utilizador  (PRIORITY: P0)
+  
   Issues Detail:
-  - Issue 1:
-     - Attempted fixes: A lógica de criação de eventos foi alterada para permitir a seleção de múltiplos utilizadores através de checkboxes () e o backend foi atualizado para guardar uma lista de IDs de utilizadores ().
+  - Issue 1: 
+     - Attempted fixes: Nenhum. O agente não chegou a investigar a causa.
      - Next debug checklist: 
-       - Clarificar com o utilizador a regra: todos podem criar eventos no calendario mas só podem atribuir ao seu proprio calendario.
-       - Se a intenção for que um utilizador (não-admin) só possa criar eventos para si mesmo, a UI no  (no diálogo de criação de evento) deve ser alterada para desativar a seleção de outros utilizadores para papéis não-admin.
-       - A rota backend  deve validar se o utilizador que está a criar o evento tem permissão para atribuí-lo aos  fornecidos.
-     - Why fix this issue and what will be achieved with the fix? Para garantir que as regras de negócio sobre a criação e partilha de eventos no calendário são corretamente implementadas, mantendo a privacidade e a lógica de atribuição pretendida.
-     - Status: IN PROGRESS
+        1.  Verificar os logs do frontend (consola do browser) e backend (TTP/1.1" 200 OK
+INFO:     10.64.129.225:37246 - "GET /api/documents/expiry/upcoming?days=60 HTTP/1.1" 200 OK
+INFO:     10.64.129.226:59908 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.129.225:57334 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.129.226:37124 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.129.226:49410 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.131.7:37610 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.129.225:56696 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.129.225:39994 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.131.7:34062 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33260 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     10.64.129.225:49890 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.131.7:34062 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     10.64.138.62:50144 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.129.226:39996 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.131.7:60390 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.138.62:52366 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK
+INFO:     10.64.129.226:45500 - "GET /api/alerts/notifications?unread_only=false HTTP/1.1" 200 OK) para identificar erros específicos no momento do carregamento.
+        2.  Analisar as chamadas de rede no browser para ver se alguma API está a falhar ou a retornar dados inesperados.
+        3.  Rever as alterações recentes nos componentes que carregam dados, como , , e .
+     - Why fix this issue and what will be achieved with the fix? A aplicação está a apresentar erros que impedem o seu uso normal. A correção é crítica para a estabilidade.
+     - Status:  NOT STARTED
      - Is recurring issue? N
      - Should Test frontend/backend/both after fix? both
-     - Blocked on other issue: Não
+     - Blocked on other issue: Não.
+  - Issue 2: 
+     - Attempted fixes: O agente implementou a funcionalidade de impersonate mas o utilizador reportou que não funciona para a sua conta de admin. O agente não chegou a depurar o problema.
+     - Next debug checklist:
+        1.  Verificar a lógica no frontend em  que chama a função .
+        2.  Depurar o endpoint backend  em , verificando se o  (o admin) tem as permissões corretas.
+        3.  Analisar a lógica de criação do token em  para garantir que os campos  e  são corretamente adicionados.
+        4.  Testar o fluxo completo: login como admin, ir à página de utilizadores, clicar no botão de impersonate, e verificar se o token no  é atualizado corretamente e se o banner de impersonate aparece.
+     - Why fix this issue and what will be achieved with the fix? Corrige uma funcionalidade chave para a administração e supervisão do sistema.
+     - Status:  NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? both
+     - Blocked on other issue: Não.
 
 **In progress Task List**:
-  - Task 1: Concluir o sistema de alertas e notificações (PRIORITY: P0)
+  - Task 1:  Concluir a UI de ações rápidas para utilizadores (PRIORITY: P1)
 
  Task Detail:
   - Task 1: 
-     - Where to resume: O trabalho deve ser retomado em . É necessário implementar a lógica para gerar os alertas especificados (Idade < 35, Janela de 90 dias, Validade de documentos, etc.). Depois, integrar a chamada a estas funções de alerta nos locais apropriados, principalmente em  quando o estado de um processo é atualizado.
-     - What will be achieved with this? Um sistema proativo que notifica os utilizadores sobre eventos críticos e tarefas pendentes, automatizando o acompanhamento dos processos.
+     - Where to resume: No ficheiro . O agente adicionou botões, mas a funcionalidade (ver detalhes, impersonate) precisa de ser ligada aos respetivos handlers e testada. A lógica de ver detalhes pode simplesmente navegar para a  com o ID do utilizador.
+     - What will be achieved with this? Melhorar a usabilidade do painel de administração, permitindo ações contextuais diretamente na lista de utilizadores.
      - Status: IN PROGRESS
-     - Should Test frontend/backend/both after fix? both
-     - Blocked on something: Não
+     - Should Test frontend/backend/both after fix? frontend
+     - Blocked on something: Issue 2 (o botão de impersonate não funcionará até que o bug seja corrigido).
 
 **Upcoming and Future Tasks**
     Upcoming Tasks:
-    - **UI para Notificações (P1):** Implementar no frontend os componentes para exibir os alertas gerados pelo backend. Isto pode incluir um ícone de sino no cabeçalho e um painel de notificações ().
-    - **Lógica de Alerta de Escritura (P1):** Implementar a lógica em  para que, ao passar para escritura agendada, seja criado um evento no calendário 15 dias antes, e não apenas uma notificação.
-    - **UI para Alertas Específicos (P1):**
-        - Implementar a chamada de atenção visual para clientes com menos de 35 anos na vista do processo.
-        - Implementar a contagem decrescente visual de 90 dias na vista do processo.
-    
+    - **Integração com Trello (P1 - Em Standby):** Retomar a implementação da sincronização bidirecional. O código base existe em .
+    - **Testar Análise com IA (P1 - Em Standby):** O utilizador pediu para testar a funcionalidade de análise de documentos com ficheiros reais.
+    - **Implementar Lógica para Editar Fluxos de Processo (P2):** O componente  existe, mas precisa de endpoints no backend para guardar as alterações ao .
+
     Future Tasks:
-    - **Preencher Documentação (P2):** Completar os ficheiros  e  com conteúdo detalhado, screenshots e exemplos, como solicitado.
-    - **Comentar Código (P2):** Continuar a tarefa de adicionar comentários descritivos ao resto do código fonte no backend e frontend.
-    - **Apresentar Sugestões (P3):** Apresentar ao utilizador as sugestões de novas funcionalidades listadas em  para obter feedback e definir prioridades.
+    - Apresentar as sugestões de funcionalidades do ficheiro  ao utilizador.
+    - Implementar Push Notifications no browser.
+    - Criar um portal de cliente dedicado.
+    - Adicionar um Dashboard de Gestão com KPIs.
 
 **Completed work in this session**
-- **Fix de Dados e Seed:** Corrigido o problema dos utilizadores sem clientes e populada a base de dados com 155 processos distribuídos por todas as fases do Kanban, resolvendo um problema de ligação a uma base de dados incorreta.
-- **Branding e UI:** Atualizadas as cores e logotipos em toda a aplicação (login, formulário público, dashboard) para alinhamento com a identidade visual das empresas.
-- **Gestão de Documentos:**
-  - Implementada a vista de documentos a expirar em 60 dias.
-  - Corrigido o bug que impedia a visualização destes documentos por utilizadores não-admin.
-  - Implementado o agrupamento de documentos por cliente e ordenação por data de validade.
-- **Gestão de Eventos:**
-  - Corrigido o bug que impedia a criação de eventos no calendário.
-  - Modificada a criação de eventos para permitir atribuição a múltiplos utilizadores.
-  - Corrigida a lógica de visibilidade para que cada utilizador veja apenas os eventos a si atribuídos ou relacionados com os seus processos.
-- **Gestão de Utilizadores:**
-  - Removida a funcionalidade de auto-registo.
-  - Adicionada uma página de Definições ao menu lateral.
-  - Adicionado o campo  ao modelo de utilizador ().
+- **Segurança:** Removidas todas as passwords hardcoded de ficheiros de código e teste, substituindo-as por variáveis de ambiente. Adicionado um aviso no arranque se a  for a de defeito.
+- **Refatorização de Clientes:** O registo público foi alterado para criar apenas , não , limpando a base de dados de utilizadores desnecessários.
+- **Melhoria de Emails:** O serviço  foi reescrito para usar templates HTML, melhorando a comunicação com o cliente (ex: email de confirmação de submissão).
+- **Notificações e WebSockets:** Implementado um sistema de notificações em tempo real, incluindo a criação de uma coleção  no MongoDB, um gestor de WebSocket (), e um hook React ().
+- **Infraestrutura:** Criado um pipeline de CI/CD básico em  e testes de WebSocket.
+- **Otimização de IA:** O serviço de análise de documentos () foi otimizado para usar , extrair texto de PDFs com  e redimensionar imagens com  antes de enviar para a API, reduzindo custos.
+- **Funcionalidade de Admin:** Implementado um sistema de impersonate para que administradores possam ver a aplicação como outros utilizadores.
+- **Melhorias de UI/UX:** Adicionado um botão mailto nos cartões do Kanban, removido o item Configurações do menu, e iniciado o trabalho de adição de ações rápidas no Admin Dashboard.
+- **Correções de Bugs:** Corrigido o endpoint de documentos a expirar para excluir processos de status irrelevantes.
+- **Documentação:** Atualizados extensivamente os ficheiros , , , e .
 
 **Earlier issues found/mentioned but not fixed**
-   - Não foram identificados problemas anteriores que não tenham sido abordados.
+   - **Refatorização do :** Este ficheiro continua a ser muito grande e complexo, apesar de algumas simplificações. Uma divisão em componentes mais pequenos melhoraria a manutenção.
 
 **Known issue recurrence from previous fork**
-  - **Recurrence:** A base de dados estava vazia no início da sessão, apesar do resumo anterior indicar um sistema funcional com dados. O agente teve de executar novamente o script de seed.
-  - **Recurrence count:** 1
-  - **Status:** RESOLVED (por re-execução do script)
-  Note: O próximo agente deve estar ciente de que o estado da base de dados pode não persistir entre sessões. A primeira ação deve ser verificar a presença de dados e, se necessário, executar ======================================================================
-  CREDITOIMO - SCRIPT DE SEED DA BASE DE DADOS
-======================================================================
-
-📡 Conectado a: mongodb://localhost:27017
-📁 Base de dados: test_database
-
-🗑️  A limpar dados existentes...
-   ✅ Dados limpos com sucesso
-
-👥 A criar utilizadores...
-   ✅ Administrador (admin) - admin@sistema.pt
-   ✅ Pedro Borges (ceo) - pedro@powerealestate.pt
-   ✅ Tiago Borges (consultor) - tiago@powerealestate.pt
-   ✅ Flávio da Silva (consultor) - flavio@powerealestate.pt
-   ✅ Estácio Miranda (intermediario) - estacio@precisioncredito.pt
-   ✅ Fernando Andrade (intermediario) - fernando@precisioncredito.pt
-   ✅ Carina Amuedo (consultor_intermediario) - carina@powerealestate.pt
-   ✅ Marisa Rodrigues (consultor_intermediario) - marisa@powerealestate.pt
-   📊 Total: 8 utilizadores criados
-
-📋 A criar estados de workflow...
-   ✅ 14 estados de workflow criados
-
-📁 A criar processos...
-   ✅ 155 processos criados
-   📊 Flávio da Silva: 58 processos como consultor
-   📊 Estácio Miranda: 60 processos como intermediário
-
-📄 A criar documentos com validades...
-   ✅ 810 documentos criados
-   ⚠️  130 documentos a expirar nos próximos 60 dias
-
-📅 A criar eventos no calendário...
-   ✅ 43 eventos criados no calendário
-
-🔧 A criar índices...
-   ✅ Índices criados
-
-======================================================================
-  SEED COMPLETO!
-======================================================================
-
-  📊 RESUMO DOS DADOS CRIADOS:
-     • Utilizadores: 8
-     • Processos: 155
-     • Documentos: 810
-     • Eventos/Prazos: 43
-     • Estados de Workflow: 14
-
-  👥 ATRIBUIÇÕES:
-     • Flávio da Silva (Consultor): 58 processos
-     • Estácio Miranda (Intermediário): 60 processos
-
-  🔐 CREDENCIAIS DE ACESSO:
-     • admin@sistema.pt / admin2026 (admin)
-     • pedro@powerealestate.pt / power2026 (ceo)
-     • tiago@powerealestate.pt / power2026 (consultor)
-     • flavio@powerealestate.pt / power2026 (consultor)
-     • estacio@precisioncredito.pt / power2026 (intermediario)
-     • fernando@precisioncredito.pt / power2026 (intermediario)
-     • carina@powerealestate.pt / power2026 (consultor_intermediario)
-     • marisa@powerealestate.pt / power2026 (consultor_intermediario)
-
-======================================================================.
+  - O utilizador tem apontado repetidamente falhas de segurança relacionadas com credenciais no código. Embora o agente tenha feito um grande esforço para corrigir isto, o próximo agente deve manter uma vigilância extra para não reintroduzir este tipo de problema.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend:** React, Tailwind CSS, Shadcn UI, Recharts, React Router.
--   **Backend:** FastAPI, Pydantic, Motor (MongoDB Async Driver), JWT.
--   **Base de Dados:** MongoDB.
--   **Arquitetura:** Full-stack com API REST.
+- **Backend:** FastAPI, Pydantic, Motor (MongoDB Async), **WebSockets**.
+- **Frontend:** React, Tailwind CSS, Shadcn UI, .
+- **Integração:** API REST do Trello (em standby), OpenAI ().
+- **CI/CD:** **GitHub Actions**.
+- **Processamento de Ficheiros:** **pypdf** para extração de texto, **Pillow** para manipulação de imagens.
 
 **key DB schema**
-  - **users**: 
-  - **processes**: 
-  - **documents**: 
-  - **deadlines**: 
-  - **alerts**: (Novo, a ser implementado) 
+  - **users**: . Já não contém dados de clientes.
+  - **processes**: . O NIF tem agora um validador Pydantic. Campos legacy foram removidos.
+  - **notifications**: .
 
 **changes in tech stack**
-  - Nenhuma.
+  - Adicionadas as dependências Python: usage: websockets [--version | <uri>], , .
 
 **All files of reference**
--   **Criados:**
-    -   : Popula a base de dados com dados de teste.
-    -   : Página de configurações do utilizador.
-    -   : Lógica para o novo sistema de notificações.
-    -   : Rotas de API para o sistema de notificações.
-    -   : Ficheiros de documentação (, , ).
--   **Modificados com relevância:**
-    -   , : Para implementar a nova visualização de documentos e a criação de eventos.
-    -   : Para corrigir a filtragem de documentos por papel de utilizador.
-    -   : Para suportar múltiplos utilizadores em eventos.
-    -   : Atualizado para .
-    -   : Adicionado o campo .
-    -   : Para registar o novo router de alertas.
-    -   : Para iniciar a implementação de notificações na criação de clientes.
+-   **Criados:** , , , , , , , , , .
+-   **Modificados com relevância:** , , , , , , , , , , , , , , , , .
 
 **Areas that need refactoring**:
-- Os componentes  e  partilham lógica semelhante para apresentar estatísticas e listas de processos. Parte dessa lógica poderia ser extraída para componentes reutilizáveis para evitar duplicação de código.
+- **:** Continua a ser um componente monolítico que deveria ser decomposto em subcomponentes para melhor legibilidade e manutenção (ex: , ).
 
 **key api endpoints**
--    (Login)
--    (Obter processos)
--    (Obter documentos a expirar)
--    (Gerir eventos do calendário)
--    (Criar novo cliente)
--    (Nova rota para obter notificações)
+-   : Para um admin assumir a identidade de outro utilizador.
+-   : Para reverter a personificação.
+-   , : Novas rotas para gestão de utilizadores.
+-   : Endpoint WebSocket para notificações em tempo real.
 
 **Critical Info for New Agent**
--   **A base de dados pode ser reiniciada.** Se a aplicação parecer vazia, execute ======================================================================
-  CREDITOIMO - SCRIPT DE SEED DA BASE DE DADOS
-======================================================================
-
-📡 Conectado a: mongodb://localhost:27017
-📁 Base de dados: test_database
-
-🗑️  A limpar dados existentes...
-   ✅ Dados limpos com sucesso
-
-👥 A criar utilizadores...
-   ✅ Administrador (admin) - admin@sistema.pt
-   ✅ Pedro Borges (ceo) - pedro@powerealestate.pt
-   ✅ Tiago Borges (consultor) - tiago@powerealestate.pt
-   ✅ Flávio da Silva (consultor) - flavio@powerealestate.pt
-   ✅ Estácio Miranda (intermediario) - estacio@precisioncredito.pt
-   ✅ Fernando Andrade (intermediario) - fernando@precisioncredito.pt
-   ✅ Carina Amuedo (consultor_intermediario) - carina@powerealestate.pt
-   ✅ Marisa Rodrigues (consultor_intermediario) - marisa@powerealestate.pt
-   📊 Total: 8 utilizadores criados
-
-📋 A criar estados de workflow...
-   ✅ 14 estados de workflow criados
-
-📁 A criar processos...
-   ✅ 155 processos criados
-   📊 Flávio da Silva: 57 processos como consultor
-   📊 Estácio Miranda: 49 processos como intermediário
-
-📄 A criar documentos com validades...
-   ✅ 848 documentos criados
-   ⚠️  127 documentos a expirar nos próximos 60 dias
-
-📅 A criar eventos no calendário...
-   ✅ 43 eventos criados no calendário
-
-🔧 A criar índices...
-   ✅ Índices criados
-
-======================================================================
-  SEED COMPLETO!
-======================================================================
-
-  📊 RESUMO DOS DADOS CRIADOS:
-     • Utilizadores: 8
-     • Processos: 155
-     • Documentos: 848
-     • Eventos/Prazos: 43
-     • Estados de Workflow: 14
-
-  👥 ATRIBUIÇÕES:
-     • Flávio da Silva (Consultor): 57 processos
-     • Estácio Miranda (Intermediário): 49 processos
-
-  🔐 CREDENCIAIS DE ACESSO:
-     • admin@sistema.pt / admin2026 (admin)
-     • pedro@powerealestate.pt / power2026 (ceo)
-     • tiago@powerealestate.pt / power2026 (consultor)
-     • flavio@powerealestate.pt / power2026 (consultor)
-     • estacio@precisioncredito.pt / power2026 (intermediario)
-     • fernando@precisioncredito.pt / power2026 (intermediario)
-     • carina@powerealestate.pt / power2026 (consultor_intermediario)
-     • marisa@powerealestate.pt / power2026 (consultor_intermediario)
-
-====================================================================== para repovoar os dados.
--   O backend está configurado para usar a base de dados  definida no ficheiro  do backend. Todos os scripts devem apontar para esta base de dados.
--   A lógica da aplicação e da API é fortemente baseada nos papéis dos utilizadores (admin, consultor, etc.). Teste sempre as funcionalidades com diferentes papéis para garantir que as permissões estão a ser aplicadas corretamente.
+-   **PRIORIDADE MÁXIMA:** Corrigir os bugs críticos reportados pelo utilizador: erros de carregamento de dados e a funcionalidade de impersonate que não funciona para o . A aplicação não está estável.
+-   O utilizador é tecnicamente proficiente e dá feedback direto e específico. Preste atenção aos detalhes.
+-   A distinção entre Cliente (dados num processo) e Utilizador (login no sistema) é fundamental. Não crie utilizadores para clientes.
+-   As tarefas de integração com o Trello e testes de IA estão explicitamente em pausa (). Não trabalhe nelas sem nova instrução do utilizador.
+-   Segurança é uma preocupação constante. Verifique sempre se não está a introduzir credenciais no código.
 
 **documents and test reports created in this job**
-  - /app/docs/GUIA_UTILIZADOR.md
-  - /app/docs/APRESENTACAO.md
-  - /app/docs/SUGESTOES_FUNCIONALIDADES.md
-  - /app/test_result.md
+  - /app/test_reports/iteration_6.json
+  - /app/.github/workflows/ci-cd.yml
+  - Vários documentos de projeto foram atualizados: , , , .
 
 **Last 10 User Messages and any pending HUMAN messages** 
-1.  **Request:** Criar um sistema de regras e notificações (idade, pré-aprovação, validade de docs), adicionar campo empresa aos utilizadores. **Status:** IN PROGRESS.
-2.  **Request:** Corrigir documentos a expirar que não aparecem e impossibilidade de criar eventos. **Status:** COMPLETED.
-3.  **Request:** Remover registo, agrupar documentos por cliente, refinar criação de eventos. **Status:** COMPLETED.
-4.  **Request:** Adicionar Definições ao menu. **Status:** COMPLETED.
-5.  **Request:** Popular o Kanban com processos em todas as fases. **Status:** COMPLETED.
-6.  **Request:** Atualizar cores do formulário principal e login. **Status:** COMPLETED.
-7.  **Request:** Corrigir associação de clientes a Flávio e Estácio e outras tarefas iniciais. **Status:** COMPLETED.
-8.  **Request:** O agrupamento de documentos por cliente não funciona; eventos devem ser visíveis apenas para os atribuídos ou donos do processo. **Status:** COMPLETED.
-9.  **Request:** A vista de documentos funciona para admin mas não para outros utilizadores. **Status:** COMPLETED.
-10. **Pending:** continua - O utilizador pediu para continuar a tarefa anterior (remover a rota de registo). **Status:** COMPLETED.
+10. **Utilizador:** Pedido para remover o botão configuracoes, adicionar ações rápidas aos utilizadores no quadro geral, e reportou erros ao carregar dados e falha no ver como outro utilizador para o admin. (PENDENTE)
+9.  **Utilizador:** Pedido para o admin poder ver como outro utilizador, melhorar o formulário público com email de confirmação, adicionar um botão de email rápido no Kanban, e reforçou que clientes não são utilizadores do sistema. (IMPLEMENTADO)
+8.  **Utilizador:** Reportou que as passwords continuavam visíveis no código e que o modelo de IA estava incorreto (gpt-4o em vez de gpt-4o-mini). (CORRIGIDO)
+7.  **Utilizador:** Pedido para atualizar o documento de sugestões e funcionalidades. (IMPLEMENTADO)
+6.  **Utilizador:** Pedido para mudar o modelo de IA para  e otimizar a leitura de documentos (extrair texto antes de usar visão, redimensionar imagens). (IMPLEMENTADO)
+5.  **Utilizador:** Fez várias críticas e pedidos: passwords no código, falta de um fallback para a , falta de um cron job, necessidade de uma coleção , e limpeza de campos Legacy. (IMPLEMENTADO)
+4.  **Utilizador:** Pedido para implementar as tarefas da lista Future. (IMPLEMENTADO)
+3.  **Utilizador:** Pedido para concluir as tarefas pendentes, exceto a integração com Trello e o teste de IA. (IMPLEMENTADO)
+2.  **Utilizador:** realizar todas as tarefas - autorização para prosseguir com o plano.
+1.  **Utilizador:** coloca a sincronizacao com o trello em stand by porque estamos em testes ainda - Pausou a tarefa do Trello.
 
 **Project Health Check:**
-- **Broken:** O sistema de notificações está por implementar.
-- **Mocked:** N/A.
+- **Broken:** Sim. O utilizador reportou erros ao carregar dados e uma funcionalidade chave (impersonate) está partida, o que torna a aplicação instável.
 
 **3rd Party Integrations**
-- Nenhuma integração foi implementada. Foram sugeridas integrações com OneDrive e email em , mas não foram discutidas ou aprovadas.
+- **Trello:** Em progresso, mas em **standby** por pedido do utilizador.
+- **OpenAI:** Ativo, a usar  para análise de documentos.
 
 **Testing status**
-  - Testing agent used after significant changes: YES
+  - Testing agent used after significant changes: YES, mas foi a meio da sessão. Muitas alterações críticas foram feitas depois sem recorrer ao agente de testes.
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: []
-  - Known regressions: []
+  - Known regressions: A funcionalidade de impersonate regrediu ou nunca funcionou corretamente para o utilizador admin.
 
 **Credentials to test flow:**
--   **Admin:**  / 
--   **Consultor:**  / 
--   **Intermediário:**  / 
+-   **Admin:**  / (obter de  env var, default: )
+-   **Trello API Key:** 
+-   **Trello Token:** 
+-   **Trello Board ID:** 
 
 **What agent forgot to execute**
--   **Preenchimento da Documentação:** O agente criou os ficheiros  e , mas deixou-os vazios, não cumprindo o pedido de criar a documentação com conteúdo.
--   **Comentários de Código:** A tarefa de comentar o código foi apenas parcialmente executada, com um único ficheiro comentado.
--   **Apresentação de Sugestões:** O agente criou o ficheiro , mas não apresentou proativamente estas sugestões ao utilizador para obter feedback, perdendo uma oportunidade de alinhar os próximos passos.</analysis>
+- O agente não investigou nem resolveu os dois bugs mais críticos da última mensagem do utilizador: Esta a dar erros ao carregar dados e no user admin nao consigo ver como outro utilizador. O agente focou-se nas outras tarefas (remover botão, adicionar botões) mas deixou os problemas bloqueadores por resolver.</analysis>
