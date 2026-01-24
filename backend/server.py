@@ -16,6 +16,7 @@ from routes import (
 )
 from routes.alerts import router as alerts_router
 from routes.websocket import router as websocket_router
+from routes.push_notifications import router as push_notifications_router
 
 
 # Configure logging
@@ -40,6 +41,7 @@ app.include_router(ai_router, prefix="/api")
 app.include_router(documents_router, prefix="/api")
 app.include_router(alerts_router, prefix="/api")
 app.include_router(websocket_router, prefix="/api")
+app.include_router(push_notifications_router, prefix="/api")
 
 
 app.add_middleware(
@@ -70,6 +72,12 @@ async def startup():
     await db.notifications.create_index("process_id")
     await db.notifications.create_index("created_at")
     await db.notifications.create_index([("user_id", 1), ("read", 1)])  # Index composto para queries
+    
+    # Indexes para push subscriptions
+    await db.push_subscriptions.create_index("id", unique=True)
+    await db.push_subscriptions.create_index("user_id")
+    await db.push_subscriptions.create_index("endpoint", unique=True)
+    await db.push_subscriptions.create_index([("user_id", 1), ("is_active", 1)])
     
     # Create default workflow statuses if none exist - 14 fases do Trello
     status_count = await db.workflow_statuses.count_documents({})
