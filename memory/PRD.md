@@ -50,17 +50,25 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
   - `CreateEventDialog.js` - Dialog para criar eventos
 - Melhor manutenção e testabilidade do código
 
-### ✅ Push Notifications (2026-01-23)
-- Service Worker para receber notificações push (`/public/sw-push.js`)
-- Serviço de gestão de notificações (`/services/pushNotifications.js`)
-- Hook React para gestão de estado (`/hooks/usePushNotifications.js`)
-- Componente de configuração (`/components/NotificationSettings.js`)
-- Integração na página de Definições
-- Suporta notificações mesmo com a aplicação fechada
+### ✅ Push Notifications - Completo (2026-01-24)
+- **Backend endpoints** implementados em `/routes/push_notifications.py`:
+  - `POST /api/notifications/push/subscribe` - Registar subscrição
+  - `POST /api/notifications/push/unsubscribe` - Cancelar subscrição
+  - `GET /api/notifications/push/status` - Estado das subscrições
+- **Service Worker** para receber notificações push (`/public/sw-push.js`)
+- **Serviço de gestão** de notificações (`/services/pushNotifications.js`) com integração backend
+- **Hook React** para gestão de estado (`/hooks/usePushNotifications.js`)
+- **Componente de configuração** (`/components/NotificationSettings.js`) em Definições > Notificações
+- **Colecção MongoDB** `push_subscriptions` para armazenar subscrições
+- **Integração com notificações em tempo real**: Push enviado quando utilizador offline
 - Tipos de notificação: novos processos, alterações, documentos a expirar, prazos
+- **Backend service** em `/services/push_notifications.py` pronto para VAPID (pywebpush)
 
-### ✅ Correção WebSocket (2026-01-23)
+### ✅ Correção WebSocket URL (2026-01-24)
 - Corrigida construção de URL do WebSocket no hook `useWebSocket.js`
+- Usa API `URL()` para parsing correto de protocolo e host
+- Resolve bug `ws://localhost:443/ws` em ambiente de preview
+- Transforma corretamente `https://` → `wss://` e `http://` → `ws://`
 - Adicionada validação de URL antes de conectar
 - Melhor tratamento de erros de conexão
 
