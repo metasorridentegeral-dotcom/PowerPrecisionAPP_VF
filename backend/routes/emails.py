@@ -16,6 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from database import db
 from models.email import EmailCreate, EmailUpdate, EmailResponse, EmailDirection, EmailStatus
 from services.auth import get_current_user
+from services.email_service import sync_emails_for_process, send_email, test_email_connection, get_email_accounts
 
 logger = logging.getLogger(__name__)
 
