@@ -495,8 +495,7 @@ async def notify_cpcv_or_deed_document_check(process: dict, new_status: str):
             message=f"{description}. Por favor, verifique se toda a documentação está em ordem.{missing_info}",
             notification_type="document_verification",
             link=f"/process/{process['id']}",
-            process_id=process["id"],
-            priority="high"
+            process_id=process["id"]
         )
         
         # Email
