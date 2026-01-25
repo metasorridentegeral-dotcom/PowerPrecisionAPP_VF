@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional, List, Any
+import re
 
 
 class ProcessType:
@@ -8,8 +9,35 @@ class ProcessType:
     AMBOS = "ambos"
 
 
+def validate_nif(nif: str) -> str:
+    """
+    Validar NIF português (9 dígitos numéricos).
+    Retorna o NIF se válido, ou levanta ValueError se inválido.
+    """
+    if not nif:
+        return nif
+    
+    # Remover espaços e caracteres especiais
+    nif_clean = re.sub(r'[^\d]', '', nif)
+    
+    if len(nif_clean) != 9:
+        raise ValueError(f"NIF deve ter 9 dígitos (recebido: {len(nif_clean)})")
+    
+    if not nif_clean.isdigit():
+        raise ValueError("NIF deve conter apenas dígitos")
+    
+    return nif_clean
+
+
 class PersonalData(BaseModel):
-    # Dados básicos
+    """
+    Dados pessoais do titular.
+    
+    Campos activos:
+    - nif (validado: 9 dígitos), documento_id, naturalidade, nacionalidade, morada_fiscal
+    - birth_date, estado_civil, compra_tipo, menor_35_anos
+    """
+    # Dados básicos (activos)
     nif: Optional[str] = None
     documento_id: Optional[str] = None
     naturalidade: Optional[str] = None
@@ -18,13 +46,18 @@ class PersonalData(BaseModel):
     birth_date: Optional[str] = None
     estado_civil: Optional[str] = None
     compra_tipo: Optional[str] = None
-    # Legacy fields (backwards compatibility)
-    address: Optional[str] = None
-    marital_status: Optional[str] = None
-    nationality: Optional[str] = None
+    menor_35_anos: Optional[bool] = None  # Checkbox apoio ao estado
+    
+    @field_validator('nif', mode='before')
+    @classmethod
+    def validate_nif_field(cls, v):
+        if v is None or v == '':
+            return None
+        return validate_nif(v)
 
 
 class Titular2Data(BaseModel):
+    """Dados do segundo titular."""
     name: Optional[str] = None
     email: Optional[str] = None
     nif: Optional[str] = None
@@ -35,27 +68,40 @@ class Titular2Data(BaseModel):
     morada_fiscal: Optional[str] = None
     birth_date: Optional[str] = None
     estado_civil: Optional[str] = None
+    
+    @field_validator('nif', mode='before')
+    @classmethod
+    def validate_nif_field(cls, v):
+        if v is None or v == '':
+            return None
+        return validate_nif(v)
 
 
 class RealEstateData(BaseModel):
-    # Novos campos do formulário
+    """
+    Dados imobiliários.
+    
+    Campos activos:
+    - tipo_imovel, num_quartos, localizacao, caracteristicas
+    - outras_caracteristicas, outras_informacoes
+    """
     tipo_imovel: Optional[str] = None
     num_quartos: Optional[str] = None
     localizacao: Optional[str] = None
     caracteristicas: Optional[List[str]] = None
     outras_caracteristicas: Optional[str] = None
     outras_informacoes: Optional[str] = None
-    # Legacy fields
-    property_type: Optional[str] = None
-    property_zone: Optional[str] = None
-    desired_area: Optional[float] = None
-    max_budget: Optional[float] = None
-    property_purpose: Optional[str] = None
-    notes: Optional[str] = None
 
 
 class FinancialData(BaseModel):
-    # Novos campos do formulário
+    """
+    Dados financeiros.
+    
+    Campos activos:
+    - acesso_portal_financas, chave_movel_digital, renda_habitacao_atual
+    - precisa_vender_casa, efetivo, fiador, bancos_creditos
+    - capital_proprio, valor_financiado
+    """
     acesso_portal_financas: Optional[str] = None
     chave_movel_digital: Optional[str] = None
     renda_habitacao_atual: Optional[float] = None
@@ -65,15 +111,6 @@ class FinancialData(BaseModel):
     bancos_creditos: Optional[List[str]] = None
     capital_proprio: Optional[float] = None
     valor_financiado: Optional[str] = None
-    # Legacy fields
-    monthly_income: Optional[float] = None
-    other_income: Optional[float] = None
-    monthly_expenses: Optional[float] = None
-    employment_type: Optional[str] = None
-    employer_name: Optional[str] = None
-    employment_duration: Optional[str] = None
-    has_debts: Optional[bool] = None
-    debt_amount: Optional[float] = None
 
 
 class CreditData(BaseModel):

@@ -44,6 +44,13 @@ from models.process import (
 from services.auth import get_current_user, require_roles, require_staff
 from services.email import send_email_notification
 from services.history import log_history, log_data_changes
+from services.alerts import (
+    get_process_alerts,
+    check_property_documents,
+    create_deed_reminder,
+    notify_pre_approval_countdown
+)
+from services.realtime_notifications import notify_process_status_change
 
 
 # ====================================================================
@@ -95,10 +102,14 @@ def can_view_process(user: dict, process: dict) -> bool:
     if role == UserRole.MEDIADOR:
         return process.get("assigned_mediador_id") == user_id
     
-    # Papel misto: acesso a ambos os tipos de atribuição
-    if role == UserRole.CONSULTOR_MEDIADOR:
+    # Diretor: acesso a ambos os tipos de atribuição (consultor e intermediário)
+    if role == UserRole.DIRETOR:
         return (process.get("assigned_consultor_id") == user_id or 
                 process.get("assigned_mediador_id") == user_id)
+    
+    # Administrativo: vê todos os processos (função de apoio)
+    if role == UserRole.ADMINISTRATIVO:
+        return True
     
     return False
 
@@ -204,14 +215,14 @@ async def get_processes(user: dict = Depends(get_current_user)):
     # Construir query baseada no papel
     if role == UserRole.CLIENTE:
         query["client_id"] = user["id"]
-    elif role in [UserRole.ADMIN, UserRole.CEO]:
-        # Admin e CEO vêem todos os processos
+    elif role in [UserRole.ADMIN, UserRole.CEO, UserRole.ADMINISTRATIVO]:
+        # Admin, CEO e Administrativo vêem todos os processos
         pass
     elif role == UserRole.CONSULTOR:
         query["assigned_consultor_id"] = user["id"]
     elif role in [UserRole.MEDIADOR, UserRole.INTERMEDIARIO]:
         query["assigned_mediador_id"] = user["id"]
-    elif role in [UserRole.CONSULTOR_MEDIADOR, UserRole.CONSULTOR_INTERMEDIARIO]:
+    elif role == UserRole.DIRETOR:
         query["$or"] = [
             {"assigned_consultor_id": user["id"]},
             {"assigned_mediador_id": user["id"]}
@@ -235,12 +246,12 @@ async def get_kanban_board(user: dict = Depends(require_staff())):
         query["assigned_consultor_id"] = user["id"]
     elif role in [UserRole.MEDIADOR, UserRole.INTERMEDIARIO]:
         query["assigned_mediador_id"] = user["id"]
-    elif role in [UserRole.CONSULTOR_MEDIADOR, UserRole.CONSULTOR_INTERMEDIARIO]:
+    elif role == UserRole.DIRETOR:
         query["$or"] = [
             {"assigned_consultor_id": user["id"]},
             {"assigned_mediador_id": user["id"]}
         ]
-    # Admin and CEO see all (no filter)
+    # Admin, CEO e Administrativo see all (no filter)
     
     # Get all workflow statuses ordered
     statuses = await db.workflow_statuses.find({}, {"_id": 0}).sort("order", 1).to_list(100)
@@ -289,9 +300,16 @@ async def get_kanban_board(user: dict = Depends(require_staff())):
 async def move_process_kanban(
     process_id: str,
     new_status: str = Query(..., description="New status name"),
+    deed_date: Optional[str] = Query(None, description="Data da escritura (YYYY-MM-DD)"),
     user: dict = Depends(require_staff())
 ):
-    """Move a process to a different status column in Kanban"""
+    """
+    Move a process to a different status column in Kanban.
+    
+    ALERTAS AUTOMÁTICOS:
+    - Ao mover para "ch_aprovado": Inicia countdown de 90 dias, verifica docs do imóvel
+    - Ao mover para "escritura_agendada": Cria lembrete 15 dias antes
+    """
     process = await db.processes.find_one({"id": process_id}, {"_id": 0})
     if not process:
         raise HTTPException(status_code=404, detail="Processo não encontrado")
@@ -306,6 +324,7 @@ async def move_process_kanban(
         raise HTTPException(status_code=400, detail="Estado inválido")
     
     old_status = process.get("status", "")
+    alerts_generated = []
     
     # Update process
     await db.processes.update_one(
@@ -315,6 +334,49 @@ async def move_process_kanban(
     
     # Log history
     await log_history(process_id, user, "Moveu processo", "status", old_status, new_status)
+    
+    # === ALERTAS AUTOMÁTICOS BASEADOS NA MUDANÇA DE ESTADO ===
+    
+    # 1. Ao mover para CH Aprovado - Verificar documentos do imóvel
+    if new_status in ["ch_aprovado", "fase_escritura"]:
+        property_check = await check_property_documents(process)
+        if property_check.get("active"):
+            alerts_generated.append({
+                "type": "property_docs",
+                "message": property_check.get("message"),
+                "details": property_check.get("details")
+            })
+    
+    # 2. Ao mover para pré-aprovação - Iniciar countdown de 90 dias
+    if new_status == "fase_bancaria" and old_status != "fase_bancaria":
+        # Guardar data de aprovação se ainda não existir
+        if not process.get("credit_data", {}).get("bank_approval_date"):
+            await db.processes.update_one(
+                {"id": process_id},
+                {"$set": {"credit_data.bank_approval_date": datetime.now().strftime("%Y-%m-%d")}}
+            )
+        # Notificar sobre o countdown
+        updated_process = await db.processes.find_one({"id": process_id}, {"_id": 0})
+        await notify_pre_approval_countdown(updated_process)
+        alerts_generated.append({
+            "type": "countdown_started",
+            "message": "Countdown de 90 dias iniciado para pré-aprovação"
+        })
+    
+    # 3. Ao mover para escritura agendada - Criar lembrete 15 dias antes
+    if new_status == "escritura_agendada":
+        if deed_date:
+            deadline_id = await create_deed_reminder(process, deed_date, user)
+            if deadline_id:
+                alerts_generated.append({
+                    "type": "deed_reminder",
+                    "message": f"Lembrete de escritura criado para 15 dias antes de {deed_date}"
+                })
+        else:
+            alerts_generated.append({
+                "type": "deed_date_needed",
+                "message": "Escritura agendada sem data. Defina a data para criar lembrete automático."
+            })
     
     # Send email notification if client has email
     if process.get("client_email"):
@@ -326,7 +388,23 @@ async def move_process_kanban(
             f"O estado do seu processo foi atualizado para: {status_label}"
         )
     
-    return {"message": "Processo movido com sucesso", "new_status": new_status}
+    # === CRIAR NOTIFICAÇÃO NA BASE DE DADOS ===
+    status_doc = await db.workflow_statuses.find_one({"name": new_status}, {"_id": 0})
+    status_label = status_doc.get("label", new_status) if status_doc else new_status
+    
+    await notify_process_status_change(
+        process=process,
+        old_status=old_status,
+        new_status=new_status,
+        new_status_label=status_label,
+        changed_by=user
+    )
+    
+    return {
+        "message": "Processo movido com sucesso", 
+        "new_status": new_status,
+        "alerts": alerts_generated
+    }
 
 
 @router.get("/{process_id}", response_model=ProcessResponse)
@@ -341,6 +419,36 @@ async def get_process(process_id: str, user: dict = Depends(get_current_user)):
     return ProcessResponse(**process)
 
 
+@router.get("/{process_id}/alerts")
+async def get_process_alerts_endpoint(process_id: str, user: dict = Depends(get_current_user)):
+    """
+    Obter todos os alertas ativos para um processo.
+    
+    Retorna alertas de:
+    - Idade < 35 anos (Apoio ao Estado)
+    - Countdown de 90 dias (pré-aprovação)
+    - Documentos a expirar em 15 dias
+    - Documentos do imóvel em falta
+    """
+    process = await db.processes.find_one({"id": process_id}, {"_id": 0})
+    if not process:
+        raise HTTPException(status_code=404, detail="Processo não encontrado")
+    
+    if not can_view_process(user, process):
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    
+    alerts = await get_process_alerts(process)
+    
+    return {
+        "process_id": process_id,
+        "client_name": process.get("client_name"),
+        "alerts": alerts,
+        "total": len(alerts),
+        "has_critical": any(a.get("priority") == "critical" for a in alerts),
+        "has_high": any(a.get("priority") == "high" for a in alerts)
+    }
+
+
 @router.put("/{process_id}", response_model=ProcessResponse)
 async def update_process(process_id: str, data: ProcessUpdate, user: dict = Depends(get_current_user)):
     process = await db.processes.find_one({"id": process_id}, {"_id": 0})
@@ -353,11 +461,11 @@ async def update_process(process_id: str, data: ProcessUpdate, user: dict = Depe
     valid_statuses = [s["name"] for s in await db.workflow_statuses.find({}, {"name": 1, "_id": 0}).to_list(100)]
     
     # Check role-based permissions
-    can_update_personal = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.CONSULTOR_MEDIADOR]
-    can_update_financial = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.MEDIADOR, UserRole.CONSULTOR_MEDIADOR]
+    can_update_personal = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.DIRETOR, UserRole.ADMINISTRATIVO]
+    can_update_financial = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.MEDIADOR, UserRole.DIRETOR, UserRole.ADMINISTRATIVO]
     can_update_real_estate = UserRole.can_act_as_consultor(role)
     can_update_credit = UserRole.can_act_as_mediador(role)
-    can_update_status = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.MEDIADOR, UserRole.CONSULTOR_MEDIADOR]
+    can_update_status = role in [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.MEDIADOR, UserRole.DIRETOR, UserRole.ADMINISTRATIVO]
     
     if role == UserRole.CLIENTE:
         if process.get("client_id") != user["id"]:

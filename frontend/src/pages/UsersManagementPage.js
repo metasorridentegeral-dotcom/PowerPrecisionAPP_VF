@@ -9,18 +9,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { 
-  Users, Search, UserPlus, Edit, Trash2, Loader2, UserX, UserCheck
+  Users, Search, UserPlus, Edit, Trash2, Loader2, UserX, UserCheck, Eye
 } from "lucide-react";
 import { toast } from "sonner";
 import { getUsers, createUser, updateUser, deleteUser } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 const roleLabels = {
   cliente: "Cliente",
   consultor: "Consultor",
-  intermediario: "Intermediário",
-  mediador: "Mediador",
-  consultor_intermediario: "Consultor/Intermediário",
-  consultor_mediador: "Consultor/Mediador",
+  intermediario: "Intermediário de Crédito",
+  mediador: "Intermediário de Crédito",
+  diretor: "Diretor(a)",
+  administrativo: "Administrativo(a)",
   ceo: "CEO",
   admin: "Administrador",
 };
@@ -30,13 +31,14 @@ const roleColors = {
   consultor: "bg-emerald-100 text-emerald-800",
   intermediario: "bg-purple-100 text-purple-800",
   mediador: "bg-purple-100 text-purple-800",
-  consultor_intermediario: "bg-teal-100 text-teal-800",
-  consultor_mediador: "bg-teal-100 text-teal-800",
-  ceo: "bg-amber-100 text-amber-800",
+  diretor: "bg-indigo-100 text-indigo-800",
+  administrativo: "bg-amber-100 text-amber-800",
+  ceo: "bg-orange-100 text-orange-800",
   admin: "bg-red-100 text-red-800",
 };
 
 const UsersManagementPage = () => {
+  const { user: currentUser, impersonate } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
@@ -104,13 +106,23 @@ const UsersManagementPage = () => {
 
   const handleEditUser = async (e) => {
     e.preventDefault();
+    if (!selectedUser?.id) {
+      toast.error("Nenhum utilizador selecionado");
+      return;
+    }
     setFormLoading(true);
     try {
-      await updateUser(selectedUser.id, formData);
+      const updateData = { ...formData };
+      // Remove password if empty
+      if (!updateData.password) {
+        delete updateData.password;
+      }
+      await updateUser(selectedUser.id, updateData);
       toast.success("Utilizador atualizado com sucesso");
       setIsEditDialogOpen(false);
       fetchUsers();
     } catch (error) {
+      console.error("Erro ao atualizar:", error);
       toast.error(error.response?.data?.detail || "Erro ao atualizar utilizador");
     } finally {
       setFormLoading(false);
@@ -118,12 +130,15 @@ const UsersManagementPage = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Tem a certeza que deseja eliminar este utilizador?")) return;
+    if (!window.confirm("Tem a certeza que deseja eliminar este utilizador? Esta ação não pode ser revertida.")) {
+      return;
+    }
     try {
       await deleteUser(userId);
-      toast.success("Utilizador eliminado");
+      toast.success("Utilizador eliminado com sucesso");
       fetchUsers();
     } catch (error) {
+      console.error("Erro ao eliminar:", error);
       toast.error(error.response?.data?.detail || "Erro ao eliminar utilizador");
     }
   };
@@ -226,8 +241,9 @@ const UsersManagementPage = () => {
                         <SelectContent>
                           <SelectItem value="cliente">Cliente</SelectItem>
                           <SelectItem value="consultor">Consultor</SelectItem>
-                          <SelectItem value="intermediario">Intermediário</SelectItem>
-                          <SelectItem value="consultor_intermediario">Consultor/Intermediário</SelectItem>
+                          <SelectItem value="intermediario">Intermediário de Crédito</SelectItem>
+                          <SelectItem value="diretor">Diretor(a)</SelectItem>
+                          <SelectItem value="administrativo">Administrativo(a)</SelectItem>
                           <SelectItem value="ceo">CEO</SelectItem>
                           <SelectItem value="admin">Administrador</SelectItem>
                         </SelectContent>
@@ -270,8 +286,9 @@ const UsersManagementPage = () => {
                   <SelectItem value="all">Todos os perfis</SelectItem>
                   <SelectItem value="cliente">Cliente</SelectItem>
                   <SelectItem value="consultor">Consultor</SelectItem>
-                  <SelectItem value="intermediario">Intermediário</SelectItem>
-                  <SelectItem value="consultor_intermediario">Consultor/Intermediário</SelectItem>
+                  <SelectItem value="intermediario">Intermediário de Crédito</SelectItem>
+                  <SelectItem value="diretor">Diretor(a)</SelectItem>
+                  <SelectItem value="administrativo">Administrativo(a)</SelectItem>
                   <SelectItem value="ceo">CEO</SelectItem>
                   <SelectItem value="admin">Administrador</SelectItem>
                 </SelectContent>
@@ -317,6 +334,25 @@ const UsersManagementPage = () => {
                         </TableCell>
                         <TableCell className="font-mono text-sm">{user.onedrive_folder || "-"}</TableCell>
                         <TableCell className="text-right">
+                          {/* Botão Impersonate - só para admins e não para si próprio */}
+                          {currentUser?.role === "admin" && user.id !== currentUser?.id && user.role !== "admin" && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={async () => {
+                                try {
+                                  await impersonate(user.id);
+                                  toast.success(`A ver como ${user.name}`);
+                                } catch (error) {
+                                  toast.error("Erro ao iniciar visualização");
+                                }
+                              }}
+                              title="Ver como este utilizador"
+                              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button 
                             variant="ghost" 
                             size="icon" 
@@ -375,8 +411,9 @@ const UsersManagementPage = () => {
                 <SelectContent>
                   <SelectItem value="cliente">Cliente</SelectItem>
                   <SelectItem value="consultor">Consultor</SelectItem>
-                  <SelectItem value="intermediario">Intermediário</SelectItem>
-                  <SelectItem value="consultor_intermediario">Consultor/Intermediário</SelectItem>
+                  <SelectItem value="intermediario">Intermediário de Crédito</SelectItem>
+                  <SelectItem value="diretor">Diretor(a)</SelectItem>
+                  <SelectItem value="administrativo">Administrativo(a)</SelectItem>
                   <SelectItem value="ceo">CEO</SelectItem>
                   <SelectItem value="admin">Administrador</SelectItem>
                 </SelectContent>

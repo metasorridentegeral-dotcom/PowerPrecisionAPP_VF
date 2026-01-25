@@ -25,12 +25,12 @@ async def get_stats(user: dict = Depends(get_current_user)):
         process_query = {"assigned_consultor_id": user_id}
     elif role in [UserRole.MEDIADOR, UserRole.INTERMEDIARIO]:
         process_query = {"assigned_mediador_id": user_id}
-    elif role in [UserRole.CONSULTOR_MEDIADOR, UserRole.CONSULTOR_INTERMEDIARIO]:
+    elif role == UserRole.DIRETOR:
         process_query = {"$or": [
             {"assigned_consultor_id": user_id},
             {"assigned_mediador_id": user_id}
         ]}
-    # Admin and CEO see all (no filter)
+    # Admin, CEO e Administrativo see all (no filter)
     
     # Get process count
     stats["total_processes"] = await db.processes.count_documents(process_query)
@@ -65,8 +65,8 @@ async def get_stats(user: dict = Depends(get_current_user)):
         stats["active_users"] = await db.users.count_documents({"is_active": {"$ne": False}})
         stats["inactive_users"] = await db.users.count_documents({"is_active": False})
         stats["clients"] = await db.users.count_documents({"role": UserRole.CLIENTE})
-        stats["consultors"] = await db.users.count_documents({"role": {"$in": [UserRole.CONSULTOR, UserRole.CONSULTOR_MEDIADOR, UserRole.CONSULTOR_INTERMEDIARIO]}})
-        stats["intermediarios"] = await db.users.count_documents({"role": {"$in": [UserRole.MEDIADOR, UserRole.INTERMEDIARIO, UserRole.CONSULTOR_MEDIADOR, UserRole.CONSULTOR_INTERMEDIARIO]}})
+        stats["consultors"] = await db.users.count_documents({"role": {"$in": [UserRole.CONSULTOR, UserRole.DIRETOR]}})
+        stats["intermediarios"] = await db.users.count_documents({"role": {"$in": [UserRole.MEDIADOR, UserRole.INTERMEDIARIO, UserRole.DIRETOR]}})
     
     return stats
 

@@ -41,8 +41,14 @@ import {
   deleteActivity,
   getHistory,
   getWorkflowStatuses,
+  getClientOneDriveFiles,
+  getOneDriveDownloadUrl,
 } from "../services/api";
 import OneDriveLinks from "../components/OneDriveLinks";
+import ProcessAlerts from "../components/ProcessAlerts";
+import TasksPanel from "../components/TasksPanel";
+import ProcessSummaryCard from "../components/ProcessSummaryCard";
+import EmailHistoryPanel from "../components/EmailHistoryPanel";
 import {
   ArrowLeft,
   User,
@@ -373,6 +379,17 @@ const ProcessDetails = () => {
           </div>
         </div>
 
+        {/* Alertas do Processo */}
+        <ProcessAlerts processId={id} className="mb-2" />
+
+        {/* Resumo do Processo */}
+        <ProcessSummaryCard 
+          process={process}
+          statusInfo={currentStatusInfo}
+          consultorName={process.assigned_consultor_name}
+          mediadorName={process.assigned_mediador_name}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
@@ -423,18 +440,18 @@ const ProcessDetails = () => {
                         />
                       </div>
                       <div className="space-y-2 md:col-span-2">
-                        <Label>Morada</Label>
+                        <Label>Morada Fiscal</Label>
                         <Input
-                          value={personalData.address || ""}
-                          onChange={(e) => setPersonalData({ ...personalData, address: e.target.value })}
+                          value={personalData.morada_fiscal || personalData.address || ""}
+                          onChange={(e) => setPersonalData({ ...personalData, morada_fiscal: e.target.value })}
                           disabled={!canEditPersonal}
                         />
                       </div>
                       <div className="space-y-2">
                         <Label>Estado Civil</Label>
                         <Select
-                          value={personalData.marital_status || ""}
-                          onValueChange={(value) => setPersonalData({ ...personalData, marital_status: value })}
+                          value={personalData.estado_civil || personalData.marital_status || ""}
+                          onValueChange={(value) => setPersonalData({ ...personalData, estado_civil: value })}
                           disabled={!canEditPersonal}
                         >
                           <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
@@ -450,8 +467,8 @@ const ProcessDetails = () => {
                       <div className="space-y-2">
                         <Label>Nacionalidade</Label>
                         <Input
-                          value={personalData.nationality || ""}
-                          onChange={(e) => setPersonalData({ ...personalData, nationality: e.target.value })}
+                          value={personalData.nacionalidade || personalData.nationality || ""}
+                          onChange={(e) => setPersonalData({ ...personalData, nacionalidade: e.target.value })}
                           disabled={!canEditPersonal}
                         />
                       </div>
@@ -527,7 +544,7 @@ const ProcessDetails = () => {
 
                   {/* Real Estate Tab */}
                   <TabsContent value="realestate" className="space-y-4 mt-4">
-                    {!canEditRealEstate && !realEstateData?.property_type ? (
+                    {!canEditRealEstate && !realEstateData?.tipo_imovel && !realEstateData?.property_type ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
                         <p>Dados imobiliários serão preenchidos pelo consultor</p>
@@ -537,8 +554,8 @@ const ProcessDetails = () => {
                         <div className="space-y-2">
                           <Label>Tipo de Imóvel</Label>
                           <Select
-                            value={realEstateData.property_type || ""}
-                            onValueChange={(value) => setRealEstateData({ ...realEstateData, property_type: value })}
+                            value={realEstateData.tipo_imovel || realEstateData.property_type || ""}
+                            onValueChange={(value) => setRealEstateData({ ...realEstateData, tipo_imovel: value })}
                             disabled={!canEditRealEstate}
                           >
                             <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
@@ -551,10 +568,10 @@ const ProcessDetails = () => {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label>Zona Pretendida</Label>
+                          <Label>Localização Pretendida</Label>
                           <Input
-                            value={realEstateData.property_zone || ""}
-                            onChange={(e) => setRealEstateData({ ...realEstateData, property_zone: e.target.value })}
+                            value={realEstateData.localizacao || realEstateData.property_zone || ""}
+                            onChange={(e) => setRealEstateData({ ...realEstateData, localizacao: e.target.value })}
                             disabled={!canEditRealEstate}
                           />
                         </div>
@@ -693,29 +710,33 @@ const ProcessDetails = () => {
                 </div>
               </CardContent>
             </Card>
+          </div>
 
-            {/* Activity Section */}
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Activity Section - Moved to top of sidebar */}
             <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
                   Atividade
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="pt-0">
+                <div className="space-y-3">
                   {/* New Comment Input */}
                   <div className="flex gap-2">
                     <Textarea
                       placeholder="Adicionar comentário..."
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      className="flex-1 min-h-[80px]"
+                      className="flex-1 min-h-[60px] text-sm"
                       data-testid="new-comment-input"
                     />
                     <Button
                       onClick={handleSendComment}
                       disabled={sendingComment || !newComment.trim()}
+                      size="sm"
                       data-testid="send-comment-btn"
                     >
                       {sendingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -723,32 +744,32 @@ const ProcessDetails = () => {
                   </div>
 
                   {/* Comments List */}
-                  <ScrollArea className="h-[300px]">
-                    <div className="space-y-3">
+                  <ScrollArea className="h-[200px]">
+                    <div className="space-y-2">
                       {activities.length === 0 ? (
-                        <p className="text-center text-muted-foreground py-4">Sem comentários</p>
+                        <p className="text-center text-muted-foreground py-4 text-sm">Sem comentários</p>
                       ) : (
                         activities.map((activity) => (
-                          <div key={activity.id} className="p-3 bg-muted/50 rounded-md" data-testid={`activity-${activity.id}`}>
+                          <div key={activity.id} className="p-2 bg-muted/50 rounded-md text-sm" data-testid={`activity-${activity.id}`}>
                             <div className="flex items-start justify-between">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium text-sm">{activity.user_name}</span>
-                                  <Badge variant="outline" className="text-xs">{activity.user_role}</Badge>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  <span className="font-medium text-xs">{activity.user_name}</span>
+                                  <Badge variant="outline" className="text-[10px] px-1 py-0">{activity.user_role}</Badge>
                                 </div>
-                                <p className="text-sm mt-1">{activity.comment}</p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {format(parseISO(activity.created_at), "dd/MM/yyyy HH:mm", { locale: pt })}
+                                <p className="text-xs mt-1">{activity.comment}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">
+                                  {format(parseISO(activity.created_at), "dd/MM HH:mm", { locale: pt })}
                                 </p>
                               </div>
                               {(activity.user_id === user.id || user.role === "admin") && (
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-7 w-7"
+                                  className="h-6 w-6 shrink-0"
                                   onClick={() => handleDeleteComment(activity.id)}
                                 >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                  <Trash2 className="h-3 w-3 text-destructive" />
                                 </Button>
                               )}
                             </div>
@@ -760,18 +781,27 @@ const ProcessDetails = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+            {/* Tasks Panel */}
+            <TasksPanel 
+              processId={id} 
+              processName={process.client_name}
+              compact={true}
+              maxHeight="250px"
+            />
+
             {/* Side Tabs */}
             <Card className="border-border">
               <CardContent className="p-0">
                 <Tabs value={sideTab} onValueChange={setSideTab}>
-                  <TabsList className="w-full grid grid-cols-3 rounded-none rounded-t-md">
+                  <TabsList className="w-full grid grid-cols-4 rounded-none rounded-t-md">
                     <TabsTrigger value="deadlines" className="gap-1">
                       <Clock className="h-4 w-4" />
                       <span className="hidden sm:inline">Prazos</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="emails" className="gap-1">
+                      <Send className="h-4 w-4" />
+                      <span className="hidden sm:inline">Emails</span>
                     </TabsTrigger>
                     <TabsTrigger value="history" className="gap-1">
                       <History className="h-4 w-4" />
@@ -927,6 +957,19 @@ const ProcessDetails = () => {
                         </div>
                       )}
                     </ScrollArea>
+                  </TabsContent>
+
+                  {/* Emails Tab */}
+                  <TabsContent value="emails" className="p-0">
+                    <div className="p-4 pt-2">
+                      <EmailHistoryPanel 
+                        processId={id}
+                        clientEmail={process?.client_email}
+                        clientName={process?.client_name}
+                        compact={true}
+                        maxHeight="350px"
+                      />
+                    </div>
                   </TabsContent>
 
                   {/* Files Tab (OneDrive Links) */}

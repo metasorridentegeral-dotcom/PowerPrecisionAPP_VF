@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import DashboardLayout from "../layouts/DashboardLayout";
 import KanbanBoard from "../components/KanbanBoard";
@@ -15,12 +16,13 @@ const roleLabels = {
   consultor: "Consultor",
   intermediario: "Intermediário de Crédito",
   mediador: "Intermediário de Crédito",
-  consultor_intermediario: "Consultor/Intermediário",
-  consultor_mediador: "Consultor/Intermediário",
+  diretor: "Diretor(a)",
+  administrativo: "Administrativo(a)",
   cliente: "Cliente"
 };
 
 const StaffDashboard = () => {
+  const navigate = useNavigate();
   const { user, token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});
@@ -60,6 +62,11 @@ const StaffDashboard = () => {
     }
   };
 
+  // Navegação para lista filtrada
+  const goToFilteredList = (filter) => {
+    navigate(`/processos-filtrados?filter=${filter}`);
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -77,16 +84,19 @@ const StaffDashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Olá, {user?.name?.split(' ')[0]}</h1>
-            <p className="text-muted-foreground">
-              <Badge variant="outline" className="mr-2">{roleLabels[user?.role] || user?.role}</Badge>
-              {canSeeAllStats ? `${stats.total_processes || 0} processos no sistema` : "Os seus processos atribuídos"}
-            </p>
+            <div className="text-muted-foreground flex items-center gap-2">
+              <Badge variant="outline">{roleLabels[user?.role] || user?.role}</Badge>
+              <span>{canSeeAllStats ? `${stats.total_processes || 0} processos no sistema` : "Os seus processos atribuídos"}</span>
+            </div>
           </div>
         </div>
 
-        {/* Quick Stats - Updated with Active/Concluded/Dropped */}
+        {/* Quick Stats - Clickable cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/processos')}
+          >
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-3xl font-bold text-primary">{stats.total_processes || 0}</p>
@@ -94,7 +104,10 @@ const StaffDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200">
+          <Card 
+            className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => goToFilteredList('active')}
+          >
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
@@ -105,7 +118,10 @@ const StaffDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200">
+          <Card 
+            className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => goToFilteredList('concluded')}
+          >
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
@@ -116,7 +132,10 @@ const StaffDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-red-50 dark:bg-red-950/30 border-red-200">
+          <Card 
+            className="bg-red-50 dark:bg-red-950/30 border-red-200 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => goToFilteredList('dropped')}
+          >
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
@@ -127,7 +146,10 @@ const StaffDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => goToFilteredList('pending_deadlines')}
+          >
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-3xl font-bold text-orange-500">{stats.pending_deadlines || 0}</p>
@@ -183,7 +205,10 @@ const StaffDashboard = () => {
                   <p className="text-muted-foreground text-center py-8">Nenhum prazo agendado</p>
                 ) : (
                   <div className="space-y-3">
-                    {deadlines.slice(0, 10).map((deadline) => (
+                    {[...deadlines]
+                      .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
+                      .slice(0, 10)
+                      .map((deadline) => (
                       <div key={deadline.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                         <div>
                           <p className="font-medium">{deadline.title}</p>
@@ -251,7 +276,16 @@ const StaffDashboard = () => {
                             <div className="py-2 px-4 bg-muted/40 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4 text-blue-900" />
-                                <span className="font-semibold">{clientName}</span>
+                                {clientData.process_id ? (
+                                  <span 
+                                    className="font-semibold text-blue-900 hover:text-blue-700 cursor-pointer hover:underline"
+                                    onClick={() => navigate(`/process/${clientData.process_id}`)}
+                                  >
+                                    {clientName}
+                                  </span>
+                                ) : (
+                                  <span className="font-semibold">{clientName}</span>
+                                )}
                                 <Badge variant="outline">{clientData.documents.length} doc(s)</Badge>
                               </div>
                             </div>

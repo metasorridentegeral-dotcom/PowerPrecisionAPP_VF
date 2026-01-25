@@ -10,11 +10,15 @@ from database import db, client
 from models.auth import UserRole
 from services.auth import hash_password
 from routes import (
-    auth_router, processes_router, admin_router, 
+    auth_router, processes_router, admin_router, users_router,
     deadlines_router, activities_router, onedrive_router,
     public_router, stats_router, ai_router, documents_router
 )
 from routes.alerts import router as alerts_router
+from routes.websocket import router as websocket_router
+from routes.push_notifications import router as push_notifications_router
+from routes.tasks import router as tasks_router
+from routes.emails import router as emails_router
 
 
 # Configure logging
@@ -29,6 +33,7 @@ app = FastAPI(title="Sistema de Gestão de Processos")
 app.include_router(auth_router, prefix="/api")
 app.include_router(public_router, prefix="/api")
 app.include_router(processes_router, prefix="/api")
+app.include_router(users_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 app.include_router(deadlines_router, prefix="/api")
 app.include_router(activities_router, prefix="/api")
@@ -37,6 +42,10 @@ app.include_router(stats_router, prefix="/api")
 app.include_router(ai_router, prefix="/api")
 app.include_router(documents_router, prefix="/api")
 app.include_router(alerts_router, prefix="/api")
+app.include_router(websocket_router, prefix="/api")
+app.include_router(push_notifications_router, prefix="/api")
+app.include_router(tasks_router, prefix="/api")
+app.include_router(emails_router, prefix="/api")
 
 
 app.add_middleware(
@@ -61,6 +70,32 @@ async def startup():
     await db.history.create_index("process_id")
     await db.workflow_statuses.create_index("name", unique=True)
     
+    # Indexes para a colecção de notificações
+    await db.notifications.create_index("id", unique=True)
+    await db.notifications.create_index("user_id")
+    await db.notifications.create_index("process_id")
+    await db.notifications.create_index("created_at")
+    await db.notifications.create_index([("user_id", 1), ("read", 1)])  # Index composto para queries
+    
+    # Indexes para push subscriptions
+    await db.push_subscriptions.create_index("id", unique=True)
+    await db.push_subscriptions.create_index("user_id")
+    await db.push_subscriptions.create_index("endpoint", unique=True)
+    await db.push_subscriptions.create_index([("user_id", 1), ("is_active", 1)])
+    
+    # Indexes para tarefas
+    await db.tasks.create_index("id", unique=True)
+    await db.tasks.create_index("process_id")
+    await db.tasks.create_index("created_by")
+    await db.tasks.create_index("assigned_to")
+    await db.tasks.create_index([("completed", 1), ("created_at", -1)])
+    
+    # Indexes para emails
+    await db.emails.create_index("id", unique=True)
+    await db.emails.create_index("process_id")
+    await db.emails.create_index([("process_id", 1), ("sent_at", -1)])
+    await db.emails.create_index("direction")
+    
     # Create default workflow statuses if none exist - 14 fases do Trello
     status_count = await db.workflow_statuses.count_documents({})
     if status_count == 0:
@@ -83,34 +118,11 @@ async def startup():
         await db.workflow_statuses.insert_many(default_statuses)
         logger.info("14 workflow statuses created (conforme Trello)")
     
-    # Create default users if they don't exist (conforme PRD)
-    default_users = [
-        {"email": "admin@sistema.pt", "password": "admin2026", "name": "Admin", "role": UserRole.ADMIN, "phone": None},
-        {"email": "pedro@powerealestate.pt", "password": "power2026", "name": "Pedro Borges", "role": UserRole.CEO, "phone": "+351 912 000 001"},
-        {"email": "tiago@powerealestate.pt", "password": "power2026", "name": "Tiago Borges", "role": UserRole.CONSULTOR, "phone": "+351 912 000 002"},
-        {"email": "flavio@powerealestate.pt", "password": "power2026", "name": "Flávio da Silva", "role": UserRole.CONSULTOR, "phone": "+351 912 000 003"},
-        {"email": "estacio@precisioncredito.pt", "password": "power2026", "name": "Estácio Miranda", "role": UserRole.INTERMEDIARIO, "phone": "+351 912 000 004"},
-        {"email": "fernando@precisioncredito.pt", "password": "power2026", "name": "Fernando Andrade", "role": UserRole.INTERMEDIARIO, "phone": "+351 912 000 005"},
-        {"email": "carina@powerealestate.pt", "password": "power2026", "name": "Carina Amuedo", "role": UserRole.CONSULTOR_INTERMEDIARIO, "phone": "+351 912 000 006"},
-        {"email": "marisa@powerealestate.pt", "password": "power2026", "name": "Marisa Rodrigues", "role": UserRole.CONSULTOR_INTERMEDIARIO, "phone": "+351 912 000 007"},
-    ]
-    
-    for user_data in default_users:
-        user_exists = await db.users.find_one({"email": user_data["email"]})
-        if not user_exists:
-            user_doc = {
-                "id": str(uuid.uuid4()),
-                "email": user_data["email"],
-                "password": hash_password(user_data["password"]),
-                "name": user_data["name"],
-                "phone": user_data.get("phone"),
-                "role": user_data["role"],
-                "is_active": True,
-                "onedrive_folder": None,
-                "created_at": datetime.now(timezone.utc).isoformat()
-            }
-            await db.users.insert_one(user_doc)
-            logger.info(f"User created: {user_data['name']} ({user_data['role']}) - {user_data['email']}")
+    # NOTA: Utilizadores iniciais são criados via script seed.py
+    # Para criar utilizadores: cd /app/backend && python seed.py
+    user_count = await db.users.count_documents({})
+    if user_count == 0:
+        logger.warning("Nenhum utilizador encontrado! Execute 'python seed.py' para criar utilizadores iniciais.")
 
 
 @app.on_event("shutdown")
