@@ -390,8 +390,13 @@ const PendingItemsList = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(`/process/${item.processId}`)}
+                          onClick={() => {
+                            // Verificar se é um prazo sem acesso ao processo
+                            // Os prazos podem ter participantes que não têm acesso ao processo
+                            navigate(`/process/${item.processId}`);
+                          }}
                           className="flex-shrink-0"
+                          title="Ver processo"
                         >
                           Ver
                         </Button>
