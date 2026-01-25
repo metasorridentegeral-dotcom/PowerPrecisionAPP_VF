@@ -33,7 +33,7 @@ async def get_user_names(user_ids: List[str]) -> dict:
 
 
 async def enrich_task(task: dict) -> dict:
-    """Adicionar nomes de utilizadores e processo à tarefa."""
+    """Adicionar nomes de utilizadores, processo e info de prazo à tarefa."""
     # Obter nomes dos utilizadores atribuídos
     if task.get("assigned_to"):
         user_names = await get_user_names(task["assigned_to"])
@@ -52,6 +52,21 @@ async def enrich_task(task: dict) -> dict:
         )
         if process:
             task["process_name"] = process.get("client_name", "")
+    
+    # Calcular se está atrasada e dias até vencer
+    if task.get("due_date") and not task.get("completed"):
+        try:
+            due = datetime.fromisoformat(task["due_date"].replace("Z", "+00:00"))
+            now = datetime.now(timezone.utc)
+            days_diff = (due - now).days
+            task["days_until_due"] = days_diff
+            task["is_overdue"] = days_diff < 0
+        except (ValueError, TypeError):
+            task["days_until_due"] = None
+            task["is_overdue"] = None
+    else:
+        task["days_until_due"] = None
+        task["is_overdue"] = None
     
     return task
 
