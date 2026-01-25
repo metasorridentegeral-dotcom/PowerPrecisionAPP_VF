@@ -50,6 +50,17 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
   - `CreateEventDialog.js` - Dialog para criar eventos
 - Melhor manutenção e testabilidade do código
 
+### ✅ Melhorias UI - Dashboard e Pesquisa (2026-01-25)
+- **Cards clicáveis no dashboard**: Navegam para lista filtrada
+  - Total → /processos
+  - Ativos → /processos-filtrados?filter=active
+  - Concluídos → /processos-filtrados?filter=concluded
+  - Desistências → /processos-filtrados?filter=dropped
+  - Prazos Pendentes → /processos-filtrados?filter=pending_deadlines
+- **Página FilteredProcessList**: Lista filtrada com pesquisa, tabela com detalhes
+- **Pesquisa no Quadro Geral**: Toggle entre vista Kanban e Lista (2+ caracteres)
+- **ProcessSummaryCard**: Resumo no topo da ficha do cliente (Cliente, Contacto, Imóvel, Financiamento, Equipa, Dias no Sistema)
+
 ### ✅ Sistema de Tarefas (2026-01-25)
 - **Backend CRUD completo** em `/routes/tasks.py`:
   - `POST /api/tasks` - Criar tarefa

@@ -4,6 +4,31 @@ Registo de alterações do sistema CreditoIMO.
 
 ---
 
+## [2026-01-25] - Melhorias UI e Navegação
+
+### Adicionado
+- **Cards clicáveis no Dashboard**
+  - Total, Ativos, Concluídos, Desistências, Prazos Pendentes
+  - Navegação para `/processos-filtrados?filter=...`
+
+- **Página FilteredProcessList**
+  - Lista de processos filtrada por status
+  - Pesquisa local por nome, email, telefone
+  - Coluna especial "Prazo" para prazos pendentes
+
+- **Pesquisa com Vista Lista no Kanban**
+  - Toggle entre Kanban e Lista quando pesquisa tem 2+ caracteres
+  - Vista lista com tabela detalhada
+
+- **ProcessSummaryCard**
+  - Resumo do processo no topo da ficha do cliente
+  - Mostra: Cliente, Contacto, Imóvel, Financiamento, Equipa, Dias no Sistema
+
+### Corrigido
+- React hydration warning: Badge (div) dentro de p tag no StaffDashboard
+
+---
+
 ## [2026-01-25] - Sistema de Tarefas e Melhorias
 
 ### Adicionado
