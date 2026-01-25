@@ -84,6 +84,7 @@ class RealEstateData(BaseModel):
     Campos activos:
     - tipo_imovel, num_quartos, localizacao, caracteristicas
     - outras_caracteristicas, outras_informacoes
+    - ja_tem_imovel (indica se o cliente já tem imóvel identificado)
     """
     tipo_imovel: Optional[str] = None
     num_quartos: Optional[str] = None
@@ -91,6 +92,8 @@ class RealEstateData(BaseModel):
     caracteristicas: Optional[List[str]] = None
     outras_caracteristicas: Optional[str] = None
     outras_informacoes: Optional[str] = None
+    ja_tem_imovel: Optional[bool] = None  # Indica se cliente já tem imóvel identificado
+    has_property: Optional[bool] = None   # Alias para ja_tem_imovel
 
 
 class FinancialData(BaseModel):
