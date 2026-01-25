@@ -931,6 +931,39 @@ const PublicClientForm = () => {
     </div>
   );
 
+  const renderBlockedMessage = () => (
+    <div className="text-center py-12">
+      <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Info className="h-8 w-8 text-amber-600" />
+      </div>
+      <h2 className="text-2xl font-semibold mb-2 text-amber-800">Processo Já Existente</h2>
+      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+        {blockedMessage}
+      </p>
+      <div className="space-y-3">
+        <p className="text-sm text-gray-500">
+          Caso tenha dúvidas, pode contactar-nos diretamente:
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <a 
+            href="mailto:geral@precisioncredito.pt" 
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-900 text-white rounded-md hover:bg-blue-800 transition-colors"
+          >
+            <HelpCircle className="h-4 w-4" />
+            Contactar Precision
+          </a>
+          <a 
+            href="mailto:geral@powerealestate.pt" 
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors"
+          >
+            <HelpCircle className="h-4 w-4" />
+            Contactar Power RE
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+
   const canProceed = () => {
     switch (step) {
       case 1:
