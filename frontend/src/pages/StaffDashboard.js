@@ -215,6 +215,7 @@ const StaffDashboard = () => {
               showCreateButton={true}
               compact={false}
               maxHeight="600px"
+              showOnlyMyTasks={true}
             />
           </TabsContent>
 
