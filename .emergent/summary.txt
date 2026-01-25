@@ -1,155 +1,205 @@
 <analysis>**original_problem_statement:**
-O utilizador iniciou com a aplicação CreditoIMO e solicitou uma vasta gama de funcionalidades e correções, incluindo: alinhamento de branding e UI, gestão de utilizadores com separação entre Cliente e Utilizador, implementação de notificações via WebSockets, funcionalidade de impersonate para administradores, remoção de credenciais hardcoded, otimização da análise de documentos com IA para , e a criação de um pipeline de CI/CD.
+O utilizador iniciou com a aplicação CreditoIMO e solicitou uma vasta gama de funcionalidades e correções, abrangendo UI/UX, gestão de utilizadores, notificações e otimizações.
 
-Na sessão atual, o utilizador reportou bugs críticos (erros ao carregar dados, falha no impersonate) e um link quebrado no dashboard do consultor. Após a correção, solicitou a limpeza de rotas e ficheiros não utilizados no frontend e, por fim, pediu a implementação de melhorias técnicas: refatorizar o , corrigir erros de conexão WebSocket e implementar Push Notifications.
+Nesta sessão, o utilizador solicitou a implementação das seguintes funcionalidades:
+1.  **Melhorar Alertas e Notificações:**
+    *   Alerta para o CEO/diretor sobre clientes em espera há mais de 15 dias.
+    *   Notificação de alta prioridade quando uma tarefa é atribuída.
+    *   Alerta para todos os envolvidos quando um processo atinge a fase de CPCV ou escritura, para verificação de documentos.
+    *   Alerta mensal automático para consultores e intermediários pedirem documentos atualizados aos clientes.
+2.  **Criar Sistema de Tarefas:**
+    *   Permitir criar, atribuir e marcar tarefas como concluídas.
+    *   Disponível globalmente e na ficha de cliente.
+    *   Notificar os envolvidos na criação da tarefa.
+3.  **Melhorar Sistema de Documentos (Standby):**
+    *   Conversão automática para PDF.
+    *   Verificação de validade dos documentos na data da escritura.
+    *   Alertar para documentos com mais de 6 meses.
+4.  **Melhorias Gerais de UI/UX:**
+    *   Resultados da pesquisa no Quadro Geral em formato de lista.
+    *   Resumo do processo no topo da ficha do cliente.
+    *   Alterar layout do calendário e renomear Próximos Prazos para Próximos Eventos.
+    *   Permitir ao CEO ver o calendário de todos os utilizadores.
+    *   Tornar os resumos de processos no dashboard em links clicáveis para listas filtradas.
+    *   Mostrar histórico de emails trocados na ficha do cliente.
+5.  **Faturação (Standby):**
+    *   Preparar o programa para ter a opção de faturação.
+6.  **Integração de Email:**
+    *   Configurar a sincronização automática de emails (IMAP/SMTP) para as contas  e .
 
 **User's preferred language**: Portuguese (Portugal). O próximo agente DEVE comunicar exclusivamente em português de Portugal.
 
 **what currently exists?**
-Um sistema full-stack (React/FastAPI/MongoDB) de gestão de crédito imobiliário. As funcionalidades incluem um quadro Kanban, notificações em tempo real via WebSockets (com um bug de conexão pendente), calendário, gestão de utilizadores com perfis e uma funcionalidade de impersonate para admins.
-
-As correções e melhorias mais recentes incluem:
-- **Correção de Bugs Críticos:** Os erros de carregamento de dados e a funcionalidade de impersonate foram corrigidos e validados.
-- **Refatorização do Dashboard:** O componente monolítico  (~1200 linhas) foi refatorizado em 6 subcomponentes modulares, tornando o código mais limpo e de fácil manutenção.
-- **Push Notifications (Estrutura Base):** Foi implementada a estrutura inicial para notificações push, incluindo um service worker, hooks e componentes de UI. A lógica de backend e a subscrição completa ainda não foram implementadas.
-- **Limpeza do Frontend:** Rotas e componentes de página não utilizados foram removidos, simplificando a navegação da aplicação.
-- **Correção de Navegação:** O link do dashboard para perfis de staff (ex: consultor) foi corrigido para apontar para a rota  correta.
+Uma aplicação full-stack (React/FastAPI/MongoDB) de gestão de crédito imobiliário. A sessão atual implementou uma grande parte das solicitações do utilizador. As funcionalidades concluídas e testadas incluem:
+- **Sistema de Push Notifications:** Completo, com VAPID para notificações push no browser.
+- **Sistema de Tarefas:** Funcionalidade CRUD completa para tarefas, com painéis dedicados no dashboard principal e na página de detalhes do processo.
+- **Alertas Agendados:** A lógica de backend para gerar alertas (clientes em espera, pedido mensal de documentos) foi implementada em .
+- **Melhorias de UI/UX:**
+    - O dashboard agora tem cartões de estatísticas clicáveis que levam a uma nova página com listas de processos filtrados.
+    - O quadro Kanban principal agora apresenta os resultados da pesquisa numa vista de lista com a opção de alternar para a vista de quadro.
+    - A página de detalhes do processo exibe um cartão de resumo no topo.
+    - O separador do calendário foi redesenhado (calendário à esquerda, eventos à direita) e Próximos Prazos foi renomeado para Próximos Eventos.
+- **Funcionalidades de Admin/CEO:** O CEO pode agora filtrar o calendário para ver os eventos de todos os utilizadores.
+- **Integração de Email:** Um sistema completo para registar e sincronizar emails. Inclui a sincronização automática via IMAP e envio via SMTP para as duas contas de email fornecidas pelo utilizador. As credenciais estão armazenadas de forma segura no ficheiro .
 
 **Last working item**:
-    - Last item agent was working: Corrigir o link do dashboard para utilizadores com o perfil de consultor, que estava a apontar para uma rota inválida ( em vez de ).
-    - Status: USER VERIFICATION PENDING
-    - Agent Testing Done: Y (O agente fez impersonate de um consultor e confirmou através de screenshots que o dashboard carregava corretamente e que o link no menu lateral estava ativo na rota ).
-    - Which testing method agent to use? screenshot tool
+    - Last item agent was working: Investigar a discrepância reportada pelo utilizador: o cartão no dashboard mostra 41 Prazos Pendentes, mas a página de detalhes para esse filtro mostra apenas 2 clientes. O agente identificou que o cartão conta o **número total de prazos**, enquanto a página de lista mostra o **número de processos únicos** com prazos pendentes.
+    - Status: IN PROGRESS
+    - Agent Testing Done: N
+    - Which testing method agent to use? manual testing by curl. É necessário primeiro clarificar com o utilizador qual o comportamento esperado (contar processos únicos ou todos os prazos) e depois ajustar o backend () ou o frontend () em conformidade.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1:  Erro de conexão WebSocket (PRIORITY: P1)
+  - Issue 1:  Discrepância na contagem de Prazos Pendentes (PRIORITY: P0)
   
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: O agente modificou o hook  para construir a URL de conexão de forma mais robusta. No entanto, os logs da consola continuaram a mostrar o erro . O problema parece ser a porta () e o protocolo () que estão a ser construídos incorretamente no ambiente de desenvolvimento/teste.
+     - Attempted fixes: A causa foi diagnosticada: a contagem no dashboard () soma todos os documentos de prazo, enquanto a página de destino () exibe processos únicos que contêm esses prazos. Nenhuma correção foi implementada ainda.
      - Next debug checklist: 
-        1.  Rever a lógica de construção da URL em . A URL base () deve ser transformada corretamente:  para  e  para , garantindo que a porta correta é usada e não uma porta HTTPS () para uma conexão .
-        2.  Verificar a configuração do  no ficheiro  para garantir que não tem erros.
-        3.  Analisar a configuração do servidor backend em  para confirmar o path do endpoint WebSocket ().
-        4.  (Opcional) Usar uma ferramenta de linha de comando como  dentro do container para testar a conexão diretamente com o backend, isolando o problema.
-     - Why fix this issue and what will be achieved with the fix? A correção ativará o sistema de notificações em tempo real, uma funcionalidade central da aplicação.
+        1.  **Confirmar com o utilizador:** Perguntar se o número no dashboard deve refletir processos com prazos pendentes em vez de total de prazos pendentes.
+        2.  **Se a contagem do dashboard precisar de ser alterada:** Modificar a query no endpoint  para contar os  distintos que têm prazos pendentes.
+        3.  **Se a lista precisar de ser alterada:** Modificar o componente  para exibir todos os prazos individuais em vez de agrupar por processo.
+     - Why fix this issue and what will be achieved with the fix? Para garantir consistência nos dados apresentados na UI e eliminar a confusão do utilizador.
      - Status:  IN PROGRESS
-     - Is recurring issue? Y
+     - Is recurring issue? N
      - Should Test frontend/backend/both after fix? both
      - Blocked on other issue: Não.
 
 **In progress Task List**:
-  - Task 1:  Concluir implementação de Push Notifications (PRIORITY: P0)
-
- Task Detail:
-  - Task 1: 
-     - Where to resume: A base do frontend foi criada (, , , ). O trabalho deve ser retomado no backend.
-     - Next Steps:
-        1.  **Backend:** Criar endpoints para gerir as subscrições. Sugestão:  para guardar a subscrição e  para a remover.
-        2.  **Base de Dados:** Criar uma nova coleção no MongoDB (ex: ) para armazenar os dados de subscrição de cada utilizador.
-        3.  **Backend:** Modificar o serviço  para que, além de criar uma notificação no Websocket, também dispare um evento para enviar uma notificação push ao utilizador correspondente.
-        4.  **Frontend:** Finalizar a lógica no hook  para chamar o endpoint de subscrição do backend.
-     - What will be achieved with this? Uma funcionalidade completa de notificações push no browser, conforme solicitado pelo utilizador.
-     - Status:  IN PROGRESS
-     - Should Test frontend/backend/both after fix? both
-     - Blocked on something: Não.
+Nenhuma.
 
 **Upcoming and Future Tasks**
-    Upcoming Tasks:
-    - Nenhuma. As tarefas solicitadas estão na secção In progress.
+    Upcoming Tasks (Prioridade Média - P1):
+    - **Notificações de Tarefas (P1):** Implementar o envio de uma notificação (Push e WebSocket) de alta prioridade quando uma tarefa é atribuída a um utilizador.
+    - **Alerta de Verificação de Documentos (P1):** Quando um processo muda para o estado CPCV ou Escritura, gerar um alerta para os utilizadores envolvidos verificarem a documentação necessária.
 
-    Future Tasks (Backlog priorizado pelo utilizador):
-    - **Dashboard de Gestão (P1):** Criar um dashboard com KPIs, métricas de conversão e tempo médio por fase do processo.
-    - **Relatórios PDF (P2):** Implementar a funcionalidade de exportar um resumo do processo para um ficheiro PDF.
-    - **Integração com Trello (EM STANDBY):** Retomar a implementação da sincronização bidirecional. O utilizador pediu para manter esta tarefa em pausa.
-    - **Testar Análise com IA (EM STANDBY):** Testar a funcionalidade de análise de documentos com ficheiros reais. Também em pausa.
+    Future Tasks (Backlog - Prioridade Baixa - P2):
+    - **Melhorias no Sistema de Documentos (Standby):**
+        - Converter documentos para PDF automaticamente.
+        - Verificar a validade dos documentos na data da escritura.
+        - Alertar para documentos com mais de 6 meses.
+    - **Dashboard de Gestão:** Criar um dashboard com KPIs e métricas.
+    - **Relatórios PDF:** Exportar um resumo do processo para PDF.
+    - **Faturação (Standby):** Preparar a aplicação para funcionalidades de faturação.
+    - **Integração com Trello (Standby):** Retomar a sincronização.
+    - **Testar Análise com IA (Standby):** Testar com documentos reais.
 
 **Completed work in this session**
-- **Bugs Críticos Corrigidos:**
-  - Erro ao carregar dados foi resolvido ao corrigir o endpoint  em .
-  - A funcionalidade de impersonate foi validada como funcional; o problema era de perceção do utilizador.
-  - Link quebrado para o dashboard de consultor foi corrigido em  para apontar para a rota .
-- **Refatorização e Limpeza:**
-  - O componente  foi refatorizado em 6 componentes modulares localizados em .
-  - Rotas e ficheiros de frontend não utilizados (, , etc.) foram removidos.
-- **Novas Funcionalidades (Base):**
-  - Implementada a estrutura base para Push Notifications no frontend.
-- **Testes:**
-  - O  foi utilizado para validar as correções de bugs críticos no início da sessão.
+- **Correção de Bug WebSocket:** Corrigido o problema de construção da URL de conexão.
+- **Implementação de Push Notifications:** Sistema completo com VAPID.
+- **Sistema de Tarefas:** Funcionalidade CRUD completa com UI integrada no dashboard e na ficha de cliente.
+- **Alertas Agendados:** Lógica de backend para alertas de clientes em espera e pedidos de documentos mensais.
+- **Melhorias de UI:**
+    - Cartões do dashboard tornaram-se clicáveis, levando para uma nova página de lista filtrada ().
+    - O quadro de processos () agora mostra os resultados da pesquisa numa vista de lista.
+    - Adicionado um cartão de resumo do processo no topo da página .
+    - O separador do calendário foi redesenhado e renomeado para Próximos Eventos.
+- **Funcionalidades de Admin/CEO:** O calendário agora tem um filtro de utilizadores para o CEO/Admin.
+- **Integração Completa de Email:**
+    - UI para registo manual de emails.
+    - Sincronização automática via IMAP/SMTP com as contas  e .
+    - Credenciais armazenadas de forma segura no .
+- **Documentação:** Criados e atualizados os ficheiros ,  e .
+
+**Earlier issues found/mentioned but not fixed**
+   - Nenhuma.
+
+**Known issue recurrence from previous fork**
+  - **WebSocket Connection Error:** Mencionada no handoff inicial. Foi corrigida e validada pelo  nesta sessão.
+  - **Status:** RESOLVED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- Backend: FastAPI, Pydantic, Motor (MongoDB Async), WebSockets
-- Frontend: React, Tailwind CSS, Shadcn UI, **React Component Refactoring**
-- Notificações: WebSockets (existente), **Push API / Service Workers** (em progresso)
+- Backend: FastAPI, Pydantic, Motor, WebSockets, **pywebpush (VAPID)**, **imaplib**, **smtplib**
+- Frontend: React, Tailwind CSS, Shadcn UI, Axios, React Router
+- Agendamento: Lógica de  para tarefas de fundo (simulada em )
 
 **key DB schema**
-  - Nenhuma alteração nesta sessão. Está planeada a criação da coleção .
+  - **tasks**: 
+  - **emails**: 
+  - **push_subscriptions**: 
 
 **changes in tech stack**
-  - Nenhuma dependência nova foi adicionada.
+  - **Adicionado (Backend):** , ,  para notificações push.
 
 **All files of reference**
-- **Criados:**
+- **Criados (Backend):**
+  - , 
+  - , 
+  - 
+- **Criados (Frontend):**
   - 
   - 
   - 
   - 
-  - Todos os ficheiros dentro de 
+- **Criados (Documentação):**
+  - 
+  - 
 - **Modificados com relevância:**
-  -  (refatorização completa)
-  -  (correção de link)
-  -  (correção de endpoint)
-  -  (adição de import)
-  -  (tentativa de correção de URL)
-  -  (integração do componente de notificações)
-  -  (remoção de rotas)
-  -  (correção do retorno de )
-- **Removidos:**
-  - 
-  - 
+  -  (adição de novas rotas)
+  -  (adição de novos alertas)
+  -  (integração do painel de tarefas e filtro no calendário)
+  -  (integração dos painéis de tarefas, emails e cartão de resumo)
+  -  (adição da vista de lista na pesquisa)
+  -  (transformação dos cartões em links)
+  -  (adição de novas funções de API)
 
 **Areas that need refactoring**:
-- Nenhuma. A principal área que necessitava de refatorização () foi tratada nesta sessão.
+- Nenhuma área crítica identificada.
+
+**key api endpoints**
+-  - Gerir tarefas.
+-  - Atualizar/apagar tarefa.
+-  - Gerir registos de email.
+-  - Disparar sincronização de todas as contas de email.
+-  - Testar a conexão com os servidores de email.
 
 **Critical Info for New Agent**
-- **Prioridade máxima:** Focar-se nas tarefas pedidas pelo utilizador: concluir a implementação de Push Notifications e corrigir o bug de conexão dos WebSockets.
-- O utilizador rejeitou explicitamente várias funcionalidades do backlog (portal de cliente, integração com bancos, chat, app mobile, assinatura digital). Não as proponha novamente.
-- A refatorização do  está concluída. Os novos componentes estão em . Familiarize-se com a nova estrutura.
+- **Prioridade Imediata:** Resolver o Last working item. O utilizador está a aguardar uma solução para a discrepância na contagem de Prazos Pendentes. É crucial confirmar o comportamento desejado antes de implementar a correção.
+- **Credenciais de Email:** As credenciais para as contas de email  e  estão configuradas no ficheiro . A integração está funcional para ambas.
+- **Documentação do Projeto:** Foram criados os ficheiros  e  em . Utilize e atualize estes documentos para manter o registo do progresso.
 
 **documents and test reports created in this job**
-  - /app/test_reports/iteration_7.json
-  - /app/memory/PRD.md (atualizado)
+  - /app/test_reports/iteration_8.json
+  - /app/test_reports/iteration_9.json
+  - /app/test_reports/iteration_10.json
+  - /app/test_reports/iteration_11.json
+  - /app/test_reports/iteration_12.json
+  - /app/memory/PRD.md
+  - /app/memory/CHANGELOG.md
+  - /app/memory/ROADMAP.md
 
 **Last 10 User Messages and any pending HUMAN messages** 
-- **10. User:** link do dashboard do consultor nao esta a funcionar corretamente. (RESOLVIDO)
-- **9. User:** terminaste? (PENDENTE - Agente respondeu que não e continuou a trabalhar)
-- **8. User:** Pedido para implementar melhorias técnicas (refatorizar , corrigir WebSocket, adicionar Push Notifications) e rejeitou várias funcionalidades do backlog. (EM PROGRESSO)
-- **7. User:** backlog? (RESPONDIDO)
-- **6. User:** Confirmação para finalizar a sessão. (RESPONDIDO, mas depois o utilizador deu mais instruções)
-- **5. User:** Pedido para limpar o frontend (rotas mortas), garantir que o registo público não cria utilizadores e verificar o modelo de IA. (RESOLVIDO)
-- **4. User:** Confirmação para prosseguir com o plano inicial de correção de bugs. (RESOLVIDO)
-- **3. User:** confirmo. o botao nao aparece. aparece o erro nos detalhes do cliente - Confirmação do plano e report de mais detalhes sobre os bugs. (RESOLVIDO)
+ -  **10. User:** estou a ver a app como diretor. Indica que tenho 8 prazos pendentes. Mas só apareceu 2 clientes.Porque? (PENDING - Agent está a investigar)
+ -  **9. User:** sim e o historico de email tambem (RESOLVED - Agent implementou ambas as funcionalidades)
+ -  **8. User:** Respondeu a questões sobre a integração de email (outro servidor, ambos, tenho credenciais). (RESOLVED)
+ -  **7. User:** sim implementa (referindo-se às melhorias de UI - dashboard clicável, etc.). (RESOLVED)
+ -  **6. User:** atualiza os documentos (RESOLVED - Agent criou/atualizou PRD, CHANGELOG, ROADMAP).
+ -  **5. User:** sim (referindo-se à conclusão da implementação VAPID para push notifications). (RESOLVED)
+ -  **4. User:** Forneceu a password corrigida para a conta de email 'Power'. (RESOLVED)
+ -  **3. User:** Forneceu as credenciais completas para as contas de email. (RESOLVED)
+ -  **2. User:** Respondeu a perguntas de clarificação sobre o sistema de tarefas. (RESOLVED)
+ -  **1. User:** quero melhorar o sistema e inserir novas funcionalidades (iniciou a longa lista de pedidos desta sessão). (IN PROGRESS)
 
 **Project Health Check:**
-- **Partially Degraded:** A aplicação principal está funcional e os bugs críticos foram corrigidos. No entanto, a funcionalidade de notificações em tempo real está indisponível devido ao bug de conexão do WebSocket.
+- **Healthy:** A aplicação está estável e funcional. As funcionalidades implementadas passaram todos os testes. O único problema pendente é uma discrepância de lógica/visualização de dados, não um bug crítico.
 
 **3rd Party Integrations**
-- **Trello:** Código existente, mas a integração está **em standby** por pedido do utilizador.
 - **OpenAI:** Ativo, a usar  para análise de documentos.
+- **Trello:** Código existente, mas a integração está **em standby** por pedido do utilizador.
+- **Servidores de Email (NOVO):** Integração IMAP/SMTP com  e .
 
 **Testing status**
-  - Testing agent used after significant changes: YES (para os bugs iniciais)
+  - Testing agent used after significant changes: YES (usado 5 vezes,  a , com 100% de sucesso)
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: Nenhum ficheiro de teste  ou  novo. Foi gerado um relatório em .
-  - Known regressions: Nenhuma regressão nova foi introduzida. Um bug de navegação foi corrigido.
+  - Test files created: []
+  - Known regressions: Nenhuma.
 
 **Credentials to test flow:**
 -   **Admin:**  / (obter de  env var, default: )
--   **Trello API Key/Token:** (Disponível, mas a funcionalidade está em standby)
+-   **Credenciais de Email:** As credenciais de teste para IMAP/SMTP estão no ficheiro .
 
 **What agent forgot to execute**
-- O agente não conseguiu resolver completamente o bug de conexão do WebSocket, embora tenha feito uma tentativa. A tarefa foi corretamente identificada como pendente para o próximo agente.</analysis>
+- O agente não se esqueceu de nada, mas o trabalho foi interrompido durante a investigação da discrepância na contagem de prazos pendentes. As próximas tarefas lógicas, após resolver esta questão, são as notificações de atribuição de tarefas e o alerta de verificação de documentos.</analysis>
