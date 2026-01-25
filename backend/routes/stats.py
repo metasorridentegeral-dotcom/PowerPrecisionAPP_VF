@@ -51,13 +51,33 @@ async def get_stats(user: dict = Depends(get_current_user)):
     # Get process IDs for deadline query
     if process_query:
         process_ids = [p["id"] for p in await db.processes.find(process_query, {"id": 1, "_id": 0}).to_list(1000)]
-        deadline_query = {"process_id": {"$in": process_ids}} if process_ids else {"process_id": {"$in": []}}
     else:
-        deadline_query = {}
+        process_ids = []
     
-    # Deadlines pendentes
-    stats["total_deadlines"] = await db.deadlines.count_documents(deadline_query)
-    pending_deadlines_count = await db.deadlines.count_documents({**deadline_query, "completed": False})
+    # Contar deadlines pendentes usando a mesma lógica do endpoint /api/deadlines
+    # Para consultores/intermediários: eventos onde estão atribuídos OU dos seus processos
+    if role in [UserRole.ADMIN, UserRole.CEO, UserRole.ADMINISTRATIVO]:
+        # Admin, CEO e Administrativo vêem todos os prazos pendentes
+        pending_deadlines_count = await db.deadlines.count_documents({"completed": False})
+    elif role == UserRole.CLIENTE:
+        # Clientes vêem apenas prazos dos seus processos
+        deadline_query = {"process_id": {"$in": process_ids}, "completed": False} if process_ids else {"process_id": {"$in": []}, "completed": False}
+        pending_deadlines_count = await db.deadlines.count_documents(deadline_query)
+    else:
+        # Consultores/Intermediários vêem:
+        # 1. Eventos onde estão diretamente atribuídos
+        # 2. Eventos criados por eles
+        # 3. Eventos dos processos dos seus clientes
+        deadline_or_query = [
+            {"assigned_user_ids": user_id, "completed": False},
+            {"created_by": user_id, "completed": False},
+            {"assigned_consultor_id": user_id, "completed": False},
+            {"assigned_mediador_id": user_id, "completed": False},
+        ]
+        if process_ids:
+            deadline_or_query.append({"process_id": {"$in": process_ids}, "completed": False})
+        
+        pending_deadlines_count = await db.deadlines.count_documents({"$or": deadline_or_query})
     
     # Tarefas pendentes atribuídas ao utilizador
     task_query = {"completed": False, "assigned_to": user_id}
