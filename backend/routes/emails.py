@@ -202,3 +202,85 @@ async def get_email_stats(
         stats["total"] += r["count"]
     
     return stats
+
+
+
+@router.post("/sync/{process_id}")
+async def sync_process_emails(
+    process_id: str,
+    days: int = Query(30, description="Sincronizar emails dos últimos X dias"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Sincronizar emails de um processo.
+    Busca emails das contas configuradas (Precision e Power) 
+    relacionados com o email do cliente.
+    """
+    result = await sync_emails_for_process(process_id, days)
+    return result
+
+
+@router.post("/send")
+async def send_email_endpoint(
+    to_emails: List[str],
+    subject: str,
+    body: str,
+    body_html: Optional[str] = None,
+    cc_emails: Optional[List[str]] = None,
+    account: str = Query("precision", description="Conta de email (precision ou power)"),
+    process_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Enviar email através de uma das contas configuradas.
+    """
+    result = await send_email(
+        account_name=account,
+        to_emails=to_emails,
+        subject=subject,
+        body=body,
+        body_html=body_html,
+        cc_emails=cc_emails,
+        process_id=process_id,
+        created_by=current_user["id"]
+    )
+    
+    if not result["success"]:
+        raise HTTPException(status_code=500, detail=result.get("error", "Erro ao enviar email"))
+    
+    return result
+
+
+@router.get("/test-connection")
+async def test_email_connections(
+    account: Optional[str] = Query(None, description="Conta específica (precision, power) ou todas"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Testar conexão com as contas de email.
+    """
+    # Apenas admin pode testar
+    if current_user["role"] not in ["admin", "ceo"]:
+        raise HTTPException(status_code=403, detail="Sem permissão")
+    
+    results = await test_email_connection(account)
+    return results
+
+
+@router.get("/accounts")
+async def get_configured_accounts(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Listar contas de email configuradas.
+    """
+    accounts = get_email_accounts()
+    return [
+        {
+            "name": a.name,
+            "email": a.email,
+            "imap_server": a.imap_server,
+            "smtp_server": a.smtp_server
+        }
+        for a in accounts
+    ]
