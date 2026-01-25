@@ -165,26 +165,36 @@ const StaffDashboard = () => {
           <TabsList className="flex-wrap">
             <TabsTrigger value="kanban" className="gap-2">
               <LayoutGrid className="h-4 w-4" />
-              Quadro Geral
+              <span className="hidden sm:inline">Quadro Geral</span>
+              <span className="sm:hidden">Quadro</span>
+            </TabsTrigger>
+            <TabsTrigger value="tasks" className="gap-2">
+              <ClipboardList className="h-4 w-4" />
+              <span className="hidden sm:inline">Minhas Tarefas</span>
+              <span className="sm:hidden">Tarefas</span>
             </TabsTrigger>
             <TabsTrigger value="calendar" className="gap-2">
               <Calendar className="h-4 w-4" />
-              Calendário
+              <span className="hidden sm:inline">Calendário</span>
+              <span className="sm:hidden">Cal.</span>
             </TabsTrigger>
             <TabsTrigger value="documents" className="gap-2">
               <FileText className="h-4 w-4" />
-              Documentos
+              <span className="hidden sm:inline">Documentos</span>
+              <span className="sm:hidden">Docs</span>
             </TabsTrigger>
             {canManageUsers && (
               <TabsTrigger value="users" className="gap-2">
                 <Users className="h-4 w-4" />
-                Utilizadores
+                <span className="hidden sm:inline">Utilizadores</span>
+                <span className="sm:hidden">Users</span>
               </TabsTrigger>
             )}
             {canManageWorkflow && (
               <TabsTrigger value="settings" className="gap-2">
                 <Settings className="h-4 w-4" />
-                Configurações
+                <span className="hidden sm:inline">Configurações</span>
+                <span className="sm:hidden">Config</span>
               </TabsTrigger>
             )}
           </TabsList>
@@ -192,6 +202,15 @@ const StaffDashboard = () => {
           {/* Kanban Tab */}
           <TabsContent value="kanban" className="mt-6">
             <KanbanBoard token={token} />
+          </TabsContent>
+
+          {/* Tasks Tab - Minhas Tarefas */}
+          <TabsContent value="tasks" className="mt-6">
+            <TasksPanel 
+              showCreateButton={true}
+              compact={false}
+              maxHeight="600px"
+            />
           </TabsContent>
 
           {/* Calendar Tab */}
