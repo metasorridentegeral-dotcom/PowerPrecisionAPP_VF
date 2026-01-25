@@ -87,6 +87,31 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
   - Dialog para criar email com tipo, de, para, assunto, corpo, notas
   - Email do cliente pré-preenchido
 
+### ✅ Bloqueio de Registo Duplicado (2026-01-25)
+- **Verificação de duplicados** no formulário público:
+  - Verifica se email já existe na base de dados
+  - Verifica se NIF já existe na base de dados
+  - Retorna `blocked: true` com razão (`email` ou `nif`)
+- **Mensagem amigável**: "Já existe um processo com este email/NIF. A nossa equipa entrará em contacto consigo em breve."
+- **UI de bloqueio**: Página com contactos das empresas para dúvidas
+- **Endpoint**: `POST /api/public/client-registration`
+
+### ✅ Alerta de Verificação de Documentos (2026-01-25)
+- **Trigger automático** quando processo muda para:
+  - CH Aprovado
+  - Fase Escritura
+  - Escritura Agendada
+- **Notifica todos os envolvidos**: consultor, mediador, CEO, diretores, admin
+- **Inclui lista de documentos em falta** do imóvel
+- **Email + Notificação em tempo real**
+- **Implementado em**: `services/alerts.py` → `notify_cpcv_or_deed_document_check()`
+
+### ✅ Etiqueta "Tem Imóvel" no Kanban (2026-01-25)
+- **Badge verde** para processos com `has_property=True`
+- **Ícone de casa** para identificação rápida
+- **Visível no cartão** do processo
+- **Ajuda CEO** a não atribuir a Consultor Imobiliário por engano
+
 ### ✅ Melhorias UI - Dashboard e Pesquisa (2026-01-25)
 - **Cards clicáveis no dashboard**: Navegam para lista filtrada
   - Total → /processos
