@@ -591,6 +591,7 @@ class ScheduledTasksService:
             # Executar tarefas
             docs_count = await self.check_expiring_documents()
             deadlines_count = await self.check_upcoming_deadlines()
+            tasks_count = await self.check_tasks_due_soon()
             countdown_count = await self.check_pre_approval_countdown()
             waiting_count = await self.check_clients_waiting_too_long()
             monthly_count = await self.send_monthly_document_reminder()
@@ -600,6 +601,7 @@ class ScheduledTasksService:
             logger.info("RESUMO DAS TAREFAS")
             logger.info(f"- Alertas de documentos: {docs_count}")
             logger.info(f"- Alertas de prazos: {deadlines_count}")
+            logger.info(f"- Alertas de tarefas: {tasks_count}")
             logger.info(f"- Alertas de countdown: {countdown_count}")
             logger.info(f"- Alertas clientes em espera: {waiting_count}")
             logger.info(f"- Lembretes mensais: {monthly_count}")
