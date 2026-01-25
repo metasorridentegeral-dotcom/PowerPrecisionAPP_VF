@@ -166,8 +166,13 @@ const ProcessDetails = () => {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error("Erro ao carregar dados do processo");
-      navigate(-1);
+      if (error.response?.status === 403) {
+        setAccessDenied(true);
+        toast.error("Não tem permissão para aceder a este processo");
+      } else {
+        toast.error("Erro ao carregar dados do processo");
+        navigate(-1);
+      }
     } finally {
       setLoading(false);
     }
