@@ -106,6 +106,8 @@ const ProcessDetails = () => {
   const [activeTab, setActiveTab] = useState("personal");
   const [sideTab, setSideTab] = useState("deadlines");
 
+  const [accessDenied, setAccessDenied] = useState(false);
+
   // Form states
   const [personalData, setPersonalData] = useState({});
   const [financialData, setFinancialData] = useState({});
