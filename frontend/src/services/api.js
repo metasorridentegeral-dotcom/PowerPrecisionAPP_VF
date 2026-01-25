@@ -120,3 +120,11 @@ export const updateTask = (id, data) => axios.put(`${API_URL}/tasks/${id}`, data
 export const completeTask = (id) => axios.put(`${API_URL}/tasks/${id}/complete`);
 export const reopenTask = (id) => axios.put(`${API_URL}/tasks/${id}/reopen`);
 export const deleteTask = (id) => axios.delete(`${API_URL}/tasks/${id}`);
+
+// Emails
+export const getProcessEmails = (processId, direction = null) => 
+  axios.get(`${API_URL}/emails/process/${processId}`, { params: { direction } });
+export const getEmailStats = (processId) => axios.get(`${API_URL}/emails/stats/${processId}`);
+export const createEmail = (data) => axios.post(`${API_URL}/emails`, data);
+export const updateEmail = (id, data) => axios.put(`${API_URL}/emails/${id}`, data);
+export const deleteEmail = (id) => axios.delete(`${API_URL}/emails/${id}`);
