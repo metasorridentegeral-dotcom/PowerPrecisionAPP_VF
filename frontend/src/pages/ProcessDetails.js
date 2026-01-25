@@ -381,6 +381,14 @@ const ProcessDetails = () => {
         {/* Alertas do Processo */}
         <ProcessAlerts processId={id} className="mb-2" />
 
+        {/* Resumo do Processo */}
+        <ProcessSummaryCard 
+          process={process}
+          statusInfo={currentStatusInfo}
+          consultorName={users.find(u => u.id === process.assigned_consultor_id)?.name}
+          mediadorName={users.find(u => u.id === process.assigned_mediador_id)?.name}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
