@@ -44,10 +44,10 @@ Plano de desenvolvimento priorizado do sistema CreditoIMO.
 ## 🟡 Prioridade Média (Próximas)
 
 ### Melhorias UI
-- [ ] Pesquisa com resultados em lista no Quadro Geral
-- [ ] Resumo do processo no topo da ficha do cliente
+- [x] Pesquisa com resultados em lista no Quadro Geral
+- [x] Resumo do processo no topo da ficha do cliente
+- [x] Links clicáveis no dashboard para filtrar processos
 - [ ] CEO ver calendário de todos os utilizadores
-- [ ] Links clicáveis no dashboard para filtrar processos
   - Clique em "Desistências" → Lista de processos desistidos
   - Clique em "Prazos Pendentes" → Lista com motivo
 
