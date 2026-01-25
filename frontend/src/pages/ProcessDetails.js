@@ -47,6 +47,7 @@ import {
 import OneDriveLinks from "../components/OneDriveLinks";
 import ProcessAlerts from "../components/ProcessAlerts";
 import TasksPanel from "../components/TasksPanel";
+import ProcessSummaryCard from "../components/ProcessSummaryCard";
 import {
   ArrowLeft,
   User,
