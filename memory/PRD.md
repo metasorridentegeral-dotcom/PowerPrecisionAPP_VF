@@ -50,6 +50,22 @@ Sistema de registo de clientes para crédito e assistência imobiliária. Client
   - `CreateEventDialog.js` - Dialog para criar eventos
 - Melhor manutenção e testabilidade do código
 
+### ✅ Integração IMAP/SMTP de Email (2026-01-25)
+- **Duas contas configuradas**:
+  - Precision: geral@precisioncredito.pt (mail.precisioncredito.pt)
+  - Power: geral@powerealestate.pt (webmail2.hcpro.pt)
+- **Sincronização automática** de emails via IMAP:
+  - Busca INBOX e Sent folders
+  - Filtra por email do cliente
+  - Detecta duplicados
+- **Envio de emails** via SMTP
+- **Endpoints**:
+  - `GET /api/emails/test-connection` - Testar conexão
+  - `GET /api/emails/accounts` - Listar contas
+  - `POST /api/emails/sync/{process_id}` - Sincronizar emails
+  - `POST /api/emails/send` - Enviar email
+- **Frontend**: Botão de sincronização no EmailHistoryPanel
+
 ### ✅ Calendário CEO/Admin - Ver Todos os Utilizadores (2026-01-25)
 - **Filtro de utilizadores** no calendário (apenas visível para admin/CEO)
 - Dropdown com todos os utilizadores staff (excluindo clientes)

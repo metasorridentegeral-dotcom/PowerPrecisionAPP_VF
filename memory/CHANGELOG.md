@@ -4,6 +4,22 @@ Registo de alterações do sistema CreditoIMO.
 
 ---
 
+## [2026-01-25] - Integração IMAP/SMTP Email
+
+### Adicionado
+- **Integração com dois servidores de email**
+  - Precision: geral@precisioncredito.pt
+  - Power Real Estate: geral@powerealestate.pt
+- **Sincronização automática via IMAP**
+  - Busca emails dos últimos 60 dias
+  - Filtra por email do cliente
+  - Remove duplicados
+- **Envio de emails via SMTP**
+- **Botão de sincronização** no painel de emails
+- **Endpoints**: /test-connection, /accounts, /sync/{id}, /send
+
+---
+
 ## [2026-01-25] - Calendário CEO e Histórico de Emails
 
 ### Adicionado
