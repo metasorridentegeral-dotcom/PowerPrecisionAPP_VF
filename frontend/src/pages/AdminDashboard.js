@@ -275,6 +275,7 @@ const AdminDashboard = () => {
               consultors={consultors}
               intermediarios={intermediarios}
               users={users}
+              currentUser={user}
               onCreateEvent={openCreateEvent}
               onDeleteEvent={handleDeleteEvent}
             />
