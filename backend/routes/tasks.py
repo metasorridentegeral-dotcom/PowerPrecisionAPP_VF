@@ -104,6 +104,7 @@ async def create_task(
         "description": task_data.description,
         "assigned_to": task_data.assigned_to,
         "process_id": task_data.process_id,
+        "due_date": task_data.due_date,  # Data de vencimento (opcional)
         "created_by": current_user["id"],
         "completed": False,
         "completed_at": None,
@@ -116,12 +117,20 @@ async def create_task(
     logger.info(f"Tarefa criada: {task_id} por {current_user['name']}")
     
     # Enviar notificações para os utilizadores atribuídos
+    due_info = ""
+    if task_data.due_date:
+        try:
+            due = datetime.fromisoformat(task_data.due_date.replace("Z", "+00:00"))
+            due_info = f" (vence {due.strftime('%d/%m/%Y')})"
+        except (ValueError, TypeError):
+            pass
+    
     for user_id in task_data.assigned_to:
         if user_id != current_user["id"]:  # Não notificar o criador
             await send_realtime_notification(
                 user_id=user_id,
                 title="📋 Nova Tarefa Atribuída",
-                message=f"{current_user['name']} atribuiu-lhe uma tarefa: {title}",
+                message=f"{current_user['name']} atribuiu-lhe uma tarefa: {title}{due_info}",
                 notification_type="task_assigned",
                 link=f"/tasks" if not task_data.process_id else f"/process/{task_data.process_id}",
                 process_id=task_data.process_id
