@@ -346,6 +346,8 @@ const TasksPanel = ({
                         </p>
                       )}
                       <div className="flex flex-wrap items-center gap-2 mt-2">
+                        {/* Badge de prazo */}
+                        {getDueDateBadge(task)}
                         {/* Atribuídos */}
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <User className="h-3 w-3" />
@@ -357,7 +359,7 @@ const TasksPanel = ({
                             {task.process_name}
                           </Badge>
                         )}
-                        {/* Data */}
+                        {/* Data de criação */}
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
                           {format(parseISO(task.created_at), "dd/MM/yyyy", { locale: pt })}
