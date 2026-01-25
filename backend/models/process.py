@@ -173,3 +173,4 @@ class ProcessResponse(BaseModel):
     prioridade: Optional[bool] = None
     labels: Optional[List[str]] = None
     onedrive_links: Optional[List[dict]] = None
+    has_property: Optional[bool] = None  # Flag para indicar se cliente já tem imóvel
