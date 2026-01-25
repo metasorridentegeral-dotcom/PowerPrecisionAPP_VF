@@ -128,3 +128,9 @@ export const getEmailStats = (processId) => axios.get(`${API_URL}/emails/stats/$
 export const createEmail = (data) => axios.post(`${API_URL}/emails`, data);
 export const updateEmail = (id, data) => axios.put(`${API_URL}/emails/${id}`, data);
 export const deleteEmail = (id) => axios.delete(`${API_URL}/emails/${id}`);
+export const syncProcessEmails = (processId, days = 30) => 
+  axios.post(`${API_URL}/emails/sync/${processId}`, null, { params: { days } });
+export const sendEmailViaServer = (data) => axios.post(`${API_URL}/emails/send`, null, { params: data });
+export const testEmailConnection = (account = null) => 
+  axios.get(`${API_URL}/emails/test-connection`, { params: { account } });
+export const getEmailAccounts = () => axios.get(`${API_URL}/emails/accounts`);
