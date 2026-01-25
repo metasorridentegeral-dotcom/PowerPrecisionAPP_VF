@@ -458,7 +458,7 @@ class TestTasksRegression:
             "description": "Tarefa criada para teste de regressão",
             "process_id": process_id,
             "priority": "medium",
-            "assigned_to": user_id
+            "assigned_to": [user_id]
         }
         
         create_response = requests.post(f"{BASE_URL}/api/tasks", json=task_data, headers=self.headers)
