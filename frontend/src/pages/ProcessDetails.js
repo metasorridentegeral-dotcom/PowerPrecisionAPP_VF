@@ -385,8 +385,8 @@ const ProcessDetails = () => {
         <ProcessSummaryCard 
           process={process}
           statusInfo={currentStatusInfo}
-          consultorName={users.find(u => u.id === process.assigned_consultor_id)?.name}
-          mediadorName={users.find(u => u.id === process.assigned_mediador_id)?.name}
+          consultorName={process.assigned_consultor_name}
+          mediadorName={process.assigned_mediador_name}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
