@@ -73,6 +73,7 @@ const PublicClientForm = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [blockedMessage, setBlockedMessage] = useState(null);
   
   const [formData, setFormData] = useState({
     // Dados Pessoais - Titular
