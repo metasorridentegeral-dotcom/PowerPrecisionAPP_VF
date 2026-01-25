@@ -36,9 +36,10 @@ const PendingItemsList = () => {
       setLoading(true);
       
       // Buscar tarefas e prazos em paralelo
+      // Usar getMyDeadlines para obter apenas prazos onde o utilizador tem acesso
       const [tasksRes, deadlinesRes] = await Promise.all([
         getMyTasks(false), // apenas não concluídas
-        getDeadlines()
+        getMyDeadlines()   // apenas prazos com acesso ao processo
       ]);
       
       // Filtrar tarefas não concluídas
