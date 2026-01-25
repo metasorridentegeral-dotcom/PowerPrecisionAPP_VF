@@ -34,10 +34,10 @@ import {
 } from "./ui/dropdown-menu";
 import { 
   ClipboardList, Plus, Check, RotateCcw, Trash2, Loader2, 
-  MoreVertical, User, Clock, CheckCircle2, Circle
+  MoreVertical, User, Clock, CheckCircle2, Circle, Calendar, AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInDays } from "date-fns";
 import { pt } from "date-fns/locale";
 import { getTasks, getMyTasks, getProcessTasks, createTask, completeTask, reopenTask, deleteTask, getUsers } from "../services/api";
 
