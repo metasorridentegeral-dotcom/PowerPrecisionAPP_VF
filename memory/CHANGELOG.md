@@ -4,6 +4,34 @@ Registo de alterações do sistema CreditoIMO.
 
 ---
 
+## [2026-01-25] - Data de Vencimento nas Tarefas e Alertas Automáticos
+
+### Adicionado
+- **Campo "Data de Vencimento" nas Tarefas (opcional)**
+  - Campo de data no dialog de criação de tarefa
+  - Não obrigatório - tarefas podem ou não ter prazo
+  - Validação: data mínima é hoje
+
+- **Badges Visuais de Prazo nas Tarefas**
+  - 🔴 Vermelho: "Atrasada (X dias)"
+  - 🔴 Vermelho: "Vence hoje"
+  - 🟠 Laranja: "Vence amanhã"
+  - 🟡 Laranja claro: "X dias" (3 dias ou menos)
+  - ⚪ Cinza: Data do prazo (mais de 3 dias)
+
+- **Sistema de Alertas Automáticos para Tarefas**
+  - Alerta 3 dias antes do vencimento
+  - Alerta 1 dia antes (amanhã)
+  - Alerta no dia do vencimento
+  - Alerta quando atrasada
+  - Notificações enviadas aos utilizadores atribuídos
+
+- **Endpoint Atualizado**
+  - `POST /api/tasks` - aceita campo `due_date` opcional
+  - `GET /api/tasks` - retorna `due_date`, `is_overdue`, `days_until_due`
+
+---
+
 ## [2026-01-25] - Separador "Minhas Tarefas" e Melhorias Mobile
 
 ### Adicionado
