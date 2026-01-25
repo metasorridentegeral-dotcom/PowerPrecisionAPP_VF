@@ -4,6 +4,24 @@ Registo de alterações do sistema CreditoIMO.
 
 ---
 
+## [2026-01-25] - Calendário CEO e Histórico de Emails
+
+### Adicionado
+- **Filtro de utilizadores no Calendário**
+  - Visível apenas para admin/CEO
+  - Dropdown com todos os utilizadores staff
+  - Filtra eventos por participante/atribuído
+
+- **Sistema de Histórico de Emails**
+  - Backend CRUD em `/api/emails`
+  - Separador "Emails" na ficha do cliente
+  - Filtros: Todos, Enviados, Recebidos
+  - Dialog para criar emails enviados/recebidos
+  - Email do cliente pré-preenchido
+  - Estatísticas de emails por processo
+
+---
+
 ## [2026-01-25] - Melhorias UI e Navegação
 
 ### Adicionado
