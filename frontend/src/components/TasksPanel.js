@@ -112,13 +112,24 @@ const TasksPanel = ({
 
     try {
       setCreating(true);
-      await createTask({
-        ...newTask,
+      
+      // Preparar dados da tarefa
+      const taskData = {
+        title: newTask.title,
+        description: newTask.description,
+        assigned_to: newTask.assigned_to,
         process_id: processId
-      });
+      };
+      
+      // Adicionar due_date apenas se preenchido
+      if (newTask.due_date) {
+        taskData.due_date = new Date(newTask.due_date).toISOString();
+      }
+      
+      await createTask(taskData);
       toast.success("Tarefa criada com sucesso");
       setIsCreateDialogOpen(false);
-      setNewTask({ title: "", description: "", assigned_to: [] });
+      setNewTask({ title: "", description: "", assigned_to: [], due_date: "" });
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erro ao criar tarefa");
