@@ -158,6 +158,7 @@ class ProcessResponse(BaseModel):
     client_name: str
     client_email: Optional[str] = None
     client_phone: Optional[str] = None
+    client_nif: Optional[str] = None
     process_type: Optional[str] = None
     type: Optional[str] = None  # Alias for process_type (from Trello import)
     status: str
@@ -177,3 +178,6 @@ class ProcessResponse(BaseModel):
     labels: Optional[List[str]] = None
     onedrive_links: Optional[List[dict]] = None
     has_property: Optional[bool] = None  # Flag para indicar se cliente já tem imóvel
+    trello_card_id: Optional[str] = None  # ID do card no Trello
+    trello_list_id: Optional[str] = None  # ID da lista no Trello
+    source: Optional[str] = None  # Origem do processo (trello_import, web_form, etc.)
