@@ -180,12 +180,14 @@ async def reset_and_sync_from_trello(
         
         logger.info(f"Dados apagados: {result['deleted']}")
         
-        # 2. Importar cards do Trello
+        # 2. Importar cards do Trello com todos os detalhes
         logger.info("A importar do Trello...")
         lists = await trello_service.get_lists(force_refresh=True)
-        all_cards = await trello_service.get_cards()
+        all_cards = await trello_service.get_cards_with_details()
         
         logger.info(f"Encontrados {len(all_cards)} cards no Trello")
+        
+        result["imported"]["activities"] = 0
         
         for card in all_cards:
             try:
@@ -205,19 +207,24 @@ async def reset_and_sync_from_trello(
                 # Extrair dados da descrição
                 card_data = parse_card_description(card.get("desc", ""))
                 
+                # Gerar ID do processo
+                process_id = str(uuid.uuid4())
+                
                 # Criar novo processo
                 new_process = {
-                    "id": str(uuid.uuid4()),
+                    "id": process_id,
                     "client_name": card["name"],
-                    "client_email": card_data.get("email", ""),
-                    "client_phone": card_data.get("telefone", card_data.get("phone", "")),
-                    "client_nif": card_data.get("nif", ""),
+                    "client_email": card_data.get("email", card_data.get("📧_email", "")),
+                    "client_phone": card_data.get("telefone", card_data.get("phone", card_data.get("📱_telefone", ""))),
+                    "client_nif": card_data.get("nif", card_data.get("🆔_nif", "")),
                     "status": status,
                     "trello_card_id": card["id"],
                     "trello_list_id": card["idList"],
-                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "trello_url": card.get("shortUrl", ""),
+                    "created_at": card.get("dateLastActivity", datetime.now(timezone.utc).isoformat()),
                     "updated_at": datetime.now(timezone.utc).isoformat(),
                     "source": "trello_import",
+                    "notes": card.get("desc", ""),
                     "personal_data": {},
                     "financial_data": {},
                     "real_estate_data": {},
@@ -227,10 +234,30 @@ async def reset_and_sync_from_trello(
                 await db.processes.insert_one(new_process)
                 result["imported"]["processes"] += 1
                 
+                # Importar comentários/atividades do Trello como atividades do sistema
+                comments = card.get("comments", [])
+                for comment in comments:
+                    try:
+                        activity = {
+                            "id": str(uuid.uuid4()),
+                            "process_id": process_id,
+                            "type": "comment",
+                            "title": "Comentário do Trello",
+                            "description": comment.get("data", {}).get("text", ""),
+                            "created_at": comment.get("date", datetime.now(timezone.utc).isoformat()),
+                            "created_by": comment.get("memberCreator", {}).get("fullName", "Trello"),
+                            "source": "trello_import",
+                            "trello_action_id": comment.get("id")
+                        }
+                        await db.activities.insert_one(activity)
+                        result["imported"]["activities"] += 1
+                    except Exception as e:
+                        logger.warning(f"Erro ao importar comentário: {e}")
+                
             except Exception as e:
                 result["imported"]["errors"].append(f"Erro no card {card.get('name', 'N/A')}: {str(e)}")
         
-        result["message"] = f"Reset completo! Apagados {result['deleted']['processes']} processos. Importados {result['imported']['processes']} do Trello."
+        result["message"] = f"Reset completo! Apagados {result['deleted']['processes']} processos. Importados {result['imported']['processes']} do Trello com {result['imported']['activities']} atividades."
         logger.info(result["message"])
         
     except Exception as e:
