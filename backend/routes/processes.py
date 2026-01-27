@@ -413,6 +413,20 @@ async def move_process_kanban(
         changed_by=user
     )
     
+    # === SINCRONIZAR COM TRELLO ===
+    if process.get("trello_card_id") and trello_service.api_key:
+        try:
+            trello_list_name = status_to_trello_list(new_status)
+            if trello_list_name:
+                # Encontrar a lista do Trello pelo nome
+                trello_list = await trello_service.get_list_by_name(trello_list_name)
+                if trello_list:
+                    await trello_service.move_card(process["trello_card_id"], trello_list["id"])
+                    logger.info(f"Card {process['trello_card_id']} movido para {trello_list_name} no Trello")
+        except Exception as e:
+            logger.error(f"Erro ao sincronizar com Trello: {e}")
+            # Não falhar a operação por erro no Trello
+    
     return {
         "message": "Processo movido com sucesso", 
         "new_status": new_status,
