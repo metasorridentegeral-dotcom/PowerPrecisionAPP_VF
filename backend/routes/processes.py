@@ -32,6 +32,7 @@ Autor: CreditoIMO Development Team
 ====================================================================
 """
 import uuid
+import logging
 from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -52,6 +53,9 @@ from services.alerts import (
     notify_cpcv_or_deed_document_check
 )
 from services.realtime_notifications import notify_process_status_change
+from services.trello import trello_service, status_to_trello_list
+
+logger = logging.getLogger(__name__)
 
 
 # ====================================================================
