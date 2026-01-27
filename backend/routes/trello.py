@@ -613,10 +613,15 @@ async def setup_webhook(
 ):
     """Configurar webhook para sincronização em tempo real."""
     try:
-        # Se não for fornecido, usar o URL padrão
+        # Se não for fornecido, usar o URL do ambiente
         if not callback_url:
             import os
-            base_url = os.environ.get("WEBHOOK_BASE_URL", "https://creditsync-app.preview.emergentagent.com")
+            base_url = os.environ.get("WEBHOOK_BASE_URL")
+            if not base_url:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="WEBHOOK_BASE_URL não configurado. Configure a variável de ambiente ou forneça callback_url."
+                )
             callback_url = f"{base_url}/api/trello/webhook"
         
         # Verificar se já existe webhook ativo
