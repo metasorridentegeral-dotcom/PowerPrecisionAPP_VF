@@ -50,6 +50,13 @@ app.include_router(emails_router, prefix="/api")
 app.include_router(trello_router, prefix="/api")
 
 
+# Health check endpoint for Kubernetes
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Kubernetes liveness/readiness probes."""
+    return {"status": "healthy"}
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
