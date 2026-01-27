@@ -98,13 +98,13 @@ async def startup():
     await db.emails.create_index([("process_id", 1), ("sent_at", -1)])
     await db.emails.create_index("direction")
     
-    # Create default workflow statuses if none exist - 14 fases do Trello
+    # Create default workflow statuses if none exist - 15 fases do Trello
     status_count = await db.workflow_statuses.count_documents({})
     if status_count == 0:
         default_statuses = [
             {"id": str(uuid.uuid4()), "name": "clientes_espera", "label": "Clientes em Espera", "order": 1, "color": "yellow", "is_default": True},
             {"id": str(uuid.uuid4()), "name": "fase_documental", "label": "Fase Documental", "order": 2, "color": "blue", "is_default": True},
-            {"id": str(uuid.uuid4()), "name": "fase_documental_ii", "label": "Fase Documental II", "order": 3, "color": "blue", "is_default": True},
+            {"id": str(uuid.uuid4()), "name": "entregue_intermediarios", "label": "Entregue aos Intermediários", "order": 3, "color": "indigo", "is_default": True},
             {"id": str(uuid.uuid4()), "name": "enviado_bruno", "label": "Enviado ao Bruno", "order": 4, "color": "purple", "is_default": True},
             {"id": str(uuid.uuid4()), "name": "enviado_luis", "label": "Enviado ao Luís", "order": 5, "color": "purple", "is_default": True},
             {"id": str(uuid.uuid4()), "name": "enviado_bcp_rui", "label": "Enviado BCP Rui", "order": 6, "color": "purple", "is_default": True},
