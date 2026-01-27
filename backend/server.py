@@ -19,6 +19,7 @@ from routes.websocket import router as websocket_router
 from routes.push_notifications import router as push_notifications_router
 from routes.tasks import router as tasks_router
 from routes.emails import router as emails_router
+from routes.trello import router as trello_router
 
 
 # Configure logging
@@ -46,6 +47,7 @@ app.include_router(websocket_router, prefix="/api")
 app.include_router(push_notifications_router, prefix="/api")
 app.include_router(tasks_router, prefix="/api")
 app.include_router(emails_router, prefix="/api")
+app.include_router(trello_router, prefix="/api")
 
 
 app.add_middleware(
