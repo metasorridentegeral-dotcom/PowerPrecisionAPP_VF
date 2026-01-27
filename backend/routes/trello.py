@@ -121,6 +121,126 @@ async def configure_trello(
 
 # === Sincronização ===
 
+@router.post("/reset-and-sync")
+async def reset_and_sync_from_trello(
+    user: dict = Depends(require_roles([UserRole.ADMIN]))
+):
+    """
+    Apagar todos os dados existentes e importar tudo do Trello.
+    ATENÇÃO: Esta operação é destrutiva e irreversível!
+    """
+    result = {
+        "success": True,
+        "deleted": {
+            "processes": 0,
+            "deadlines": 0,
+            "tasks": 0,
+            "activities": 0,
+            "documents": 0,
+            "emails": 0,
+            "notifications": 0,
+            "users": 0
+        },
+        "imported": {
+            "processes": 0,
+            "errors": []
+        },
+        "message": ""
+    }
+    
+    try:
+        # 1. Apagar dados existentes (exceto admins)
+        logger.info("A apagar dados existentes...")
+        
+        # Apagar processos e dados relacionados
+        del_processes = await db.processes.delete_many({})
+        result["deleted"]["processes"] = del_processes.deleted_count
+        
+        del_deadlines = await db.deadlines.delete_many({})
+        result["deleted"]["deadlines"] = del_deadlines.deleted_count
+        
+        del_tasks = await db.tasks.delete_many({})
+        result["deleted"]["tasks"] = del_tasks.deleted_count
+        
+        del_activities = await db.activities.delete_many({})
+        result["deleted"]["activities"] = del_activities.deleted_count
+        
+        del_documents = await db.documents.delete_many({})
+        result["deleted"]["documents"] = del_documents.deleted_count
+        
+        del_emails = await db.emails.delete_many({})
+        result["deleted"]["emails"] = del_emails.deleted_count
+        
+        del_notifications = await db.notifications.delete_many({})
+        result["deleted"]["notifications"] = del_notifications.deleted_count
+        
+        # Apagar utilizadores não-admin
+        del_users = await db.users.delete_many({"role": {"$ne": "admin"}})
+        result["deleted"]["users"] = del_users.deleted_count
+        
+        logger.info(f"Dados apagados: {result['deleted']}")
+        
+        # 2. Importar cards do Trello
+        logger.info("A importar do Trello...")
+        lists = await trello_service.get_lists(force_refresh=True)
+        all_cards = await trello_service.get_cards()
+        
+        logger.info(f"Encontrados {len(all_cards)} cards no Trello")
+        
+        for card in all_cards:
+            try:
+                # Encontrar a lista do card
+                list_info = next((l for l in lists if l["id"] == card["idList"]), None)
+                if not list_info:
+                    result["imported"]["errors"].append(f"Lista não encontrada para card: {card.get('name', 'N/A')}")
+                    continue
+                
+                # Converter para status do sistema
+                status = trello_list_to_status(list_info["name"])
+                if not status:
+                    # Se a lista não estiver mapeada, usar um status genérico
+                    status = "clientes_espera"
+                    result["imported"]["errors"].append(f"Lista não mapeada '{list_info['name']}', usando 'clientes_espera'")
+                
+                # Extrair dados da descrição
+                card_data = parse_card_description(card.get("desc", ""))
+                
+                # Criar novo processo
+                new_process = {
+                    "id": str(uuid.uuid4()),
+                    "client_name": card["name"],
+                    "client_email": card_data.get("email", ""),
+                    "client_phone": card_data.get("telefone", card_data.get("phone", "")),
+                    "client_nif": card_data.get("nif", ""),
+                    "status": status,
+                    "trello_card_id": card["id"],
+                    "trello_list_id": card["idList"],
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                    "source": "trello_import",
+                    "personal_data": {},
+                    "financial_data": {},
+                    "real_estate_data": {},
+                    "credit_data": {},
+                }
+                
+                await db.processes.insert_one(new_process)
+                result["imported"]["processes"] += 1
+                
+            except Exception as e:
+                result["imported"]["errors"].append(f"Erro no card {card.get('name', 'N/A')}: {str(e)}")
+        
+        result["message"] = f"Reset completo! Apagados {result['deleted']['processes']} processos. Importados {result['imported']['processes']} do Trello."
+        logger.info(result["message"])
+        
+    except Exception as e:
+        logger.error(f"Erro no reset e sync: {e}")
+        result["success"] = False
+        result["message"] = f"Erro: {str(e)}"
+    
+    return result
+
+
 @router.post("/sync/from-trello", response_model=SyncResult)
 async def sync_from_trello(
     background_tasks: BackgroundTasks,
