@@ -146,6 +146,7 @@ TRELLO_TO_STATUS = {
     "clientes em espera": "clientes_espera",
     "fase documental": "fase_documental",
     "fase documental ii": "fase_documental_ii",
+    "entregue aos intermediarios": "entregue_intermediarios",
     "enviado ao bruno": "enviado_bruno",
     "enviado ao luís": "enviado_luis",
     "enviado bcp rui": "enviado_bcp_rui",
