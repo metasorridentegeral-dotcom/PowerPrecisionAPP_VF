@@ -41,6 +41,8 @@ const TrelloIntegration = () => {
   const [syncing, setSyncing] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
+  const [webhooks, setWebhooks] = useState([]);
+  const [settingUpWebhook, setSettingUpWebhook] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -50,6 +52,15 @@ const TrelloIntegration = () => {
       if (response.ok) {
         const data = await response.json();
         setStatus(data);
+      }
+      
+      // Também buscar webhooks
+      const webhookResponse = await fetch(`${API_URL}/api/trello/webhook/list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (webhookResponse.ok) {
+        const webhookData = await webhookResponse.json();
+        setWebhooks(webhookData.webhooks || []);
       }
     } catch (error) {
       console.error("Erro ao verificar Trello:", error);
