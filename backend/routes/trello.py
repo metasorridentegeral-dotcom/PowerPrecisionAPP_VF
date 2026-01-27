@@ -581,11 +581,28 @@ async def handle_card_moved(action: dict):
 
 @router.post("/webhook/setup")
 async def setup_webhook(
-    callback_url: str,
+    callback_url: Optional[str] = None,
     user: dict = Depends(require_roles([UserRole.ADMIN]))
 ):
     """Configurar webhook para sincronização em tempo real."""
     try:
+        # Se não for fornecido, usar o URL padrão
+        if not callback_url:
+            import os
+            base_url = os.environ.get("WEBHOOK_BASE_URL", "https://trello-sync.preview.emergentagent.com")
+            callback_url = f"{base_url}/api/trello/webhook"
+        
+        # Verificar se já existe webhook ativo
+        existing_webhooks = await trello_service.get_webhooks()
+        for wh in existing_webhooks:
+            if wh.get("callbackURL") == callback_url:
+                return {
+                    "success": True,
+                    "webhook_id": wh["id"],
+                    "message": "Webhook já está configurado",
+                    "callback_url": callback_url
+                }
+        
         webhook = await trello_service.create_webhook(
             callback_url=callback_url,
             description="CreditoIMO Real-time Sync"
@@ -606,7 +623,8 @@ async def setup_webhook(
         return {
             "success": True,
             "webhook_id": webhook["id"],
-            "message": "Webhook configurado com sucesso"
+            "message": "Webhook configurado com sucesso",
+            "callback_url": callback_url
         }
     except Exception as e:
         logger.error(f"Erro ao criar webhook: {e}")
