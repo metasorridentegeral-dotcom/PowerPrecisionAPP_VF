@@ -643,6 +643,41 @@ const ProcessDetails = () => {
                             disabled={!canEditRealEstate}
                           />
                         </div>
+                        
+                        {/* Dados do Proprietário */}
+                        <div className="md:col-span-2 pt-4 border-t">
+                          <h4 className="font-medium text-sm text-muted-foreground mb-4">Dados do Proprietário</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <Label>Nome do Proprietário</Label>
+                              <Input
+                                value={realEstateData.owner_name || ""}
+                                onChange={(e) => setRealEstateData({ ...realEstateData, owner_name: e.target.value })}
+                                disabled={!canEditRealEstate}
+                                placeholder="Nome completo"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Email do Proprietário</Label>
+                              <Input
+                                type="email"
+                                value={realEstateData.owner_email || ""}
+                                onChange={(e) => setRealEstateData({ ...realEstateData, owner_email: e.target.value })}
+                                disabled={!canEditRealEstate}
+                                placeholder="email@exemplo.com"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Telefone do Proprietário</Label>
+                              <Input
+                                value={realEstateData.owner_phone || ""}
+                                onChange={(e) => setRealEstateData({ ...realEstateData, owner_phone: e.target.value })}
+                                disabled={!canEditRealEstate}
+                                placeholder="+351 000 000 000"
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </TabsContent>
