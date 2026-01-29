@@ -219,13 +219,10 @@ async def reset_and_sync_from_trello(
                 docs_preparados = any("documento" in l.lower() and "preparad" in l.lower() for l in trello_labels)
                 ch_aprovado = any("aprovado" in l.lower() for l in trello_labels)
                 
-                # Extrair consultor/responsável dos labels (nomes de pessoas)
-                consultor_labels = ["milton", "nuno", "silvino", "wilson", "alex", "victor", "fernando", "emanuel", "julia", "ivo", "estacio", "vânia"]
-                assigned_label = None
-                for label in trello_labels:
-                    if any(c in label.lower() for c in consultor_labels):
-                        assigned_label = label
-                        break
+                # Extrair MEMBROS atribuídos ao cartão (utilizadores do Trello)
+                trello_members = card.get("members", [])
+                assigned_members = [m.get("fullName") for m in trello_members if m.get("fullName")]
+                assigned_member_ids = card.get("idMembers", [])
                 
                 # Criar novo processo com todos os dados do Trello
                 new_process = {
