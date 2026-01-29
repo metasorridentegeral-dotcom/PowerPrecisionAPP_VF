@@ -182,3 +182,4 @@ class ProcessResponse(BaseModel):
     trello_card_id: Optional[str] = None  # ID do card no Trello
     trello_list_id: Optional[str] = None  # ID da lista no Trello
     source: Optional[str] = None  # Origem do processo (trello_import, web_form, etc.)
+    monitored_emails: Optional[List[str]] = None  # Emails adicionais para monitorizar
