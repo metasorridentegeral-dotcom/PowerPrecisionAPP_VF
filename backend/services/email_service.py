@@ -157,34 +157,24 @@ async def fetch_emails_by_name(
     if not client_name or len(client_name) < 3:
         return emails_found
     
-    # Extrair primeiro e último nome para busca mais precisa
-    name_parts = client_name.strip().split()
-    search_names = []
-    
-    # Usar nome completo
-    if len(name_parts) >= 2:
-        # Primeiro nome + último nome
-        search_names.append(f"{name_parts[0]} {name_parts[-1]}")
-    # Usar apenas primeiro nome se tiver mais de 3 caracteres
-    if name_parts and len(name_parts[0]) >= 3:
-        search_names.append(name_parts[0])
+    # Usar nome completo para busca (não dividir em partes)
+    search_name = client_name.strip()
     
     try:
         context = ssl.create_default_context()
         mail = imaplib.IMAP4_SSL(account.imap_server, account.imap_port, ssl_context=context)
         mail.login(account.email, account.password)
         
-        logger.info(f"Buscando emails com nome '{client_name}' em {account.name}")
+        logger.info(f"Buscando emails com nome '{search_name}' em {account.name}")
         
         mail.select(folder)
         since_date = (datetime.now() - timedelta(days=since_days)).strftime("%d-%b-%Y")
         
         seen_ids = set()
         
-        for search_name in search_names:
-            # Buscar no assunto
-            try:
-                _, message_numbers = mail.search(None, f'(SUBJECT "{search_name}" SINCE {since_date})')
+        # Buscar no assunto pelo nome completo
+        try:
+            _, message_numbers = mail.search(None, f'(SUBJECT "{search_name}" SINCE {since_date})')
                 
                 for num in message_numbers[0].split():
                     try:
