@@ -578,6 +578,121 @@ const EmailHistoryPanel = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de Configurações de Emails Monitorizados */}
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AtSign className="h-5 w-5" />
+              Emails Monitorizados
+            </DialogTitle>
+            <DialogDescription>
+              Configure os emails que serão sincronizados para este processo.
+              Os emails de geral@powerealestate.pt e geral@precisioncredito.pt são verificados automaticamente.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Email principal do cliente */}
+            <div>
+              <Label className="text-sm font-medium">Email Principal do Cliente</Label>
+              <div className="flex items-center gap-2 mt-1 p-2 bg-muted rounded-md">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">{clientEmail || "Não definido"}</span>
+                <Badge variant="outline" className="ml-auto text-xs">Principal</Badge>
+              </div>
+            </div>
+
+            {/* Emails adicionais */}
+            <div>
+              <Label className="text-sm font-medium">Emails Adicionais</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Adicione outros emails relacionados com este processo (bancos, intermediários, etc.)
+              </p>
+              
+              {/* Lista de emails monitorizados */}
+              {monitoredEmails.length > 0 ? (
+                <div className="space-y-2 mb-3">
+                  {monitoredEmails.map((email) => (
+                    <div key={email} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                      <AtSign className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm flex-1">{email}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        onClick={() => handleRemoveMonitoredEmail(email)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground italic mb-3">
+                  Nenhum email adicional configurado
+                </p>
+              )}
+
+              {/* Adicionar novo email */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="email@exemplo.pt"
+                  value={newMonitoredEmail}
+                  onChange={(e) => setNewMonitoredEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddMonitoredEmail()}
+                />
+                <Button 
+                  onClick={handleAddMonitoredEmail}
+                  disabled={addingEmail}
+                  size="sm"
+                >
+                  {addingEmail ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Contas de email da empresa */}
+            <div className="pt-2 border-t">
+              <Label className="text-sm font-medium">Contas da Empresa</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Emails da empresa onde os emails são sincronizados
+              </p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge variant="outline" className="text-xs">Precision</Badge>
+                  geral@precisioncredito.pt
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge variant="outline" className="text-xs">Power</Badge>
+                  geral@powerealestate.pt
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSettingsOpen(false)}>
+              Fechar
+            </Button>
+            <Button 
+              onClick={() => {
+                setIsSettingsOpen(false);
+                handleSyncEmails();
+              }}
+              className="bg-blue-900 hover:bg-blue-800"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Sincronizar Agora
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
