@@ -135,3 +135,10 @@ export const sendEmailViaServer = (data) => axios.post(`${API_URL}/emails/send`,
 export const testEmailConnection = (account = null) => 
   axios.get(`${API_URL}/emails/test-connection`, { params: { account } });
 export const getEmailAccounts = () => axios.get(`${API_URL}/emails/accounts`);
+
+// Emails Monitorizados
+export const getMonitoredEmails = (processId) => axios.get(`${API_URL}/emails/monitored/${processId}`);
+export const addMonitoredEmail = (processId, email) => 
+  axios.post(`${API_URL}/emails/monitored/${processId}`, null, { params: { email } });
+export const removeMonitoredEmail = (processId, email) => 
+  axios.delete(`${API_URL}/emails/monitored/${processId}/${encodeURIComponent(email)}`);
