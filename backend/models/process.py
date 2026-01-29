@@ -155,6 +155,8 @@ class ProcessUpdate(BaseModel):
     real_estate_data: Optional[RealEstateData] = None
     credit_data: Optional[CreditData] = None
     status: Optional[str] = None
+    client_email: Optional[str] = None
+    client_phone: Optional[str] = None
 
 
 class ProcessResponse(BaseModel):
