@@ -175,56 +175,56 @@ async def fetch_emails_by_name(
         # Buscar no assunto pelo nome completo
         try:
             _, message_numbers = mail.search(None, f'(SUBJECT "{search_name}" SINCE {since_date})')
-                
-                for num in message_numbers[0].split():
-                    try:
-                        _, msg_data = mail.fetch(num, "(RFC822)")
-                        email_body = msg_data[0][1]
-                        msg = email.message_from_bytes(email_body)
-                        
-                        msg_id = msg.get("Message-ID", "")
-                        if msg_id in seen_ids:
-                            continue
-                        seen_ids.add(msg_id)
-                        
-                        from_email = extract_email_address(msg.get("From", ""))
-                        to_emails = [extract_email_address(e) for e in (msg.get("To", "")).split(",")]
-                        subject = decode_email_header(msg.get("Subject", ""))
-                        date_str = msg.get("Date", "")
-                        body_text, body_html = get_email_body(msg)
-                        
-                        # Determinar direção (se veio do email da conta é enviado)
-                        direction = "sent" if from_email.lower() == account.email.lower() else "received"
-                        
-                        email_date = None
-                        if date_str:
-                            try:
-                                email_date = email.utils.parsedate_to_datetime(date_str)
-                            except:
-                                email_date = datetime.now()
-                        
-                        emails_found.append({
-                            "message_id": msg_id,
-                            "from_email": from_email,
-                            "to_emails": to_emails,
-                            "subject": subject,
-                            "body": body_text or body_html or "",
-                            "date": email_date.isoformat() if email_date else datetime.now().isoformat(),
-                            "direction": direction,
-                            "source": "imap_sync",
-                            "account": account.name,
-                            "matched_by": "client_name"
-                        })
-                        
-                    except Exception as e:
-                        logger.warning(f"Erro ao processar email: {e}")
+            
+            for num in message_numbers[0].split():
+                try:
+                    _, msg_data = mail.fetch(num, "(RFC822)")
+                    email_body = msg_data[0][1]
+                    msg = email.message_from_bytes(email_body)
+                    
+                    msg_id = msg.get("Message-ID", "")
+                    if msg_id in seen_ids:
                         continue
-                        
-            except Exception as e:
-                logger.warning(f"Erro na busca por assunto '{search_name}': {e}")
+                    seen_ids.add(msg_id)
+                    
+                    from_email = extract_email_address(msg.get("From", ""))
+                    to_emails = [extract_email_address(e) for e in (msg.get("To", "")).split(",")]
+                    subject = decode_email_header(msg.get("Subject", ""))
+                    date_str = msg.get("Date", "")
+                    body_text, body_html = get_email_body(msg)
+                    
+                    # Determinar direção (se veio do email da conta é enviado)
+                    direction = "sent" if from_email.lower() == account.email.lower() else "received"
+                    
+                    email_date = None
+                    if date_str:
+                        try:
+                            email_date = email.utils.parsedate_to_datetime(date_str)
+                        except:
+                            email_date = datetime.now()
+                    
+                    emails_found.append({
+                        "message_id": msg_id,
+                        "from_email": from_email,
+                        "to_emails": to_emails,
+                        "subject": subject,
+                        "body": body_text or body_html or "",
+                        "date": email_date.isoformat() if email_date else datetime.now().isoformat(),
+                        "direction": direction,
+                        "source": "imap_sync",
+                        "account": account.name,
+                        "matched_by": "client_name"
+                    })
+                    
+                except Exception as e:
+                    logger.warning(f"Erro ao processar email: {e}")
+                    continue
+                    
+        except Exception as e:
+            logger.warning(f"Erro na busca por assunto '{search_name}': {e}")
         
         mail.logout()
-        logger.info(f"Encontrados {len(emails_found)} emails para '{client_name}' em {account.name}/{folder}")
+        logger.info(f"Encontrados {len(emails_found)} emails para '{search_name}' em {account.name}/{folder}")
         
     except Exception as e:
         logger.error(f"Erro ao buscar emails por nome em {account.name}: {e}")
