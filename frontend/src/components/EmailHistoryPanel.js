@@ -49,8 +49,14 @@ const EmailHistoryPanel = ({
   const [syncing, setSyncing] = useState(false);
   const [filter, setFilter] = useState("all"); // all, sent, received
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [expandedEmail, setExpandedEmail] = useState(null);
+  
+  // Emails monitorizados
+  const [monitoredEmails, setMonitoredEmails] = useState([]);
+  const [newMonitoredEmail, setNewMonitoredEmail] = useState("");
+  const [addingEmail, setAddingEmail] = useState(false);
   
   // Form state
   const [newEmail, setNewEmail] = useState({
@@ -65,8 +71,46 @@ const EmailHistoryPanel = ({
   useEffect(() => {
     if (processId) {
       fetchData();
+      fetchMonitoredEmails();
     }
   }, [processId, filter]);
+
+  const fetchMonitoredEmails = async () => {
+    try {
+      const response = await getMonitoredEmails(processId);
+      setMonitoredEmails(response.data.monitored_emails || []);
+    } catch (error) {
+      console.error("Erro ao carregar emails monitorizados:", error);
+    }
+  };
+
+  const handleAddMonitoredEmail = async () => {
+    if (!newMonitoredEmail.trim() || !newMonitoredEmail.includes("@")) {
+      toast.error("Introduza um email válido");
+      return;
+    }
+    try {
+      setAddingEmail(true);
+      await addMonitoredEmail(processId, newMonitoredEmail.trim());
+      toast.success("Email adicionado à monitorização");
+      setNewMonitoredEmail("");
+      fetchMonitoredEmails();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erro ao adicionar email");
+    } finally {
+      setAddingEmail(false);
+    }
+  };
+
+  const handleRemoveMonitoredEmail = async (email) => {
+    try {
+      await removeMonitoredEmail(processId, email);
+      toast.success("Email removido da monitorização");
+      fetchMonitoredEmails();
+    } catch (error) {
+      toast.error("Erro ao remover email");
+    }
+  };
 
   const fetchData = async () => {
     try {
