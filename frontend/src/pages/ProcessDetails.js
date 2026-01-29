@@ -825,7 +825,7 @@ const ProcessDetails = () => {
                   clientEmail={process?.client_email}
                   clientName={process?.client_name}
                   compact={true}
-                  maxHeight="300px"
+                  maxHeight="400px"
                 />
               </CardContent>
             </Card>
