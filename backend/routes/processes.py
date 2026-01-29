@@ -556,6 +556,12 @@ async def update_process(process_id: str, data: ProcessUpdate, user: dict = Depe
             await log_data_changes(process_id, user, process.get("credit_data"), data.credit_data.model_dump(), "dados de crédito")
             update_data["credit_data"] = data.credit_data.model_dump()
         
+        # Atualizar email e telefone do cliente
+        if data.client_email is not None:
+            update_data["client_email"] = data.client_email
+        if data.client_phone is not None:
+            update_data["client_phone"] = data.client_phone
+        
         if data.status and can_update_status and (data.status in valid_statuses or not valid_statuses):
             await log_history(process_id, user, "Alterou estado", "status", process["status"], data.status)
             update_data["status"] = data.status
