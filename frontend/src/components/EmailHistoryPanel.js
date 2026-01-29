@@ -554,7 +554,7 @@ const EmailHistoryPanel = ({
             <Button 
               onClick={handleCreateEmail} 
               disabled={creating}
-              className="bg-blue-900 hover:bg-blue-800"
+              className="bg-teal-600 hover:bg-teal-700"
             >
               {creating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
               Registar Email
@@ -669,7 +669,7 @@ const EmailHistoryPanel = ({
                 setIsSettingsOpen(false);
                 handleSyncEmails();
               }}
-              className="bg-blue-900 hover:bg-blue-800"
+              className="bg-teal-600 hover:bg-teal-700"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Sincronizar Agora

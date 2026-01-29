@@ -42,7 +42,7 @@ const roleLabels = {
 // Cores dos badges de papel - Azul Power Real Estate, Dourado Precision
 const roleColors = {
   cliente: "bg-blue-100 text-blue-800",
-  consultor: "bg-blue-900 text-white",                    // Power Real Estate
+  consultor: "bg-teal-600 text-white",                    // Power Real Estate
   mediador: "bg-amber-500 text-white",                    // Precision Crédito
   intermediario: "bg-amber-500 text-white",               // Precision Crédito
   consultor_intermediario: "bg-gradient-to-r from-blue-900 to-amber-500 text-white",
@@ -153,7 +153,7 @@ const DashboardLayout = ({ children, title }) => {
       >
         <div className="flex flex-col h-full">
           {/* Logo - Power Real Estate & Precision Crédito */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-blue-800 bg-blue-900">
+          <div className="h-16 flex items-center justify-between px-6 border-b border-blue-800 bg-teal-600">
             <div className="flex items-center gap-2">
               <Building2 className="h-6 w-6 text-amber-400" />
               <div className="flex flex-col">
@@ -164,7 +164,7 @@ const DashboardLayout = ({ children, title }) => {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-white hover:bg-blue-800"
+              className="lg:hidden text-white hover:bg-teal-700"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-5 w-5" />
@@ -183,7 +183,7 @@ const DashboardLayout = ({ children, title }) => {
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
                       isActive
                         ? "bg-amber-500 text-white"
-                        : "text-blue-100 hover:bg-blue-800 hover:text-white"
+                        : "text-blue-100 hover:bg-teal-700 hover:text-white"
                     }`}
                     onClick={() => setSidebarOpen(false)}
                   >
