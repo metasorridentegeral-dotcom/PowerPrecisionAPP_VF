@@ -202,6 +202,14 @@ const ProcessDetails = () => {
     try {
       const updateData = {};
 
+      // Sempre incluir email e telefone do cliente se foram alterados
+      if (process?.client_email !== undefined) {
+        updateData.client_email = process.client_email;
+      }
+      if (process?.client_phone !== undefined) {
+        updateData.client_phone = process.client_phone;
+      }
+
       if (user.role === "cliente" || user.role === "admin") {
         updateData.personal_data = personalData;
         updateData.financial_data = financialData;
