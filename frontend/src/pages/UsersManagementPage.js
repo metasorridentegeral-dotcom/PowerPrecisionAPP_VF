@@ -52,7 +52,7 @@ const UsersManagementPage = () => {
     email: "",
     password: "",
     phone: "",
-    role: "cliente",
+    role: "consultor",
     onedrive_folder: "",
   });
 
@@ -93,7 +93,7 @@ const UsersManagementPage = () => {
         email: "",
         password: "",
         phone: "",
-        role: "cliente",
+        role: "consultor",
         onedrive_folder: "",
       });
       fetchUsers();
