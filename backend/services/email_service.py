@@ -481,7 +481,11 @@ async def fetch_emails_from_account(
 async def sync_emails_for_process(process_id: str, days: int = 30) -> Dict[str, Any]:
     """
     Sincronizar emails para um processo específico.
-    Busca emails de ambas as contas relacionados com o cliente por NOME e por emails monitorizados.
+    Busca emails de ambas as contas relacionados com:
+    - Nome do cliente (busca no assunto e corpo)
+    - Email do cliente
+    - Email do proprietário do imóvel
+    - Emails adicionais monitorizados
     """
     # Obter processo
     process = await db.processes.find_one({"id": process_id}, {"_id": 0})
@@ -497,15 +501,28 @@ async def sync_emails_for_process(process_id: str, days: int = 30) -> Dict[str, 
     # Email principal do cliente
     client_email = process.get("client_email")
     if client_email:
-        emails_to_monitor.append(client_email)
+        # Limpar emails com formatação markdown do Trello
+        clean_email = client_email
+        if "[" in clean_email and "]" in clean_email:
+            import re
+            match = re.search(r'[\w\.-]+@[\w\.-]+', clean_email)
+            if match:
+                clean_email = match.group()
+        emails_to_monitor.append(clean_email)
+    
+    # Email do proprietário do imóvel (muito importante para o match)
+    real_estate_data = process.get("real_estate_data", {}) or {}
+    owner_email = real_estate_data.get("owner_email")
+    if owner_email:
+        emails_to_monitor.append(owner_email)
     
     # Emails adicionais monitorizados
     monitored_emails = process.get("monitored_emails", [])
     if monitored_emails:
         emails_to_monitor.extend(monitored_emails)
     
-    # Remover duplicados
-    emails_to_monitor = list(set([e.lower().strip() for e in emails_to_monitor if e]))
+    # Remover duplicados e limpar
+    emails_to_monitor = list(set([e.lower().strip() for e in emails_to_monitor if e and "@" in e]))
     
     accounts = get_email_accounts()
     if not accounts:
