@@ -288,6 +288,9 @@ const KanbanBoard = ({ token }) => {
                         <TableCell>
                           <div>
                             <p className="font-medium">{process.client_name}</p>
+                            <p className="text-xs text-muted-foreground font-mono">
+                              ID: {process.id?.substring(0, 8)}...
+                            </p>
                             {process.under_35 && (
                               <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 mt-1">
                                 &lt;35 anos
