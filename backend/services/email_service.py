@@ -141,13 +141,15 @@ async def fetch_emails_by_name(
     folder: str = "INBOX"
 ) -> List[Dict[str, Any]]:
     """
-    Buscar emails que contenham o nome do cliente no assunto ou corpo.
+    Buscar emails do cliente de duas formas:
+    1. Por nome no assunto
+    2. Em subpastas que correspondam ao nome do cliente
     
     Args:
         account: Configuração da conta
         client_name: Nome do cliente para buscar
         since_days: Buscar emails dos últimos X dias
-        folder: Pasta IMAP (INBOX, Sent, etc.)
+        folder: Pasta IMAP base
     
     Returns:
         Lista de emails encontrados
@@ -157,23 +159,108 @@ async def fetch_emails_by_name(
     if not client_name or len(client_name) < 3:
         return emails_found
     
-    # Usar nome completo para busca (não dividir em partes)
     search_name = client_name.strip()
+    # Extrair partes do nome para matching de subpastas
+    name_parts = [p.lower() for p in search_name.split() if len(p) >= 3]
     
     try:
         context = ssl.create_default_context()
         mail = imaplib.IMAP4_SSL(account.imap_server, account.imap_port, ssl_context=context)
         mail.login(account.email, account.password)
         
-        logger.info(f"Buscando emails com nome '{search_name}' em {account.name}")
-        
-        mail.select(folder)
-        since_date = (datetime.now() - timedelta(days=since_days)).strftime("%d-%b-%Y")
+        logger.info(f"Buscando emails para '{search_name}' em {account.name}")
         
         seen_ids = set()
+        since_date = (datetime.now() - timedelta(days=since_days)).strftime("%d-%b-%Y")
         
-        # Buscar no assunto pelo nome completo
+        # 1. Procurar em subpastas que correspondam ao nome do cliente
+        _, folders = mail.list()
+        matching_folders = []
+        
+        for folder_info in folders:
+            try:
+                folder_str = folder_info.decode('utf-8', errors='replace')
+                # Extrair nome da pasta (está entre aspas ou após o último /)
+                if '"' in folder_str:
+                    folder_name = folder_str.split('"')[-2]
+                else:
+                    folder_name = folder_str.split('/')[-1]
+                
+                folder_name_lower = folder_name.lower()
+                
+                # Verificar se alguma parte do nome está no nome da pasta
+                for part in name_parts:
+                    if part in folder_name_lower:
+                        # Extrair o nome completo da pasta para seleção
+                        if '"' in folder_str:
+                            full_folder = '"' + folder_str.split('"')[-2] + '"'
+                        else:
+                            parts = folder_str.split(' ')[-1]
+                            full_folder = parts
+                        matching_folders.append(full_folder)
+                        logger.info(f"Pasta encontrada para '{search_name}': {full_folder}")
+                        break
+            except Exception as e:
+                continue
+        
+        # 2. Buscar emails nas pastas encontradas
+        for folder_name in matching_folders:
+            try:
+                result, _ = mail.select(folder_name)
+                if result != 'OK':
+                    continue
+                
+                _, message_numbers = mail.search(None, 'ALL')
+                
+                for num in message_numbers[0].split():
+                    try:
+                        _, msg_data = mail.fetch(num, "(RFC822)")
+                        email_body = msg_data[0][1]
+                        msg = email.message_from_bytes(email_body)
+                        
+                        msg_id = msg.get("Message-ID", "")
+                        if msg_id in seen_ids:
+                            continue
+                        seen_ids.add(msg_id)
+                        
+                        from_email = extract_email_address(msg.get("From", ""))
+                        to_emails = [extract_email_address(e) for e in (msg.get("To", "")).split(",")]
+                        subject = decode_email_header(msg.get("Subject", ""))
+                        date_str = msg.get("Date", "")
+                        body_text, body_html = get_email_body(msg)
+                        
+                        direction = "sent" if from_email.lower() == account.email.lower() else "received"
+                        
+                        email_date = None
+                        if date_str:
+                            try:
+                                email_date = email.utils.parsedate_to_datetime(date_str)
+                            except:
+                                email_date = datetime.now()
+                        
+                        emails_found.append({
+                            "message_id": msg_id,
+                            "from_email": from_email,
+                            "to_emails": to_emails,
+                            "subject": subject,
+                            "body": body_text or body_html or "",
+                            "date": email_date.isoformat() if email_date else datetime.now().isoformat(),
+                            "direction": direction,
+                            "source": "imap_sync",
+                            "account": account.name,
+                            "matched_by": "client_folder"
+                        })
+                        
+                    except Exception as e:
+                        logger.warning(f"Erro ao processar email: {e}")
+                        continue
+                        
+            except Exception as e:
+                logger.warning(f"Erro ao aceder pasta {folder_name}: {e}")
+        
+        # 3. Também buscar na INBOX por nome no assunto
         try:
+            mail.select(folder)
             _, message_numbers = mail.search(None, f'(SUBJECT "{search_name}" SINCE {since_date})')
             
             for num in message_numbers[0].split():
@@ -193,7 +280,6 @@ async def fetch_emails_by_name(
                     date_str = msg.get("Date", "")
                     body_text, body_html = get_email_body(msg)
                     
-                    # Determinar direção (se veio do email da conta é enviado)
                     direction = "sent" if from_email.lower() == account.email.lower() else "received"
                     
                     email_date = None
@@ -221,13 +307,15 @@ async def fetch_emails_by_name(
                     continue
                     
         except Exception as e:
-            logger.warning(f"Erro na busca por assunto '{search_name}': {e}")
+            logger.warning(f"Erro na busca por assunto: {e}")
         
         mail.logout()
-        logger.info(f"Encontrados {len(emails_found)} emails para '{search_name}' em {account.name}/{folder}")
+        logger.info(f"Encontrados {len(emails_found)} emails para '{search_name}' em {account.name}")
         
     except Exception as e:
         logger.error(f"Erro ao buscar emails por nome em {account.name}: {e}")
+    
+    return emails_found
     
     return emails_found
 
