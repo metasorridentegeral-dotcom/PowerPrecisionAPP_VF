@@ -314,8 +314,8 @@ const EmailHistoryPanel = ({
               </Button>
             </div>
           ) : (
-            <ScrollArea style={{ maxHeight }}>
-              <div className="space-y-2">
+            <ScrollArea className="pr-3" style={{ height: maxHeight }}>
+              <div className="space-y-2 pr-1">
                 {emails.map((email) => (
                   <div
                     key={email.id}
