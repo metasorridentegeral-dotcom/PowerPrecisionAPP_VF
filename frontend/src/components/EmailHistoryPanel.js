@@ -309,7 +309,7 @@ const EmailHistoryPanel = ({
             </TabsList>
           </Tabs>
 
-          {/* Lista de emails */}
+          {/* Lista de emails - Layout compacto com scroll horizontal no assunto */}
           {emails.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Mail className="h-12 w-12 mx-auto mb-2 opacity-20" />
@@ -324,70 +324,70 @@ const EmailHistoryPanel = ({
               </Button>
             </div>
           ) : (
-            <ScrollArea className="pr-3" style={{ height: maxHeight }}>
-              <div className="space-y-2 pr-1">
+            <ScrollArea className="pr-1" style={{ height: maxHeight }}>
+              <div className="space-y-1">
                 {emails.map((email) => (
                   <div
                     key={email.id}
-                    className="border rounded-lg overflow-hidden"
+                    className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors ${
+                      email.direction === "sent" 
+                        ? "bg-blue-50/30 dark:bg-blue-950/10 border-blue-200/50" 
+                        : "bg-emerald-50/30 dark:bg-emerald-950/10 border-emerald-200/50"
+                    }`}
+                    onClick={() => openEmailViewer(email.id)}
                   >
-                    {/* Header do email */}
-                    <div 
-                      className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-muted/50 transition-colors ${
-                        email.direction === "sent" 
-                          ? "bg-blue-50/50 dark:bg-blue-950/20" 
-                          : "bg-emerald-50/50 dark:bg-emerald-950/20"
-                      }`}
-                      onClick={() => toggleExpandEmail(email.id)}
-                    >
-                      {/* Ícone de direção */}
-                      <div className={`mt-0.5 p-1.5 rounded ${
-                        email.direction === "sent" 
-                          ? "bg-blue-100 text-blue-600" 
-                          : "bg-emerald-100 text-emerald-600"
-                      }`}>
-                        {email.direction === "sent" ? (
-                          <Send className="h-4 w-4" />
-                        ) : (
-                          <Inbox className="h-4 w-4" />
-                        )}
-                      </div>
+                    {/* Ícone de direção */}
+                    <div className={`p-1.5 rounded shrink-0 ${
+                      email.direction === "sent" 
+                        ? "bg-blue-100 text-blue-600" 
+                        : "bg-emerald-100 text-emerald-600"
+                    }`}>
+                      {email.direction === "sent" ? (
+                        <Send className="h-3 w-3" />
+                      ) : (
+                        <Inbox className="h-3 w-3" />
+                      )}
+                    </div>
 
-                      {/* Conteúdo */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm truncate">
-                              {email.subject}
-                            </p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {email.direction === "sent" ? "Para: " : "De: "}
-                              {email.direction === "sent" 
-                                ? email.to_emails?.join(", ")
-                                : email.from_email
-                              }
-                            </p>
-                          </div>
-                          {expandedEmail === email.id ? (
-                            <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            {email.sent_at 
-                              ? format(parseISO(email.sent_at), "dd/MM/yyyy HH:mm", { locale: pt })
-                              : "-"
-                            }
-                          </div>
-                          {email.attachments?.length > 0 && (
-                            <Badge variant="outline" className="text-[10px]">
-                              <Paperclip className="h-3 w-3 mr-1" />
-                              {email.attachments.length}
-                            </Badge>
-                          )}
+                    {/* Conteúdo com scroll horizontal */}
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted">
+                        <p className="font-medium text-sm whitespace-nowrap pr-2" title={email.subject}>
+                          {email.subject}
+                        </p>
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {email.direction === "sent" ? "Para: " : "De: "}
+                        {email.direction === "sent" 
+                          ? email.to_emails?.join(", ")
+                          : email.from_email
+                        }
+                      </p>
+                    </div>
+
+                    {/* Data e botão */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                        {email.sent_at 
+                          ? format(parseISO(email.sent_at), "dd/MM/yy", { locale: pt })
+                          : "-"
+                        }
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEmailViewer(email.id);
+                        }}
+                        title="Ver email completo"
+                      >
+                        <Maximize2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
                         </div>
                       </div>
                     </div>
