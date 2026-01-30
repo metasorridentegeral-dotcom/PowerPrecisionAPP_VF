@@ -230,6 +230,90 @@ async def create_process(data: ProcessCreate, user: dict = Depends(get_current_u
     return ProcessResponse(**{k: v for k, v in process_doc.items() if k != "_id"})
 
 
+@router.post("/create-client", response_model=ProcessResponse)
+async def create_client_process(data: ProcessCreate, user: dict = Depends(get_current_user)):
+    """
+    Criar um novo processo/cliente.
+    
+    Este endpoint permite que Intermediários de Crédito criem 
+    processos para os seus clientes. O processo é automaticamente
+    atribuído ao intermediário que o criou.
+    
+    Permissões:
+    - Admin, CEO, Consultor, Intermediário: Podem criar
+    
+    Args:
+        data: Dados do processo
+        user: Utilizador autenticado
+    
+    Returns:
+        ProcessResponse: Processo criado
+    """
+    allowed_roles = [UserRole.ADMIN, UserRole.CEO, UserRole.CONSULTOR, UserRole.INTERMEDIARIO, UserRole.MEDIADOR]
+    
+    if user["role"] not in allowed_roles:
+        raise HTTPException(
+            status_code=403, 
+            detail="Não tem permissão para criar clientes. Apenas Admin, Consultores e Intermediários de Crédito podem criar."
+        )
+    
+    # Obter o primeiro estado do workflow
+    first_status = await db.workflow_statuses.find_one({}, {"_id": 0}, sort=[("order", 1)])
+    initial_status = first_status["name"] if first_status else "clientes_espera"
+    
+    # Gerar ID único e número sequencial
+    process_id = str(uuid.uuid4())
+    process_number = await get_next_process_number()
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Extrair nome e email dos dados pessoais
+    personal = data.personal_data.model_dump() if data.personal_data else {}
+    client_name = personal.get("nome_completo") or data.client_name or "Cliente"
+    client_email = personal.get("email") or data.client_email or ""
+    client_phone = personal.get("telefone") or ""
+    
+    # Construir documento do processo
+    process_doc = {
+        "id": process_id,
+        "process_number": process_number,
+        "client_id": None,  # Não há utilizador cliente associado
+        "client_name": client_name,
+        "client_email": client_email,
+        "client_phone": client_phone,
+        "process_type": data.process_type,
+        "status": initial_status,
+        "personal_data": personal,
+        "financial_data": data.financial_data.model_dump() if data.financial_data else None,
+        "real_estate_data": None,
+        "credit_data": None,
+        "created_at": now,
+        "updated_at": now,
+        "source": "staff_created"
+    }
+    
+    # Atribuir automaticamente ao criador baseado no seu papel
+    if user["role"] in [UserRole.INTERMEDIARIO, UserRole.MEDIADOR]:
+        process_doc["assigned_mediador_id"] = user["id"]
+        process_doc["mediador_name"] = user["name"]
+    elif user["role"] == UserRole.CONSULTOR:
+        process_doc["assigned_consultor_id"] = user["id"]
+        process_doc["consultor_name"] = user["name"]
+    
+    # Inserir na base de dados
+    await db.processes.insert_one(process_doc)
+    
+    # Registar no histórico
+    await log_history(process_id, user, f"Criou processo para cliente {client_name}")
+    
+    # Sincronizar com Trello (criar cartão)
+    try:
+        await sync_process_to_trello(process_doc)
+    except Exception as e:
+        logger.warning(f"Erro ao sincronizar com Trello: {e}")
+    
+    return ProcessResponse(**{k: v for k, v in process_doc.items() if k != "_id"})
+
+
 # ====================================================================
 # ENDPOINTS DE LISTAGEM
 # ====================================================================
