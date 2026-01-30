@@ -204,8 +204,8 @@ const EmailViewerModal = ({
               </div>
             </div>
 
-            {/* Corpo do email */}
-            <ScrollArea className="flex-1 p-4">
+            {/* Corpo do email - com scroll visível */}
+            <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/50">
               <div className="prose prose-sm max-w-none dark:prose-invert">
                 {currentEmail.body_html ? (
                   <div 
@@ -218,11 +218,11 @@ const EmailViewerModal = ({
                   </pre>
                 )}
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Footer com notas */}
             {currentEmail.notes && (
-              <div className="p-3 border-t bg-muted/30">
+              <div className="p-3 border-t bg-muted/30 shrink-0">
                 <p className="text-xs text-muted-foreground">
                   <strong>Notas:</strong> {currentEmail.notes}
                 </p>
