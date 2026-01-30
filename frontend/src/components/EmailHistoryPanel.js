@@ -29,12 +29,13 @@ import {
 import { 
   Mail, Send, Inbox, Plus, Loader2, Clock, User, 
   Paperclip, MoreVertical, Trash2, Eye, ChevronDown, ChevronUp, RefreshCw,
-  Settings, X, AtSign
+  Settings, X, AtSign, Maximize2
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { pt } from "date-fns/locale";
 import { getProcessEmails, getEmailStats, createEmail, deleteEmail, syncProcessEmails, getMonitoredEmails, addMonitoredEmail, removeMonitoredEmail } from "../services/api";
+import EmailViewerModal from "./EmailViewerModal";
 
 const EmailHistoryPanel = ({ 
   processId, 
@@ -53,6 +54,10 @@ const EmailHistoryPanel = ({
   const [creating, setCreating] = useState(false);
   const [expandedEmail, setExpandedEmail] = useState(null);
   
+  // Modal de visualização
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [selectedEmailId, setSelectedEmailId] = useState(null);
+  
   // Emails monitorizados
   const [monitoredEmails, setMonitoredEmails] = useState([]);
   const [newMonitoredEmail, setNewMonitoredEmail] = useState("");
@@ -67,6 +72,11 @@ const EmailHistoryPanel = ({
     body: "",
     notes: ""
   });
+  
+  const openEmailViewer = (emailId) => {
+    setSelectedEmailId(emailId);
+    setIsViewerOpen(true);
+  };
 
   useEffect(() => {
     if (processId) {
