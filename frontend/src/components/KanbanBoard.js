@@ -768,6 +768,95 @@ const KanbanBoard = ({ token, user }) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Dialog para criar novo cliente */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Criar Novo Cliente
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="client_name">Nome do Cliente *</Label>
+              <Input
+                id="client_name"
+                placeholder="Nome completo do cliente"
+                value={newClient.client_name}
+                onChange={(e) => setNewClient({ ...newClient, client_name: e.target.value })}
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="client_email">Email</Label>
+                <Input
+                  id="client_email"
+                  type="email"
+                  placeholder="email@exemplo.com"
+                  value={newClient.client_email}
+                  onChange={(e) => setNewClient({ ...newClient, client_email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client_phone">Telefone</Label>
+                <Input
+                  id="client_phone"
+                  placeholder="+351 000 000 000"
+                  value={newClient.client_phone}
+                  onChange={(e) => setNewClient({ ...newClient, client_phone: e.target.value })}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="process_type">Tipo de Processo</Label>
+              <Select 
+                value={newClient.process_type} 
+                onValueChange={(v) => setNewClient({ ...newClient, process_type: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="credito_habitacao">Crédito Habitação</SelectItem>
+                  <SelectItem value="credito_pessoal">Crédito Pessoal</SelectItem>
+                  <SelectItem value="credito_consolidado">Crédito Consolidado</SelectItem>
+                  <SelectItem value="credito_automovel">Crédito Automóvel</SelectItem>
+                  <SelectItem value="transferencia_credito">Transferência de Crédito</SelectItem>
+                  <SelectItem value="imobiliario">Imobiliário</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleCreateClient} 
+              disabled={creating || !newClient.client_name.trim()}
+              className="bg-teal-600 hover:bg-teal-700"
+            >
+              {creating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  A criar...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Cliente
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
