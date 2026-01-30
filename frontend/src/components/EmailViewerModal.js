@@ -60,7 +60,7 @@ const EmailViewerModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[85vh] p-0 gap-0">
+      <DialogContent className="max-w-6xl h-[85vh] p-0 gap-0 overflow-hidden">
         <div className="flex h-full">
           {/* Lista de emails - lado esquerdo */}
           <div className="w-80 border-r bg-muted/30 flex flex-col">
@@ -70,7 +70,7 @@ const EmailViewerModal = ({
                 Emails ({emails.length})
               </h3>
             </div>
-            <ScrollArea className="flex-1">
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/50">
               <div className="p-2 space-y-1">
                 {emails.map((email, index) => (
                   <div
