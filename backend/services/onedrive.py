@@ -1,12 +1,16 @@
 import logging
-import httpx
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional
+from typing import List
+
+import httpx
 from fastapi import HTTPException
+
 from config import ONEDRIVE_TENANT_ID, ONEDRIVE_CLIENT_ID, ONEDRIVE_CLIENT_SECRET
 from models.onedrive import OneDriveFile
 
+
 logger = logging.getLogger(__name__)
+
 
 class OneDriveService:
     def __init__(self):
@@ -14,62 +18,79 @@ class OneDriveService:
         self.token_expires = None
     
     async def get_access_token(self) -> str:
+        """Get Microsoft Graph access token using client credentials"""
         if not all([ONEDRIVE_TENANT_ID, ONEDRIVE_CLIENT_ID, ONEDRIVE_CLIENT_SECRET]):
-            logger.error("Credenciais Azure não configuradas no .env")
-            return None
+            raise HTTPException(status_code=503, detail="OneDrive não configurado. Configure as variáveis ONEDRIVE_TENANT_ID, ONEDRIVE_CLIENT_ID e ONEDRIVE_CLIENT_SECRET.")
         
         if self.token and self.token_expires and datetime.now(timezone.utc) < self.token_expires:
             return self.token
         
         token_url = f"https://login.microsoftonline.com/{ONEDRIVE_TENANT_ID}/oauth2/v2.0/token"
         
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(token_url, data={
-                    "client_id": ONEDRIVE_CLIENT_ID,
-                    "client_secret": ONEDRIVE_CLIENT_SECRET,
-                    "scope": "https://graph.microsoft.com/.default",
-                    "grant_type": "client_credentials"
-                })
-                response.raise_for_status()
-                data = response.json()
-                self.token = data["access_token"]
-                self.token_expires = datetime.now(timezone.utc) + timedelta(seconds=data["expires_in"] - 60)
-                return self.token
-        except Exception as e:
-            logger.error(f"Erro autenticação Azure: {e}")
-            return None
-
-    async def create_client_folder(self, client_name: str):
+        async with httpx.AsyncClient() as client:
+            response = await client.post(token_url, data={
+                "client_id": ONEDRIVE_CLIENT_ID,
+                "client_secret": ONEDRIVE_CLIENT_SECRET,
+                "scope": "https://graph.microsoft.com/.default",
+                "grant_type": "client_credentials"
+            })
+            
+            if response.status_code != 200:
+                logger.error(f"OneDrive auth failed: {response.text}")
+                raise HTTPException(status_code=503, detail="Erro de autenticação OneDrive")
+            
+            data = response.json()
+            self.token = data["access_token"]
+            self.token_expires = datetime.now(timezone.utc) + timedelta(seconds=data["expires_in"] - 60)
+            return self.token
+    
+    async def list_files(self, folder_path: str) -> List[OneDriveFile]:
+        """List files in a OneDrive folder"""
         token = await self.get_access_token()
-        if not token: return None
-
-        # 1. Criar Pasta
-        folder_url = f"https://graph.microsoft.com/v1.0/users/geral@powerealestate.pt/drive/root:/Clientes/2026/{client_name}:/children"
-        # NOTA: Substitui 'geral@powerealestate.pt' pelo ID do utilizador se der erro, mas o email costuma funcionar
         
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-        body = {"name": client_name, "folder": {}, "@microsoft.graph.conflictBehavior": "rename"}
+        encoded_path = folder_path.replace(" ", "%20")
+        url = f"https://graph.microsoft.com/v1.0/me/drive/root:/{encoded_path}:/children"
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers={"Authorization": f"Bearer {token}"})
+            
+            if response.status_code == 404:
+                return []
+            
+            if response.status_code != 200:
+                logger.error(f"OneDrive list failed: {response.text}")
+                raise HTTPException(status_code=503, detail="Erro ao listar ficheiros do OneDrive")
+            
+            data = response.json()
+            files = []
+            
+            for item in data.get("value", []):
+                files.append(OneDriveFile(
+                    id=item["id"],
+                    name=item["name"],
+                    size=item.get("size"),
+                    is_folder="folder" in item,
+                    modified_at=item.get("lastModifiedDateTime"),
+                    web_url=item.get("webUrl"),
+                    download_url=item.get("@microsoft.graph.downloadUrl")
+                ))
+            
+            return files
+    
+    async def get_download_url(self, item_id: str) -> str:
+        """Get download URL for a file"""
+        token = await self.get_access_token()
+        
+        url = f"https://graph.microsoft.com/v1.0/me/drive/items/{item_id}"
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers={"Authorization": f"Bearer {token}"})
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=404, detail="Ficheiro não encontrado")
+            
+            data = response.json()
+            return data.get("@microsoft.graph.downloadUrl", data.get("webUrl"))
 
-        try:
-            async with httpx.AsyncClient() as client:
-                # Tenta criar na raiz ou caminho especifico
-                create_url = f"https://graph.microsoft.com/v1.0/users/geral@powerealestate.pt/drive/root:/Clientes/2026/{client_name}"
-                # Método simplificado: PUT para criar/obter
-                response = await client.put(
-                    f"https://graph.microsoft.com/v1.0/users/geral@powerealestate.pt/drive/root:/Clientes/2026/{client_name}:/content", 
-                    headers=headers
-                )
-                
-                # A Graph API é complexa para "App Permissions". 
-                # Se isto for complicado, O Power Automate (pago) é mais simples de configurar.
-                return None 
-        except Exception as e:
-            logger.error(f"Erro OneDrive Azure: {e}")
-            return None
-
-    # Manter métodos vazios para compatibilidade
-    async def list_files(self, path): return []
-    async def get_download_url(self, id): return None
 
 onedrive_service = OneDriveService()
